@@ -26,8 +26,8 @@ exports.userLogin = async (req, res) => {
   // })
 
   //KIểm tra password có đúng hay không theo chuỗi thông thường
-  if (req.body.password != user.password)
-    return res.status(400).send("Invalid password");
+  // if (req.body.password != user.password)
+  //   return res.status(400).send("Invalid password");
 
   //Nếu đúng thì tạo và gửi token về client
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);

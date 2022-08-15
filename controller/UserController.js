@@ -1,5 +1,6 @@
 const User = require("../models/usersModel");
 const jwt = require("jsonwebtoken");
+const json = require("body-parser")
 
 exports.userLogin = async (req, res) => {
   // console.log("req.body: ", req.body);
@@ -36,3 +37,20 @@ exports.userList = (req, res) => {
       res.send(result);
     });
   };
+
+//test đăng ký user
+exports.userRegister = async (req, res) => {
+  const { cbID, fullName, roleID, email, password } = req.body
+
+  const user = await User.create({
+    cbID,
+    fullName,
+    roleID,
+    email,
+    password
+  })
+  res.status(200).json({
+    success: true,
+    message: "Create user successfully"
+  })
+}

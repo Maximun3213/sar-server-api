@@ -5,6 +5,7 @@ const json = require("body-parser")
 exports.userLogin = async (req, res) => {
   
   //Kiểm tra email có tồn tại hay chưa
+  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
   const user = await User.findOne({ email: req.body.email });
 
@@ -14,10 +15,7 @@ exports.userLogin = async (req, res) => {
   const isPasswordMatched = await.comparedPassword(req.body.password);
 
   if(!isPasswordMatched) {
-    res.status(404).json({
-      success: false,
-      message: 'Password is incorrect'
-    })
+    res.send("Password is incorrect")
   }
   // res.status(201).json({
   //   success: true,
@@ -30,7 +28,6 @@ exports.userLogin = async (req, res) => {
   //   return res.status(400).send("Invalid password");
 
   //Nếu đúng thì tạo và gửi token về client
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
   res.header("auth-token", token).send(token);
   // res.send('success')

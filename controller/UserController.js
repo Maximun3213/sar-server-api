@@ -5,8 +5,11 @@ const json = require("body-parser")
 exports.userLogin = async (req, res) => {
   
   const { email, password } = req.body;
+
+  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
+  
   if (!user) return res.status(400).send("Email is not found");
 
   //KIểm tra password có đúng hay không bằng cách hash password
@@ -19,13 +22,11 @@ exports.userLogin = async (req, res) => {
     });
 
   //Nếu đúng thì tạo và gửi token về client
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
   res.status(200).json({
     success: true,
     user,
     token
   });
-  // res.send('success')
 };
 
 exports.userList = (req, res) => {

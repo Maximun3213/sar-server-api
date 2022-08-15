@@ -17,20 +17,20 @@ exports.userLogin = async (req, res, next) => {
   if(!isPasswordMatched) {
     return next(new Error("Password is incorrect", 404))
   }
-  res.status(201).json({
-    success: true,
-    user,
-    token
-  })
+  // res.status(201).json({
+  //   success: true,
+  //   user,
+  //   token
+  // })
 
-  // //KIểm tra password có đúng hay không theo chuỗi thông thường
-  // if (req.body.password != user.password)
-  //   return res.status(400).send("Invalid password");
+  //KIểm tra password có đúng hay không theo chuỗi thông thường
+  if (req.body.password != user.password)
+    return res.status(400).send("Invalid password");
 
-  // //Nếu đúng thì tạo và gửi token về client
+  //Nếu đúng thì tạo và gửi token về client
   
-  // res.header("auth-token", token).send(token);
-  // // res.send('success')
+  res.header("auth-token", token).send(token);
+  // res.send('success')
 };
 
 exports.userList = (req, res) => {

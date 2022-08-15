@@ -2,21 +2,20 @@ const User = require("../models/usersModel");
 const jwt = require("jsonwebtoken");
 const json = require("body-parser")
 
-exports.userLogin = async (req, res, next) => {
+exports.userLogin = async (req, res) => {
   
   //Kiểm tra email có tồn tại hay chưa
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
   const user = await User.findOne({ email: req.body.email });
 
   if (!user) return res.status(400).send("Email is not found");
 
   //KIểm tra password có đúng hay không bằng cách hash password
-  const isPasswordMatched = await.comparedPassword(req.body.password);
+  // const isPasswordMatched = await.comparedPassword(req.body.password);
 
-  if(!isPasswordMatched) {
-    return next(new Error("Password is incorrect", 404))
-  }
+  // if(!isPasswordMatched) {
+  //   return next(new Error("Password is incorrect", 404))
+  // }
   // res.status(201).json({
   //   success: true,
   //   user,
@@ -28,7 +27,8 @@ exports.userLogin = async (req, res, next) => {
     return res.status(400).send("Invalid password");
 
   //Nếu đúng thì tạo và gửi token về client
-  
+  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+
   res.header("auth-token", token).send(token);
   // res.send('success')
 };

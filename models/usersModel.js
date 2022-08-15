@@ -55,9 +55,9 @@ userSchema.pre('save', function(next) {
 })
 
 //compare hashed password
-userSchema.methods.comparedPassword = async function(candidatePassword) {
-  return await bcrypt.compare(candidatePassword, this.password)
-}
+// userSchema.methods.comparedPassword = async function(candidatePassword) {
+//   return await bcrypt.compare(candidatePassword, this.password)
+// }
 
 const User = mongoose.model("user", userSchema);
 

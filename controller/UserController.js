@@ -4,15 +4,16 @@ const json = require("body-parser")
 
 exports.userLogin = async (req, res) => {
   
+  const { email, password } = req.body;
   //Kiểm tra email có tồn tại hay chưa
-  const user = await User.findOne({ email: req.body.email });
+  const user = await User.findOne({ email });
   if (!user) return res.status(400).send("Email is not found");
 
   //KIểm tra password có đúng hay không bằng cách hash password
-  // const isPasswordMatched = await.comparedPassword(req.body.password);
+  // const isPasswordMatched = await user.comparedPassword(req.body.password);
 
   //KIểm tra password có đúng hay không theo chuỗi thông thường
-  if (req.body.password != user.password)
+  if (password != user.password)
     return res.status(400).send("Invalid password");
 
   //Nếu đúng thì tạo và gửi token về client

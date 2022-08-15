@@ -3,7 +3,7 @@ const mongoose = require("mongoose");
 const Schema = mongoose.Schema;
 
 const userSchema = new Schema({
-    cbID: {
+  cbID: {
     type: String,
     unique: true,
     required: [true, "Mã CB không được trống"],
@@ -17,7 +17,7 @@ const userSchema = new Schema({
   roleID: {
     type: String,
     required: [true, "Quyền không được trống"],
-    default: 'USER'
+    default: 'USER',
     ref: 'Role',
   },
   email: {
@@ -25,7 +25,7 @@ const userSchema = new Schema({
   },
   password: {
     type: String
-  }
+  },
   creatAt: {
     type: Date,
     default: Date.now()

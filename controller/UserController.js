@@ -12,9 +12,11 @@ exports.userLogin = async (req, res) => {
   //KIểm tra password có đúng hay không bằng cách hash password
   const isPasswordMatched = await user.comparedPassword(password);
 
-  //KIểm tra password có đúng hay không theo chuỗi thông thường
   if (!isPasswordMatched)
-    return res.status(400).send("Invalid password");
+    return res.status(400).json({
+      success: false,
+      message: "Invalid password"
+    });
 
   //Nếu đúng thì tạo và gửi token về client
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);

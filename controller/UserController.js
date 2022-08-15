@@ -10,7 +10,7 @@ exports.userLogin = async (req, res) => {
   if (!user) return res.status(400).send("Email is not found");
 
   //KIểm tra password có đúng hay không bằng cách hash password
-  // const isPasswordMatched = await user.comparedPassword(req.body.password);
+  const isPasswordMatched = await user.comparedPassword(password);
 
   //KIểm tra password có đúng hay không theo chuỗi thông thường
   if (password != user.password)

@@ -13,7 +13,7 @@ exports.userLogin = async (req, res) => {
   const isPasswordMatched = await user.comparedPassword(password);
 
   //KIểm tra password có đúng hay không theo chuỗi thông thường
-  if (password != user.password)
+  if (!isPasswordMatched)
     return res.status(400).send("Invalid password");
 
   //Nếu đúng thì tạo và gửi token về client

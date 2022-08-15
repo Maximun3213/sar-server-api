@@ -16,7 +16,7 @@ exports.userLogin = async (req, res) => {
   const isPasswordMatched = await user.comparedPassword(password);
 
   if(!isPasswordMatched) 
-    res.send("Password is incorrect")
+    return res.send("Password is incorrect")
   
   // res.status(201).json({
   //   success: true,

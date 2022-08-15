@@ -11,11 +11,14 @@ exports.userLogin = async (req, res) => {
   if (!user) return res.status(400).send("Email is not found");
 
   //KIểm tra password có đúng hay không bằng cách hash password
-  // const isPasswordMatched = await.comparedPassword(req.body.password);
+  const isPasswordMatched = await.comparedPassword(req.body.password);
 
-  // if(!isPasswordMatched) {
-  //   return next(new Error("Password is incorrect", 404))
-  // }
+  if(!isPasswordMatched) {
+    res.status(404).json({
+      success: false,
+      message: 'Password is incorrect'
+    })
+  }
   // res.status(201).json({
   //   success: true,
   //   user,

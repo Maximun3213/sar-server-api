@@ -20,7 +20,11 @@ exports.userLogin = async (req, res) => {
 
   //Nếu đúng thì tạo và gửi token về client
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-  res.header("auth-token", token).send(token);
+  res.status(200).json({
+    success: true,
+    user,
+    token
+  });
   // res.send('success')
 };
 

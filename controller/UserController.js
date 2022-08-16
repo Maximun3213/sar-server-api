@@ -3,11 +3,14 @@ const jwt = require("jsonwebtoken");
 const json = require("body-parser")
 
 exports.userLogin = async (req, res) => {
-  
+
   const { email, password } = req.body;
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
-  if (!user) return res.status(400).send("Email is not found");
+  if (!user) return res.status(400).json({
+    success: false,
+    message: "Email is not found"
+  });
 
   //KIểm tra password có đúng hay không bằng cách hash password
   const isPasswordMatched = await user.comparedPassword(password);

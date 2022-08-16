@@ -10,13 +10,13 @@ const roleSchema = new Schema({
     roleName: {
         type: String,
         require: true,
-    }
+    },
     crudID: {
         type: String,
         ref: 'Crud',
         require: true
     }
-    
+
 })
 
 const Role = mongoose.model("Role", roleSchema);

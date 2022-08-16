@@ -21,7 +21,7 @@ const userSchema = new Schema({
     type: String,
     required: [true, "Quyền không được trống"],
     default: 'USER',
-    // ref: 'Role',
+    ref: 'Role',
   },
   email: {
     type: String

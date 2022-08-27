@@ -5,7 +5,8 @@ const Schema = mongoose.Schema;
 const permissionSchema = new Schema({
     permissionID: {
         type: String,
-        required: true
+        required: true,
+        unique: true
     },
     permissionName: {
         type: String,

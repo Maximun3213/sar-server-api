@@ -15,8 +15,13 @@ app.use(function (req, res, next) {
 
 //Route import
 const user = require('./routes/UserRoute')
+const role = require('./routes/RoleRoute')
+const permission = require('./routes/PermissionRoute')
 
 app.use('/api',user);
+app.use('/api',role);
+app.use('/api',permission);
+
 
 
 module.exports = app;

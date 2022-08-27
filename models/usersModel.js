@@ -5,6 +5,7 @@ SALT_WORK_FACTOR = 10
 
 const Schema = mongoose.Schema;
 
+
 const userSchema = new Schema({
     cbID: {
     type: String,
@@ -18,16 +19,17 @@ const userSchema = new Schema({
     max: [30, "Tên tối đa 30 ký tự"]
   },
   roleID: {
-    type: String,
-    required: [true, "Quyền không được trống"],
-    default: 'USER',
+    type: mongoose.Schema.ObjectId,
     ref: 'Role',
+    required: true
   },
   email: {
-    type: String
+    type: String,
+    required: true
   },
   password: {
-    type: String
+    type: String,
+    required: true
   },
   creatAt: {
     type: Date,

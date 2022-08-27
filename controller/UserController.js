@@ -9,7 +9,7 @@ exports.userLogin = async (req, res) => {
   const user = await User.findOne({ email });
   if (!user) return res.status(400).json({
     success: false,
-    message: "Email is not found"
+    message: "Email not matched"
   });
 
   //KIểm tra password có đúng hay không bằng cách hash password

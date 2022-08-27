@@ -16,7 +16,7 @@ app.use(function (req, res, next) {
 //Route import
 const user = require('./routes/UserRoute')
 
-app.use('/api', user);
+app.use('/api',user);
 
 
 module.exports = app;

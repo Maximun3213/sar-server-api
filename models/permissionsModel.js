@@ -2,18 +2,18 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const crudSchema = new Schema({
-    crudID: {
+const permissionSchema = new Schema({
+    permissionID: {
         type: String,
         required: true
     },
-    crudName: {
+    permissionName: {
         type: String,
         require: true
     }
     
 })
 
-const Crud = mongoose.model("Crud", crudSchema);
+const Permission = mongoose.model("permission", permissionSchema);
 
-module.exports = Crud
+module.exports = Permission

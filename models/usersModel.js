@@ -19,7 +19,7 @@ const userSchema = new Schema({
     max: [30, "Tên tối đa 30 ký tự"]
   },
   roleID: {
-    type: mongoose.Schema.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Role',
     required: true
   },

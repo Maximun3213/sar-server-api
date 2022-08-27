@@ -6,6 +6,7 @@ const roleSchema = new Schema({
     roleID: {
         type: String,
         required: true,
+        unique: true
     },
     roleName: {
         type: String,

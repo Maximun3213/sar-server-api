@@ -2,9 +2,6 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-
-console.log('Roles')
-
 const roleSchema = new Schema({
     roleID: {
         type: String,
@@ -13,7 +10,7 @@ const roleSchema = new Schema({
     roleName: {
         type: String,
         require: true,
-    }
+    },
     permissionID: [
         {
             type: String,
@@ -23,6 +20,9 @@ const roleSchema = new Schema({
     ]
     
 })
+
+console.log('Roles')
+
 
 const Role = mongoose.model("role", roleSchema);
 

@@ -12,19 +12,17 @@ exports.userLogin = async (req, res) => {
   const user = await User.findOne({ email });
   const role = await Role.findById(user.roleID);
 
-  const permission = await Role.
-  findById(role._id).
-  populate('permissionID'). // only return the Persons name
-  exec();
+  const permission = await Role.findById(role._id)
+    .populate("permissionID")
+    .exec();
 
-  console.log(permission)
+  console.log(permission);
   // exec(function (err, role) {
   //   if (err) return err;
 
   //   console.log('Permission Name %s', role.permissionID.permissionName);
   // });
 
-  
   if (!user)
     return res
       .status(400)

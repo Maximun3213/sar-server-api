@@ -20,7 +20,7 @@ const userSchema = new Schema({
   },
   roleID: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'Role',
+    ref: 'role',
     required: true
   },
   email: {

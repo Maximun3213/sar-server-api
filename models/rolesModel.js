@@ -15,7 +15,7 @@ const roleSchema = new Schema({
     permissionID: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'Permission',
+            ref: 'permission',
             require: true   
         }
     ]

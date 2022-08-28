@@ -1,26 +1,32 @@
 const User = require("../models/usersModel");
-const Role = require("../models/rolesModel")
-const Permission = require("../models/permissionsModel")
+const Role = require("../models/rolesModel");
+const Permission = require("../models/permissionsModel");
 
 const jwt = require("jsonwebtoken");
-const json = require("body-parser")
+const json = require("body-parser");
 
 exports.userLogin = async (req, res) => {
-
   const { email, password } = req.body;
 
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
-  const role = await Role.findOne(res.roleID);
-  const permission = await Permission.findOne(res.permissionID);
+  const role = await Role.findById(user.roleID);
 
-  console.log(permission)
-  if (!user) return res.status(400).json({
-    success: false,
-    message: "Email not matched"
-  });
+  const permission = await Role.findById(role._id)
+    .populate("permissionID")
+    .exec();
 
-  
+  console.log(permission);
+  // exec(function (err, role) {
+  //   if (err) return err;
+
+  //   console.log('Permission Name %s', role.permissionID.permissionName);
+  // });
+
+  if (!user)
+    return res
+      .status(400)
+      .json({ success: false, message: "Email not matched" });
 
   //KIểm tra password có đúng hay không bằng cách hash password
   const isPasswordMatched = await user.comparedPassword(password);
@@ -28,7 +34,7 @@ exports.userLogin = async (req, res) => {
   if (!isPasswordMatched)
     return res.status(400).json({
       success: false,
-      message: "Invalid password"
+      message: "Invalid password",
     });
 
   //Nếu đúng thì tạo và gửi token về client
@@ -38,30 +44,29 @@ exports.userLogin = async (req, res) => {
     user,
     role,
     permission,
-    token
+    token,
   });
 };
 
 exports.userList = (req, res) => {
-    User.find({}, (err, result) => {
-      res.send(result);
-    });
-  };
-
+  User.find({}, (err, result) => {
+    res.send(result);
+  });
+};
 
 //test đăng ký user
 exports.userRegister = async (req, res) => {
-  const { cbID, fullName, roleID, email, password } = req.body
+  const { cbID, fullName, roleID, email, password } = req.body;
 
   const user = await User.create({
     cbID,
     fullName,
     roleID,
     email,
-    password
-  })
+    password,
+  });
   res.status(200).json({
     success: true,
-    message: "Create user successfully"
-  })
-}
+    message: "Create user successfully",
+  });
+};

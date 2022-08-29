@@ -16,6 +16,13 @@ exports.userLogin = async (req, res) => {
     .populate("permissionID")
     .exec();
 
+  console.log(permission);
+  // exec(function (err, role) {
+  //   if (err) return err;
+
+  //   console.log('Permission Name %s', role.permissionID.permissionName);
+  // });
+
   if (!user)
     return res
       .status(400)

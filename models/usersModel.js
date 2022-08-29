@@ -18,16 +18,17 @@ const userSchema = new Schema({
     max: [30, "Tên tối đa 30 ký tự"]
   },
   roleID: {
-    type: String,
-    required: [true, "Quyền không được trống"],
-    default: 'USER',
-    ref: 'Role',
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'role',
+    required: true
   },
   email: {
-    type: String
+    type: String,
+    required: true
   },
   password: {
-    type: String
+    type: String,
+    required: true
   },
   creatAt: {
     type: Date,

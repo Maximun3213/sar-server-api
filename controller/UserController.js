@@ -1,9 +1,44 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
-const Permission = require("../models/permissionsModel");
+const Image = require("../models/imageModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
+const fs = require("fs");
+const multer = require("multer");
+
+const Storage = multer.diskStorage({
+  destination: "uploads",
+  filename: (req, file, cb) => {
+    cb(null, file.originalname);
+  },
+});
+
+const upload = multer({
+  storage: Storage,
+}).single("testImage");
+
+
+exports.uploadFile = (req, res) => {
+  upload(req, res, (err) => {
+    if(err){
+      console.log(err)
+    }
+    const newImage = new Image({
+      name: req.body.name,
+      image: {
+        data: req.file.filename,
+        contentType: "image/png",
+      },
+    });
+    newImage
+      .save()
+      .then(() => res.send(req.file))
+      .catch((err) => console.log(err));
+  })
+  
+};
+
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;

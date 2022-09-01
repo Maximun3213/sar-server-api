@@ -6,37 +6,75 @@ const jwt = require("jsonwebtoken");
 const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
+const path = require("path");
 
 const Storage = multer.diskStorage({
   destination: "uploads",
   filename: (req, file, cb) => {
-    cb(null, file.originalname);
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + file.originalname.match(/\..*$/)[0]
+    );
   },
 });
 
 const upload = multer({
   storage: Storage,
-}).single("testImage");
-
+  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB
+  // fileFilter: (req, file, cb) => {
+  //   if (
+  //     file.mimetype == "image/png" ||
+  //     file.mimetype == "image/jpg" ||
+  //     file.mimetype == "image/jpge"
+  //   ) {
+  //     cb(null, false);
+  //     const err = new Error("Only .doc, .pdf, .xls file format allowed");
+  //     err.name = "ExtensionError";
+  //     return cb(err);
+  //   } else {
+  //     cb(null, true);
+  //   }
+  // },
+}).array("uploadedFiles");
 
 exports.uploadFile = (req, res) => {
   upload(req, res, (err) => {
-    if(err){
-      console.log(err)
+    if (err) {
+      res.send(err)
     }
-    const newImage = new Image({
-      name: req.body.name,
-      image: {
-        data: req.file.filename,
-        contentType: "image/png",
-      },
+    const fileList = req.files;
+    fileList.map((file, index) => {
+      const newImage = new Image({
+        name: req.body.name,
+        file: {
+          data: file.filename,
+          // data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.files.filename)),
+          contentType: "multipart/form-data",
+        },
+      });
+      newImage
+        .save()
+        .then(() => console.log(`1 file uploaded`))
+        .catch((err) => console.log(err));
     });
-    newImage
-      .save()
-      .then(() => res.send(req.file))
-      .catch((err) => console.log(err));
-  })
-  
+    res.status(200).json({
+      success: true,
+      message: "Upload file successfully",
+      fileList,
+    });
+  });
+};
+
+//In danh sách file
+exports.getFileList = (req, res) => {
+  Image.find({}, (err, items) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send("An error occurred", err);
+    } else {
+      res.send(items);
+    }
+  });
 };
 
 
@@ -45,6 +83,13 @@ exports.userLogin = async (req, res) => {
 
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
+  const role = await Role.findById(user.roleID);
+
+  const permission = await Role.findById(role._id)
+    .populate("permissionID")
+    .exec();
+
+  // console.log(permission);
 
   if (!user)
     return res

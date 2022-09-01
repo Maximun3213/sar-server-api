@@ -37,6 +37,19 @@ const upload = multer({
   // },
 }).array("uploadedFiles");
 
+// var getFileFromStore = function(uri, filename, callback){
+//   request.head(uri, function(err, res, body){
+//     console.log('content-type:', res.headers['content-type']);
+//     console.log('content-length:', res.headers['content-length']);
+
+//     request(uri).pipe(fs.createWriteStream(filename)).on('close', callback);
+//   });
+// };
+
+// download('https://www.google.com/images/srpr/logo3w.png', 'google.png', function(){
+//   console.log('done');
+// });
+
 exports.uploadFile = (req, res) => {
   upload(req, res, (err) => {
     if (err) {
@@ -47,8 +60,7 @@ exports.uploadFile = (req, res) => {
       const newImage = new Image({
         name: req.body.name,
         file: {
-          data: file.filename,
-          // data: fs.readFileSync(path.join(__dirname + '/uploads/' + req.files.filename)),
+          data: file,
           contentType: "multipart/form-data",
         },
       });

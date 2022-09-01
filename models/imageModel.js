@@ -7,7 +7,7 @@ const ImageSchema = new Schema({
         type: String,
         required: true
     },
-    image: {
+    file: {
         data: Buffer,
         contentType: String
     }

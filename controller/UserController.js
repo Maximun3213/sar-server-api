@@ -10,11 +10,6 @@ exports.userLogin = async (req, res) => {
 
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
-  const role = await Role.findById(user.roleID);
-
-  const permission = await Role.findById(role._id)
-    .populate("permissionID")
-    .exec();
 
   if (!user)
     return res
@@ -30,7 +25,13 @@ exports.userLogin = async (req, res) => {
       message: "Invalid password",
     });
 
-  //Nếu đúng thì tạo và gửi token về client
+  //Nếu đúng thì lấy role, permission, token và gửi về client
+  const role = await Role.findById(user.roleID);
+  const permission = await Role.findById(role._id)
+    .populate("permissionID")
+    .exec();
+
+
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
   res.status(200).json({
     success: true,

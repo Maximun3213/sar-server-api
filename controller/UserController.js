@@ -14,7 +14,7 @@ exports.userLogin = async (req, res) => {
   if (!user)
     return res
       .status(400)
-      .json({ success: false, message: "Email not matched" });
+      .json({ success: false, message: "Email không tồn tại" });
 
   //KIểm tra password có đúng hay không bằng cách hash password
   const isPasswordMatched = await user.comparedPassword(password);
@@ -22,7 +22,7 @@ exports.userLogin = async (req, res) => {
   if (!isPasswordMatched)
     return res.status(400).json({
       success: false,
-      message: "Invalid password",
+      message: "Mật khẩu không đúng",
     });
 
   //Nếu đúng thì lấy role, permission, token và gửi về client

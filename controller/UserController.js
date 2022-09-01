@@ -10,16 +10,11 @@ exports.userLogin = async (req, res) => {
 
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
-  const role = await Role.findById(user.roleID);
-
-  const permission = await Role.findById(role._id)
-    .populate("permissionID")
-    .exec();
 
   if (!user)
     return res
       .status(400)
-      .json({ success: false, message: "Email not matched" });
+      .json({ success: false, message: "Email không tồn tại" });
 
   //KIểm tra password có đúng hay không bằng cách hash password
   const isPasswordMatched = await user.comparedPassword(password);
@@ -27,10 +22,16 @@ exports.userLogin = async (req, res) => {
   if (!isPasswordMatched)
     return res.status(400).json({
       success: false,
-      message: "Invalid password",
+      message: "Mật khẩu không đúng",
     });
 
-  //Nếu đúng thì tạo và gửi token về client
+  //Nếu đúng thì lấy role, permission, token và gửi về client
+  const role = await Role.findById(user.roleID);
+  const permission = await Role.findById(role._id)
+    .populate("permissionID")
+    .exec();
+
+
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
   res.status(200).json({
     success: true,

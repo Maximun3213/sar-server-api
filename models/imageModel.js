@@ -8,7 +8,16 @@ const ImageSchema = new Schema({
         required: true
     },
     file: {
-        data: Buffer,
+        data: {
+            "fieldname": String,
+            "originalname": String,
+            "encoding": String,
+            "mimetype": String,
+            "destination": String,
+            "filename": String,
+            "path": String,
+            "size": Number
+        },
         contentType: String
     }
 })

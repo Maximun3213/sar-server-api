@@ -3,7 +3,10 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer")
 const app = express();
+app.use(express.static('uploads'))
+
 app.use(express.json());
+
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");

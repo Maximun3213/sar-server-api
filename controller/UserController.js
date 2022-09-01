@@ -77,19 +77,11 @@ exports.getFileList = (req, res) => {
   });
 };
 
-
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
 
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
-  const role = await Role.findById(user.roleID);
-
-  const permission = await Role.findById(role._id)
-    .populate("permissionID")
-    .exec();
-
-  // console.log(permission);
 
   if (!user)
     return res

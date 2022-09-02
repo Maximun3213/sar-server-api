@@ -20,9 +20,13 @@ app.use(function (req, res, next) {
 const user = require("./routes/UserRoute");
 const role = require("./routes/RoleRoute");
 const permission = require("./routes/PermissionRoute");
+const proof = require("./routes/proofRoute");
+
 
 app.use("/api", user);
 app.use("/api", role);
 app.use("/api", permission);
+app.use("/api", proof);
+
 
 module.exports = app;

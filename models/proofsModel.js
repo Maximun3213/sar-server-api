@@ -3,13 +3,14 @@ const mongoose = require("mongoose")
 const Schema = mongoose.Schema
 
 const ImageSchema = new Schema({
-    name: {
-        type: String,
-        required: true
-    },
+    // name: {
+    //     type: String,
+    // },
     file: {
         data: Buffer,
-        contentType: String
+        fileName: String,
+        mimeType: String,
+        size: Number,
     }
 })
 const Image = mongoose.model("image", ImageSchema)

@@ -42,10 +42,11 @@ exports.uploadFile = (req, res) => {
 
     fileList.map((file, index) => {
       const newImage = new Image({
-        name: req.body.name,
         file: {
           data: fs.readFileSync(file.path),
-          contentType: "multipart/form-data",
+          mimeType: file.mimetype,
+          fileName: file.originalname,
+          size: file.size
         },
       });
       newImage

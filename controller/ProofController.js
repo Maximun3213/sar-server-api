@@ -16,7 +16,7 @@ const Storage = multer.diskStorage({
 
 const upload = multer({
   storage: Storage,
-  limits: { fileSize: 1 * 1024 * 1024 }, // 1MB
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   // fileFilter: (req, file, cb) => {
   //   if (
   //     file.mimetype == "image/png" ||
@@ -42,10 +42,10 @@ exports.uploadFile = (req, res) => {
 
     fileList.map((file, index) => {
       const newImage = new Image({
+        name: file.originalname,
         file: {
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
-          fileName: file.originalname,
           size: file.size
         },
       });
@@ -74,3 +74,24 @@ exports.getFileList = (req, res) => {
   });
 };
 
+//Search module
+exports.searchProof = async (req, res) => {
+  const file =  await Image.find(
+    {
+      "$or": [
+        {name: {$regex:req.params.key}}
+      ]
+    }
+  )
+  if(file){
+    res.status(200).json({
+      success: true,
+      file
+    })
+  }
+  else{
+    res.status(404).json({
+      message: 'Not found everything else'
+    })
+  }
+}

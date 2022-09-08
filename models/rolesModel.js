@@ -16,10 +16,10 @@ const roleSchema = new Schema({
         {
             type: mongoose.Schema.Types.ObjectId,
             ref: 'permission',
-            require: true   
+            require: true
         }
     ]
-    
+
 })
 
 const Role = mongoose.model("role", roleSchema);

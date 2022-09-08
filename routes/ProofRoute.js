@@ -7,7 +7,7 @@ router.route("/upload").post(uploadFile);
 
 router.route("/fileList").get(getFileList);
 
-router.route("/search/:key").get(searchProof);
+router.route("/fileList/:key").get(searchProof);
 
 
 

@@ -20,7 +20,7 @@ app.use(function (req, res, next) {
 const user = require("./routes/UserRoute");
 const role = require("./routes/RoleRoute");
 const permission = require("./routes/PermissionRoute");
-const proof = require("./routes/proofRoute");
+const proof = require("./routes/ProofRoute");
 
 
 app.use("/api", user);

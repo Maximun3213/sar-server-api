@@ -7,6 +7,10 @@
     "test": "echo \"Error: no test specified\" && exit 1",
     "start": "nodemon server.js"
   },
+  "permissions": [
+    "http://www.google.com/",
+    "https://www.google.com/"
+  ],
   "author": "",
   "license": "ISC",
   "dependencies": {

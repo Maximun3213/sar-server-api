@@ -32,7 +32,7 @@ const proof = require("./routes/proofRoute");
 app.use("/api", user);
 app.use("/api", role);
 app.use("/api", permission);
-app.use("/api", proof);
+app.use("/api",cors(), proof);
 
 
 module.exports = app;

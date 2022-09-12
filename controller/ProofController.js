@@ -4,7 +4,16 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 
-const Storage = multer.diskStorage({
+const {Storage} = require('@google-cloud/storage');
+import Multer from "multer";
+import cors from "cors";
+const { createWriteStream } = require("fs");
+const express = require("express");
+const app = express();
+const files = [];
+
+
+const Str = multer.diskStorage({
   destination: "uploads",
   filename: (req, file, cb) => {
     cb(
@@ -14,8 +23,15 @@ const Storage = multer.diskStorage({
   },
 });
 
+// const gc  = new Storage({
+//   keyFilename: path.join(__dirname, '../sar-storage.json'),
+//   projectId: 'sar-server-359312'
+// })
+
+// const sarFilesBucket = gc.bucket('sar-storage');
+
 const upload = multer({
-  storage: Storage,
+  storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   // fileFilter: (req, file, cb) => {
   //   if (

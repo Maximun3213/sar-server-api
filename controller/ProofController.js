@@ -51,7 +51,7 @@ exports.uploadFile = (req, res) => {
       });
       newImage
         .save()
-        .then(() => console.log(`1 file uploaded`))
+        .then(() => console.log(`Upload successfully`))
         .catch((err) => console.log(err));
     });
     res.status(200).json({

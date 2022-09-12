@@ -1,6 +1,5 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
-const Permission = require("../models/permissionsModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");

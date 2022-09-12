@@ -4,7 +4,16 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 
-const Storage = multer.diskStorage({
+// const {Storage} = require('@google-cloud/storage');
+// import Multer from "multer";
+// import cors from "cors";
+// const { createWriteStream } = require("fs");
+// const express = require("express");
+// const app = express();
+// const files = [];
+
+
+const Str = multer.diskStorage({
   destination: "uploads",
   filename: (req, file, cb) => {
     cb(
@@ -14,8 +23,15 @@ const Storage = multer.diskStorage({
   },
 });
 
+// const gc  = new Storage({
+//   keyFilename: path.join(__dirname, '../sar-storage.json'),
+//   projectId: 'sar-server-359312'
+// })
+
+// const sarFilesBucket = gc.bucket('sar-storage');
+
 const upload = multer({
-  storage: Storage,
+  storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
   // fileFilter: (req, file, cb) => {
   //   if (
@@ -33,12 +49,14 @@ const upload = multer({
   // },
 }).array("uploadedFiles");
 
-exports.uploadFile = (req, res) => {
+exports.uploadFile = async (req, res) => {
   upload(req, res, (err) => {
     if (err) {
-      res.send(err)
+      res.send(err);
     }
     const fileList = req.files;
+
+    console.log(fileList);
 
     fileList.map((file, index) => {
       const newImage = new Image({
@@ -46,7 +64,7 @@ exports.uploadFile = (req, res) => {
         file: {
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
-          size: file.size
+          size: file.size,
         },
       });
       newImage
@@ -59,7 +77,12 @@ exports.uploadFile = (req, res) => {
       message: "Upload file successfully",
       fileList,
     });
+    // res.status(200).then((res)=>console.log('success'))
   });
+  // res.send({
+  //   success: true,
+  //   message: "Upload file successfully",
+  // });
 };
 
 //In danh sách file
@@ -76,22 +99,17 @@ exports.getFileList = (req, res) => {
 
 //Search module
 // exports.searchProof = async (req, res) => {
-//   const file =  await Image.find(
-//     {
-//       "$or": [
-//         {name: {$regex:req.params.key}}
-//       ]
-//     }
-//   )
-//   if(file){
+//   const file = await Image.find({
+//     $or: [{ name: { $regex: req.params.key } }],
+//   });
+//   if (file) {
 //     res.status(200).json({
 //       success: true,
-//       file
-//     })
-//   }
-//   else{
+//       file,
+//     });
+//   } else {
 //     res.status(404).json({
-//       message: 'Not found everything else'
-//     })
+//       message: "Not found everything else",
+//     });
 //   }
-// }
+// };

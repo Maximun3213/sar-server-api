@@ -12,7 +12,6 @@ const path = require("path");
 // const app = express();
 // const files = [];
 
-
 const Str = multer.diskStorage({
   destination: "uploads",
   filename: (req, file, cb) => {
@@ -47,16 +46,17 @@ const upload = multer({
   //     cb(null, true);
   //   }
   // },
-}).array("uploadedFiles");
+}).array("uploadedFiles", 4);
 
-exports.uploadFile = async (req, res) => {
+exports.uploadFile = async (req, res, next) => {
   upload(req, res, (err) => {
     if (err) {
-      res.send(err);
+      return res
+        .status(400)
+        .send({ success: false, message: "Tối đa 4 tệp được upload" });
     }
-    const fileList = req.files;
 
-    console.log(fileList);
+    const fileList = req.files;
 
     fileList.map((file, index) => {
       const newImage = new Image({
@@ -67,22 +67,14 @@ exports.uploadFile = async (req, res) => {
           size: file.size,
         },
       });
-      newImage
-        .save()
-        .then(() => console.log(`Upload successfully`))
-        .catch((err) => console.log(err));
+      newImage.save();
     });
     res.status(200).json({
       success: true,
       message: "Upload file successfully",
       fileList,
     });
-    // res.status(200).then((res)=>console.log('success'))
   });
-  // res.send({
-  //   success: true,
-  //   message: "Upload file successfully",
-  // });
 };
 
 //In danh sách file

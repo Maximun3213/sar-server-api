@@ -4,13 +4,13 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 
-const {Storage} = require('@google-cloud/storage');
-import Multer from "multer";
-import cors from "cors";
-const { createWriteStream } = require("fs");
-const express = require("express");
-const app = express();
-const files = [];
+// const {Storage} = require('@google-cloud/storage');
+// import Multer from "multer";
+// import cors from "cors";
+// const { createWriteStream } = require("fs");
+// const express = require("express");
+// const app = express();
+// const files = [];
 
 
 const Str = multer.diskStorage({
@@ -69,7 +69,7 @@ exports.uploadFile = async (req, res) => {
       });
       newImage
         .save()
-        .then(() => console.log(`1 file uploaded`))
+        .then(() => console.log(`Upload successfully`))
         .catch((err) => console.log(err));
     });
     res.status(200).json({

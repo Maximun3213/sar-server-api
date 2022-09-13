@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "sar-server-359312",
+  "private_key_id": "441ae3d69a0118ac5dc316030b4d1ce66783764b",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvAIBADANBgkqhkiG9w0BAQEFAASCBKYwggSiAgEAAoIBAQC0mMwnm7P5yLde\n1GDJPVyCAyvdiviPjy3wAruxWi0LbdkKfi+fUT0ijNpPWa6d2S+ntlVFxQkpZTls\nWfjXAmnB+9LKvJVIifqHEfzUFmd8ma4OM+1dbkqFORsE6UPHl5D++zL/jbsBFUD/\nX8r8B1PYjlftJXtz165GwgdKEuVmRLRidstFLnuGoMDCwhqGfSbAsnHNz9YWOij0\n764DJf60WDKnLc58BHrV6vl8c8vYnYdqYHCmHMf2B1vQAV7gNFuaT//pGnVPgC0q\nlqWfp0Xwy7cjg9NBQ5B8asGe9C1X2CASRp2Ch3GBqdk/DfIWheWzUInMn4Kq/RcF\nHkp5CJK3AgMBAAECggEAOVH6EmRAFnrXgLjF03mvX/Cjvph6Vg5q1S/45MyrWWJP\nLh5o/Rcq4Ul1jRP48U7a6k9b914Xj1T6ieJwscWpTZGhEQoUE8b/hll2Nta5l/mr\nHgTrROlZq7k5UzC6e6Imuld+k1An16soSyXbZmzo9uYPEE0CRv1g6kJxT9h5iSCh\nv+GPig2GshRArkUshtx8xA4jIFliFoQU+ct1EFq8kwj0C8hhmGjd+Jh9Nhq+tYB/\nfamNk8LB/TK8AQpmIP5xTHfgjkKtVGUtBKNNoEWVF5MorQxwwm2K0+ScWzaR0qYn\n6fb71DbtAKt1TEP2gZVmE80dCZFm6ZnSTOE11YVFsQKBgQD0y6c5Glgv/u4AFpYu\nl06k1yDef1LYcnpdd99FdSmln3Bs630dzCioMouX1orU16drYL9GwoSMrOHIAnNF\nVHjGKJhCoR3r0rYtRdeoLw0SajzCsqwdZwRddVagmUPaIsyuy5o0hZ85pTr2SE6L\nNHfNFL/o6a8dUr/vRGddurbiqQKBgQC83OiDJSaA5gVABR3k3p27OEk7Zz5trCP7\nHlfjybbsq9VJQAXv0y/KGoldA2hYfDoLeGSVyzjz/cHDp92jdFFO8BwHlvuee4Pk\nrCqWdZJk4zDdLYV24PNV0IDojA8Ay9G6QXTe5lnolW2FWN50nGwzT5/3EJGAkWV2\nVlmtahaGXwKBgBRdTNAHTQbRImOHfX7qv3QfIXDhDrdK7rsP2dchZBGPLf8hqAru\njQNRESPUiUAjoJ3iModkbzp0t2O4MHa4DEQP5HrGhIK1yMoDYWlwYJoDlIJt8ruP\ncmGD/Wzm0yo2cuinr3BnHVPiVwFeCoqyFrVM4Joztomt9KGnAyJdAhHhAoGAQojQ\noOMFnYNrdhJXZbnHd51srzDAHYL3ahBWhjkZ6GbgzN1xOfv8agbPPaVlrUaWbFQN\nm3fsqIhNKtCIlHz16AlO1p2qJzr8TCMbHcZtvH0NSd4vlqHJGAJMZ6Bv6KflSuik\nc6JTKkz6OHAGbq5sr+btQ+ziVZjjVb01+pHVPaECgYBboaI+km66PaDVSsr8bNyA\npu91AZgLAZxB80fCYwSxI1S9bVnWZW4P2Wt+RjIc8D8mjYKeRrT5WVUw9NhEVLOF\nQuUqCMH+TNoiagEzlqXSGCzlZHVYNqLLYB5wMN8SGr4k/SiyEFeKVzN6aIdI1Gup\ndM60IDBRjCi0gxl5KFe8SA==\n-----END PRIVATE KEY-----\n",
+  "client_email": "sar-storage-646@sar-server-359312.iam.gserviceaccount.com",
+  "client_id": "107824755668370928888",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/sar-storage-646%40sar-server-359312.iam.gserviceaccount.com"
+}

@@ -17,20 +17,7 @@ const Str = multer.diskStorage({
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  // fileFilter: (req, file, cb) => {
-  //   if (
-  //     file.mimetype == "image/png" ||
-  //     file.mimetype == "image/jpg" ||
-  //     file.mimetype == "image/jpge"
-  //   ) {
-  //     cb(null, false);
-  //     const err = new Error("Only .doc, .pdf, .xls file format allowed");
-  //     err.name = "ExtensionError";
-  //     return cb(err);
-  //   } else {
-  //     cb(null, true);
-  //   }
-  // },
+
 }).array("uploadedFiles", 4);
 
 exports.uploadFile = async (req, res, next) => {

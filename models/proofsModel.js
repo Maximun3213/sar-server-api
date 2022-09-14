@@ -2,14 +2,23 @@ const mongoose = require("mongoose");
 
 const Schema = mongoose.Schema;
 
-const ImageSchema = new Schema({
+const ProofSchema = new Schema({
   name: String,
-  file: {
-    data: Buffer,
-    mimeType: String,
-    size: Number,
-  },
-});
-const Image = mongoose.model("image", ImageSchema);
+  data: Buffer,
+  mimeType: String,
+  size: Number,
 
-module.exports = Image;
+  // name: String,
+  // size: {
+  //   require: false,
+  //   type: Number
+  // },
+  // type: {
+  //   type: String,
+  //   default: 'folder'
+  // }
+  // children: [{}]
+});
+const Proof = mongoose.model("proof", ProofSchema);
+
+module.exports = Proof;

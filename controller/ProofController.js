@@ -1,4 +1,4 @@
-const Image = require("../models/proofsModel");
+const Proof = require("../models/proofsModel");
 const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
@@ -31,13 +31,11 @@ exports.uploadFile = async (req, res, next) => {
     const fileList = req.files;
 
     fileList.map((file, index) => {
-      const newImage = new Image({
+      const newImage = new Proof({
         name: file.originalname,
-        file: {
-          data: fs.readFileSync(file.path),
-          mimeType: file.mimetype,
-          size: file.size,
-        },
+        data: fs.readFileSync(file.path),
+        mimeType: file.mimetype,
+        size: file.size,
       });
       newImage.save();
     });
@@ -51,7 +49,7 @@ exports.uploadFile = async (req, res, next) => {
 
 //In danh sách file
 exports.getFileList = (req, res) => {
-  Image.find({}, (err, items) => {
+  Proof.find({}, (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
@@ -77,17 +75,17 @@ exports.getFileList = (req, res) => {
 //     });
 //   }
 // };
-const emptyFolder = async (folderPath) => {
-  try {
-      // Find all files in the folder
-      const files = await fsPromises.readdir(folderPath);
-      for (const file of files) {
-          await fsPromises.unlink(path.resolve(folderPath, file));
-          console.log(`${folderPath}/${file} has been removed successfully`);
-      }
-  } catch (err){
-      console.log(err);
-  }
-}
+// const emptyFolder = async (folderPath) => {
+//   try {
+//       // Find all files in the folder
+//       const files = await fsPromises.readdir(folderPath);
+//       for (const file of files) {
+//           await fsPromises.unlink(path.resolve(folderPath, file));
+//           console.log(`${folderPath}/${file} has been removed successfully`);
+//       }
+//   } catch (err){
+//       console.log(err);
+//   }
+// }
 
-emptyFolder('./files');
+// emptyFolder('./files');

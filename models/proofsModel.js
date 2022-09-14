@@ -17,9 +17,10 @@ const ProofSchema = new Schema({
     required: false
   },
   parentID: {
-    type: String,
-    required: true
+    type: mongoose.Schema.Types.ObjectId,
+    default: null
   }
+    
 
   // name: String,
   // size: {

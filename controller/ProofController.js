@@ -36,7 +36,6 @@ exports.uploadFile = async (req, res, next) => {
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
-        parentID: ''
       });
       newImage.save();
     });
@@ -59,6 +58,18 @@ exports.getFileList = (req, res) => {
     }
   });
 };
+
+exports.createFolder = async (req, res) => {
+  const { name, parentID } = req.body
+
+  const dir = await Proof.create({ name, parentID })
+  res.status(201).json({
+    success: true,
+    message: "New folder was created",
+  });
+
+
+}
 
 //Search module
 // exports.searchProof = async (req, res) => {

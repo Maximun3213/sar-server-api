@@ -18,19 +18,8 @@ const ProofSchema = new Schema({
   },
   parentID: {
     type: String,
-    required: true
+    required: false
   }
-
-  // name: String,
-  // size: {
-  //   require: false,
-  //   type: Number
-  // },
-  // type: {
-  //   type: String,
-  //   default: 'folder'
-  // }
-  // children: [{}]
 });
 const Proof = mongoose.model("proof", ProofSchema);
 

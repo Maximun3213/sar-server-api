@@ -17,10 +17,23 @@ const ProofSchema = new Schema({
     required: false
   },
   parentID: {
-    type: String,
+    // type: mongoose.Schema.Types.ObjectId,
+    type: mongoose.Schema.Types.ObjectId,
     default: "",
-    required: false
+    ref: 'proof'
   }
+
+
+  // name: String,
+  // size: {
+  //   require: false,
+  //   type: Number
+  // },
+  // type: {
+  //   type: String,
+  //   default: 'folder'
+  // }
+  // children: [{}]
 });
 const Proof = mongoose.model("proof", ProofSchema);
 

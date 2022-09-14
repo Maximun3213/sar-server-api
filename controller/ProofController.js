@@ -71,6 +71,18 @@ exports.getFileList =  (req, res) => {
   });
 };
 
+exports.createFolder = async (req, res) => {
+  const { name, parentID } = req.body
+
+  const dir = await Proof.create({ name, parentID })
+  res.status(201).json({
+    success: true,
+    message: "New folder was created",
+  });
+
+
+}
+
 //Search module
 // exports.searchProof = async (req, res) => {
 //   const file = await Image.find({

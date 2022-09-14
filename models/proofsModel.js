@@ -18,6 +18,7 @@ const ProofSchema = new Schema({
   },
   parentID: {
     type: String,
+    default: "",
     required: false
   }
 });

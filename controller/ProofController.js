@@ -37,9 +37,9 @@ exports.uploadFile = async (req, res, next) => {
         mimeType: file.mimetype,
         size: file.size,
       });
-      newImage.save();
+       newImage.save();
     });
-    res.status(200).json({
+     res.status(200).json({
       success: true,
       message: "Upload file successfully",
       fileList,
@@ -53,20 +53,20 @@ exports.createFolder = async (req, res, next) => {
 
   const dir = await Proof.create({ name, parentID })
   // newFolder.save();
-  res.status(200).json({
+  return res.status(200).json({
     success: true,
     message: "Create folder successfully",
   });
 };
 
 //In danh sách file
-exports.getFileList = (req, res) => {
-  Proof.find({}, (err, items) => {
+exports.getFileList =  (req, res) => {
+   Proof.find({}, async (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
     } else {
-      res.send(items);
+      await res.send(items);
     }
   });
 };

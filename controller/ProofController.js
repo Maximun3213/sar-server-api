@@ -17,7 +17,6 @@ const Str = multer.diskStorage({
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-
 }).array("uploadedFiles", 4);
 
 exports.uploadFile = async (req, res, next) => {
@@ -32,7 +31,7 @@ exports.uploadFile = async (req, res, next) => {
 
     fileList.map((file, index) => {
       const newImage = new Proof({
-        name: file.originalname ,
+        name: file.originalname,
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
@@ -48,15 +47,18 @@ exports.uploadFile = async (req, res, next) => {
 };
 
 exports.createFolder = async (req, res, next) => {
+  const { name, parentID } = req.body;
 
-  const { name, parentID } = req.body
+  if (name === "") {
+    res.send("Name must be provided");
+  } else {
+    const dir = await Proof.create({ name, parentID });
 
-  const dir = await Proof.create({ name, parentID })
-  // newFolder.save();
-  res.status(200).json({
-    success: true,
-    message: "Create folder successfully",
-  });
+    res.status(201).json({
+      success: true,
+      message: "New folder was created",
+    });
+  }
 };
 
 //In danh sách file
@@ -71,17 +73,6 @@ exports.getFileList = (req, res) => {
   });
 };
 
-exports.createFolder = async (req, res) => {
-  const { name, parentID } = req.body
-
-  const dir = await Proof.create({ name, parentID })
-  res.status(201).json({
-    success: true,
-    message: "New folder was created",
-  });
-
-
-}
 
 //Search module
 // exports.searchProof = async (req, res) => {

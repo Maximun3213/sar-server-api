@@ -1,16 +1,8 @@
-const Image = require("../models/proofsModel");
+const Proof = require("../models/proofsModel");
 const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
-
-// const {Storage} = require('@google-cloud/storage');
-// import Multer from "multer";
-// import cors from "cors";
-// const { createWriteStream } = require("fs");
-// const express = require("express");
-// const app = express();
-// const files = [];
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -22,30 +14,10 @@ const Str = multer.diskStorage({
   },
 });
 
-// const gc  = new Storage({
-//   keyFilename: path.join(__dirname, '../sar-storage.json'),
-//   projectId: 'sar-server-359312'
-// })
-
-// const sarFilesBucket = gc.bucket('sar-storage');
-
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  // fileFilter: (req, file, cb) => {
-  //   if (
-  //     file.mimetype == "image/png" ||
-  //     file.mimetype == "image/jpg" ||
-  //     file.mimetype == "image/jpge"
-  //   ) {
-  //     cb(null, false);
-  //     const err = new Error("Only .doc, .pdf, .xls file format allowed");
-  //     err.name = "ExtensionError";
-  //     return cb(err);
-  //   } else {
-  //     cb(null, true);
-  //   }
-  // },
+
 }).array("uploadedFiles", 4);
 
 exports.uploadFile = async (req, res, next) => {
@@ -59,13 +31,11 @@ exports.uploadFile = async (req, res, next) => {
     const fileList = req.files;
 
     fileList.map((file, index) => {
-      const newImage = new Image({
+      const newImage = new Proof({
         name: file.originalname,
-        file: {
-          data: fs.readFileSync(file.path),
-          mimeType: file.mimetype,
-          size: file.size,
-        },
+        data: fs.readFileSync(file.path),
+        mimeType: file.mimetype,
+        size: file.size,
       });
       newImage.save();
     });
@@ -79,7 +49,7 @@ exports.uploadFile = async (req, res, next) => {
 
 //In danh sách file
 exports.getFileList = (req, res) => {
-  Image.find({}, (err, items) => {
+  Proof.find({}, (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
@@ -105,3 +75,17 @@ exports.getFileList = (req, res) => {
 //     });
 //   }
 // };
+// const emptyFolder = async (folderPath) => {
+//   try {
+//       // Find all files in the folder
+//       const files = await fsPromises.readdir(folderPath);
+//       for (const file of files) {
+//           await fsPromises.unlink(path.resolve(folderPath, file));
+//           console.log(`${folderPath}/${file} has been removed successfully`);
+//       }
+//   } catch (err){
+//       console.log(err);
+//   }
+// }
+
+// emptyFolder('./files');

@@ -15,7 +15,6 @@ exports.userLogin = async (req, res) => {
     .populate("permissionID")
     .exec();
 
-
   if (!user)
     return res
       .status(400)

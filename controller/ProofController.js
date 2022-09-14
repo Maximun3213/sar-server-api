@@ -79,8 +79,6 @@ exports.createFolder = async (req, res) => {
     success: true,
     message: "New folder was created",
   });
-
-
 }
 
 //Search module

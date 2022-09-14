@@ -7,10 +7,10 @@ const router = express.Router();
 
 router.route("/upload").post(uploadFile);
 router.route("/createFolder").post(createFolder);
+router.route("/createDir").post(createFolder);
 
 router.route("/fileList").get(getFileList);
 
-router.route("/createDir").post(createFolder)
 // router.route("/search/:key").get(searchProof);
 
 

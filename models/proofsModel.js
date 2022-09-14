@@ -4,9 +4,22 @@ const Schema = mongoose.Schema;
 
 const ProofSchema = new Schema({
   name: String,
-  data: Buffer,
-  mimeType: String,
-  size: Number,
+  data: {
+    type: Buffer,
+    required: false
+  },
+  mimeType: {
+    type: String,
+    required: false
+  },
+  size: {
+    type: Number,
+    required: false
+  },
+  parentID: {
+    type: String,
+    required: true
+  }
 
   // name: String,
   // size: {

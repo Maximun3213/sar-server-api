@@ -36,6 +36,7 @@ exports.uploadFile = async (req, res, next) => {
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
+        parentID: ''
       });
       newImage.save();
     });

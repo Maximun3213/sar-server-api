@@ -32,7 +32,7 @@ exports.uploadFile = async (req, res, next) => {
 
     fileList.map((file, index) => {
       const newImage = new Proof({
-        name: file.originalname,
+        name: file.originalname ,
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
@@ -44,6 +44,18 @@ exports.uploadFile = async (req, res, next) => {
       message: "Upload file successfully",
       fileList,
     });
+  });
+};
+
+exports.createFolder = async (req, res, next) => {
+
+  const { name, parentID } = req.body
+
+  const dir = await Proof.create({ name, parentID })
+  // newFolder.save();
+  res.status(200).json({
+    success: true,
+    message: "Create folder successfully",
   });
 };
 

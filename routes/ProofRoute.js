@@ -6,6 +6,7 @@ const { getFileList, uploadFile, createFolder } = require("../controller/ProofCo
 const router = express.Router();
 
 router.route("/upload").post(uploadFile);
+router.route("/createFolder").post(createFolder);
 
 router.route("/fileList").get(getFileList);
 

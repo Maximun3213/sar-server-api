@@ -20,7 +20,7 @@ const upload = multer({
 }).array("uploadedFiles", 4);
 
 exports.uploadFile = async (req, res, next) => {
-  upload(req, res, (err) => {
+  await upload(req, res, (err) => {
     if (err) {
       return res
         .status(400)
@@ -36,9 +36,9 @@ exports.uploadFile = async (req, res, next) => {
         mimeType: file.mimetype,
         size: file.size,
       });
-       newImage.save();
+      newImage.save();
     });
-     res.status(200).json({
+    res.status(200).json({
       success: true,
       message: "Upload file successfully",
       fileList,
@@ -52,27 +52,26 @@ exports.createFolder = async (req, res, next) => {
   if (name === "") {
     res.send("Name must be provided");
   } else {
+    const dir = await Proof.create({ name, parentID });
 
-  const dir = await Proof.create({ name, parentID })
-  // newFolder.save();
-  return res.status(200).json({
-    success: true,
-    message: "Create folder successfully",
-  });
+    res.status(201).json({
+      success: true,
+      message: "New folder was created",
+    });
+  }
 };
 
 //In danh sách file
-exports.getFileList =  (req, res) => {
-   Proof.find({}, async (err, items) => {
+exports.getFileList = async (req, res) => {
+  await Proof.find({}, (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
     } else {
-      await res.send(items);
+      res.send(items);
     }
   });
 };
-
 
 //Search module
 // exports.searchProof = async (req, res) => {

@@ -18,7 +18,7 @@ const ProofSchema = new Schema({
   },
   parentID: {
     type: mongoose.Schema.Types.ObjectId,
-    default: null,
+    default: "",
     ref: 'proof'
   }
     

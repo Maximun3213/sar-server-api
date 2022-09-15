@@ -62,8 +62,8 @@ exports.createFolder = async (req, res, next) => {
 };
 
 //In danh sách file
-exports.getFileList = (req, res) => {
-  Proof.find({}, (err, items) => {
+exports.getFileList = async (req, res) => {
+  await Proof.find({}, (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
@@ -74,7 +74,7 @@ exports.getFileList = (req, res) => {
 };
 
 exports.getFileFromFolder = async (req, res, next) => {
-  const storage = await Proof.find({ parentID: req.params.id}).select("name")
+  const storage = await Proof.find({ parentID: req.params.id}).select("name parentID")
 
   if(!storage) {
     return next(new Error('404 not found'))

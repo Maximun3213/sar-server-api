@@ -19,8 +19,8 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 }).array("uploadedFiles", 4);
 
-exports.uploadFile = async (req, res, next) => {
-  await upload(req, res, (err) => {
+exports.uploadFile = (req, res, next) => {
+  upload(req, res, (err) => {
     if (err) {
       return res
         .status(400)
@@ -74,7 +74,7 @@ exports.getFileList = async (req, res) => {
 };
 
 exports.getFileFromFolder = async (req, res, next) => {
-  const storage = await Proof.find({ parentID: req.params.id}).select("name")
+  const storage = await Proof.find({ parentID: req.params.id})
 
   if(!storage) {
     return next(new Error('404 not found'))

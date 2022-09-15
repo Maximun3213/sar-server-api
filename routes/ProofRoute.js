@@ -6,7 +6,6 @@ const { getFileList, uploadFile, createFolder, getFileFromFolder } = require("..
 const router = express.Router();
 
 router.route("/upload").post(uploadFile);
-router.route("/createFolder").post(createFolder);
 
 router.route("/fileList").get(getFileList);
 

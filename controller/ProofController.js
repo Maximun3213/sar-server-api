@@ -120,7 +120,7 @@ exports.getFileList = async (req, res) => {
     } else {
       res.send(items);
     }
-  });
+  }).clone().catch(function(err){ console.log(err)});
 };
 
 exports.getFileFromFolder = async (req, res, next) => {
@@ -132,6 +132,19 @@ exports.getFileFromFolder = async (req, res, next) => {
   res.status(200).json({
     success: true,
     storage,
+  });
+};
+
+exports.postDeleteFile = async (req, res, next) => {
+  const file = await Proof.findOne({ _id: req.params.id });
+
+  if (!file) {
+    return next(new Error("404 not found"));
+  }
+  await Proof.deleteOne(file);
+  res.status(200).json({
+    success: true,
+    message: "Delete success",
   });
 };
 

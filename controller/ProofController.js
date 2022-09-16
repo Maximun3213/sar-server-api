@@ -70,7 +70,7 @@ exports.getFileList = async (req, res) => {
     } else {
       res.send(items);
     }
-  });
+  }).clone().catch(function(err){ console.log(err)});
 };
 
 exports.getFileFromFolder = async (req, res, next) => {

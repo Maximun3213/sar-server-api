@@ -35,6 +35,7 @@ exports.uploadFile = (req, res, next) => {
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
+        parentID: req.body.parentID
       });
       newImage.save();
     });
@@ -82,6 +83,19 @@ exports.getFileFromFolder = async (req, res, next) => {
   res.status(200).json({
     success: true,
     storage,
+  });
+};
+
+exports.postDeleteFile = async (req, res, next) => {
+  const file = await Proof.findOne({ _id: req.params.id });
+
+  if (!file) {
+    return next(new Error("404 not found"));
+  }
+  await Proof.deleteOne(file);
+  res.status(200).json({
+    success: true,
+    message: "Delete success",
   });
 };
 

@@ -74,16 +74,16 @@ exports.getFileList = async (req, res) => {
 };
 
 exports.getFileFromFolder = async (req, res, next) => {
-  const storage = await Proof.find({ parentID: req.params.id})
+  const storage = await Proof.find({ parentID: req.params.id });
 
-  if(!storage) {
-    return next(new Error('404 not found'))
+  if (!storage) {
+    return next(new Error("404 not found"));
   }
   res.status(200).json({
     success: true,
-    storage
-  })
-}
+    storage,
+  });
+};
 
 //Search module
 // exports.searchProof = async (req, res) => {

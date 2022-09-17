@@ -78,14 +78,14 @@ exports.uploadFile = (req, res, next) => {
 
     const fileList = req.files;
     // console.log(typeof req.body.parentID)
-    // const parentID = req.body.parentID.toString()
+    const parentID = req.body.parentID.toString().slice(0, 24)
     fileList.map((file, index) => {
       const newImage = new Proof({
         name: file.originalname,
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
-        parentID: req.body.parentID[0].toString()
+        parentID: parentID
       });
       newImage.save();
     });

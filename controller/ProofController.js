@@ -77,13 +77,14 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
+
     fileList.map((file, index) => {
       const newImage = new Proof({
         name: file.originalname,
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
-        parentID: req.body.parentID
+        parentID: req.body.parentID[0].toString()
       });
       newImage.save();
     });

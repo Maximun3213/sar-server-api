@@ -77,7 +77,6 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-
     fileList.map((file, index) => {
       const newImage = new Proof({
         name: file.originalname,
@@ -120,7 +119,7 @@ exports.getFileList = async (req, res) => {
     } else {
       res.send(items);
     }
-  }).select("name mimeType size parentID").catch(function(err){ console.log(err)});
+  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
 };
 
 exports.getFileFromFolder = async (req, res, next) => {

@@ -77,14 +77,14 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-
+    
     fileList.map((file, index) => {
       const newImage = new Proof({
         name: file.originalname,
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
-        parentID: req.body.parentID
+        parentID: req.body.parentID[0].toString()
       });
       newImage.save();
     });
@@ -120,7 +120,7 @@ exports.getFileList = async (req, res) => {
     } else {
       res.send(items);
     }
-  }).select("name mimeType size parentID").catch(function(err){ console.log(err)});
+  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
 };
 
 exports.getFileFromFolder = async (req, res, next) => {

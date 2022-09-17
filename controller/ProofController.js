@@ -66,7 +66,7 @@ const Str = multer.diskStorage({
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-}).array("uploadedFiles", 4);
+}).any("uploadedFiles", 4);
 
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {
@@ -77,7 +77,8 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-    
+    // console.log(typeof req.body.parentID)
+    // const parentID = req.body.parentID.toString()
     fileList.map((file, index) => {
       const newImage = new Proof({
         name: file.originalname,
@@ -147,6 +148,20 @@ exports.postDeleteFile = async (req, res, next) => {
     message: "Delete success",
   });
 };
+
+exports.getDataFromFile = async (req, res, next) => {
+  const file = await Proof.findById(req.params.id).select("data")
+  const data = file.data
+  if(!file) {
+    next(new Error("Data not found!!!"))
+  }
+  res.status(200).json({
+    success: true,
+    data
+  })
+
+
+}
 
 //Search module
 // exports.searchProof = async (req, res) => {

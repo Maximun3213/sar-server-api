@@ -148,6 +148,20 @@ exports.postDeleteFile = async (req, res, next) => {
   });
 };
 
+// exports.getDataFile = async (req, res, next) => {
+//   const file = await Proof.findOne({ _id: req.params.id }).select("data");
+
+//   if (!file) {
+//     return next(new Error("404 not found"));
+//   }
+//   await Proof.deleteOne(file);
+//   res.status(200).json({
+//     success: true,
+//     message: "Delete success",
+//     file
+//   });
+// };
+
 //Search module
 // exports.searchProof = async (req, res) => {
 //   const file = await Image.find({

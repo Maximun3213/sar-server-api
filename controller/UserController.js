@@ -13,8 +13,6 @@ exports.userLogin = async (req, res) => {
   const role = await Role.findById(user.roleID);
   const IdFolderRoot = await Proof.findOne({ parentID : null}).select("_id");
 
-  console.log(IdFolderRoot)
-
   const permission = await Role.findById(role._id)
     .populate("permissionID")
     .exec();

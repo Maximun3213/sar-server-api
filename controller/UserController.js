@@ -1,6 +1,6 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
-const Proof = require("../models/proofsModel")
+const Proof = require("../models/proofsModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
@@ -11,9 +11,9 @@ exports.userLogin = async (req, res) => {
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
   const role = await Role.findById(user.roleID);
-  const IdFolderRoot = await Proof.findOne({ parentID : null}).select("_id");
+  const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
 
-  console.log(IdFolderRoot)
+  console.log(IdFolderRoot);
 
   const permission = await Role.findById(role._id)
     .populate("permissionID")
@@ -66,4 +66,15 @@ exports.userRegister = async (req, res) => {
     success: true,
     message: "Create user successfully",
   });
+};
+// List MP user
+exports.getAllProofManager = async (req, res, next) => {
+  const user = await User.find({ roleID: "630a2454b6a1b1e909a16431" })
+    .select("cbID fullName")
+    .exec(function (err, users) {
+      if (err) {
+        return res.send(err);
+      }
+      res.send(users);
+    });
 };

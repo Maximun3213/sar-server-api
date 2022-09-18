@@ -1,17 +1,57 @@
-const Image = require("../models/proofsModel");
+const Proof = require("../models/proofsModel");
+const mongoose = require("mongoose")
 const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
+// const { GridFsStorage } = require("multer-gridfs-storage");
+// var Grid = require('gridfs-stream');
+// const url = "mongodb+srv://sar_api:LxLNhLkVHcRveiC9@cluster0.n8drxfd.mongodb.net/sar?retryWrites=true&w=majority";
+// const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
+//   bucketName: 'proof'
+// })
+// // Create a storage object with a given configuration
+// const storage = new GridFsStorage({
+//   url: url,
+//   file: (req, file) => {
+//     return new Promise((resolve, reject) => {
+//       const filename = file.originalname;
+//       const fileInfo = {
+//         filename: filename,
+//         bucketName: "proof",
+//       };
+//       resolve(fileInfo);
+//     });
+//   },
+// });
 
-// const {Storage} = require('@google-cloud/storage');
-// import Multer from "multer";
-// import cors from "cors";
-// const { createWriteStream } = require("fs");
-// const express = require("express");
-// const app = express();
-// const files = [];
+// // Set multer storage engine to the newly created object
+// const upload = multer({ storage }).array("uploadedFiles", 4);
 
+// exports.uploadFile = (req, res, next) => {
+//   upload(req, res, (err) => {
+//     if (err) {
+//       return res
+//         .status(400)
+//         .send({ success: false, message: "Tối đa 4 tệp được upload" });
+//     }
+//     res.status(200).json({
+//       success: true,
+//       message: `${req.files.length} files uploaded successfully`,
+//     });
+//   });
+// };
+
+// exports.getFileList = async (req, res) => {
+//   const file = bucket.find({}).toArray((err, files) => {
+//     if (!files || files.length === 0) {
+//       return res.status(404).json({
+//         err: "no files exist",
+//       });
+//     }
+//     bucket.openDownloadStreamByName(req.params.filename).pipe(res);
+//   });
+// };
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -23,79 +63,105 @@ const Str = multer.diskStorage({
   },
 });
 
-// const gc  = new Storage({
-//   keyFilename: path.join(__dirname, '../sar-storage.json'),
-//   projectId: 'sar-server-359312'
-// })
-
-// const sarFilesBucket = gc.bucket('sar-storage');
-
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-  // fileFilter: (req, file, cb) => {
-  //   if (
-  //     file.mimetype == "image/png" ||
-  //     file.mimetype == "image/jpg" ||
-  //     file.mimetype == "image/jpge"
-  //   ) {
-  //     cb(null, false);
-  //     const err = new Error("Only .doc, .pdf, .xls file format allowed");
-  //     err.name = "ExtensionError";
-  //     return cb(err);
-  //   } else {
-  //     cb(null, true);
-  //   }
-  // },
-}).array("uploadedFiles");
+}).any("uploadedFiles", 4);
 
-exports.uploadFile = async (req, res) => {
+exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {
     if (err) {
-      res.send(err);
+      return res
+        .status(400)
+        .send({ success: false, message: "Tối đa 4 tệp được upload" });
     }
+
     const fileList = req.files;
-
-    console.log(fileList);
-
+    // console.log(typeof req.body.parentID)
+    const parentID = req.body.parentID.toString().slice(0, 24)
     fileList.map((file, index) => {
-      const newImage = new Image({
+      const newImage = new Proof({
         name: file.originalname,
-        file: {
-          data: fs.readFileSync(file.path),
-          mimeType: file.mimetype,
-          size: file.size,
-        },
+        data: fs.readFileSync(file.path),
+        mimeType: file.mimetype,
+        size: file.size,
+        parentID: parentID
       });
-      newImage
-        .save()
-        .then(() => console.log(`Upload successfully`))
-        .catch((err) => console.log(err));
+      newImage.save();
     });
     res.status(200).json({
       success: true,
       message: "Upload file successfully",
       fileList,
     });
-    // res.status(200).then((res)=>console.log('success'))
   });
-  // res.send({
-  //   success: true,
-  //   message: "Upload file successfully",
-  // });
+};
+
+exports.createFolder = async (req, res, next) => {
+  const { name, parentID } = req.body;
+
+  if (name === "") {
+    res.send("Name must be provided");
+  } else {
+    const dir = await Proof.create({ name, parentID });
+
+    res.status(201).json({
+      success: true,
+      message: "New folder was created",
+    });
+  }
 };
 
 //In danh sách file
-exports.getFileList = (req, res) => {
-  Image.find({}, (err, items) => {
+exports.getFileList = async (req, res) => {
+    await Proof.find({}, (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
     } else {
       res.send(items);
     }
+  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
+};
+
+exports.getFileFromFolder = async (req, res, next) => {
+  const storage = await Proof.find({ parentID: req.params.id });
+
+  if (!storage) {
+    return next(new Error("404 not found"));
+  }
+  res.status(200).json({
+    success: true,
+    storage,
   });
 };
+
+exports.postDeleteFile = async (req, res, next) => {
+  const file = await Proof.findOne({ _id: req.params.id });
+
+  if (!file) {
+    return next(new Error("404 not found"));
+  }
+  await Proof.deleteOne(file);
+  res.status(200).json({
+    success: true,
+    message: "Delete success",
+  });
+};
+
+exports.getDataFromFile = async (req, res, next) => {
+  const file = await Proof.findById(req.params.id).select("data")
+  const data = file.data
+  if(!file) {
+    next(new Error("Data not found!!!"))
+  }
+  res.status(200).json({
+    success: true,
+    data
+  })
+
+
+}
 
 //Search module
 // exports.searchProof = async (req, res) => {
@@ -113,3 +179,17 @@ exports.getFileList = (req, res) => {
 //     });
 //   }
 // };
+// const emptyFolder = async (folderPath) => {
+//   try {
+//       // Find all files in the folder
+//       const files = await fsPromises.readdir(folderPath);
+//       for (const file of files) {
+//           await fsPromises.unlink(path.resolve(folderPath, file));
+//           console.log(`${folderPath}/${file} has been removed successfully`);
+//       }
+//   } catch (err){
+//       console.log(err);
+//   }
+// }
+
+// emptyFolder('./files');

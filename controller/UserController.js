@@ -78,3 +78,19 @@ exports.getAllProofManager = async (req, res, next) => {
       res.send(users);
     });
 };
+//grantProofPermission
+exports.grantProofKey = async (req, res, next) => {
+  const filter = { _id: req.body.id };
+  const checkProofStoreExist = await User.findById(req.body.id);
+
+  if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
+    const users = await User.findByIdAndUpdate(filter, {
+      $push: { proofStore: req.body.proofStore }
+    });
+    return res.send(users);
+  }
+  return res.status(400).json({
+    success: false,
+    message: "Thư mục đã được cấp quyền",
+  });
+};

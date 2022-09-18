@@ -6,21 +6,21 @@ const ProofSchema = new Schema({
   name: String,
   data: {
     type: Buffer,
-    required: false
+    required: false,
   },
   mimeType: {
     type: String,
-    required: false
+    required: false,
   },
   size: {
     type: Number,
-    required: false
+    required: false,
   },
   parentID: {
     type: mongoose.Schema.Types.ObjectId,
     default: null,
-    ref: 'proof'
-  }
+    ref: "proof",
+  },
 });
 const Proof = mongoose.model("proof", ProofSchema);
 

@@ -13,8 +13,6 @@ exports.userLogin = async (req, res) => {
   const role = await Role.findById(user.roleID);
   const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
 
-  console.log(IdFolderRoot);
-
   const permission = await Role.findById(role._id)
     .populate("permissionID")
     .exec();
@@ -85,7 +83,7 @@ exports.grantProofKey = async (req, res, next) => {
 
   if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
     const users = await User.findByIdAndUpdate(filter, {
-      $push: { proofStore: req.body.proofStore }
+      $push: { proofStore: req.body.proofStore },
     });
     return res.send(users);
   }
@@ -93,4 +91,15 @@ exports.grantProofKey = async (req, res, next) => {
     success: false,
     message: "Thư mục đã được cấp quyền",
   });
+};
+
+exports.getOwnStorage = async (req, res, next) => {
+  const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
+  const checkRoleID = await User.findById(req.params.id).populate("roleID");
+  if (checkRoleID.roleID.roleID === "ADMIN") {
+    return res.send({ IdFolderRoot: IdFolderRoot });
+  } else if (checkRoleID.roleID.roleID === "MP") {
+    return res.send({ proofStore: checkRoleID.proofStore });
+  }
+  res.send('Nothing happens')
 };

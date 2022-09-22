@@ -50,25 +50,27 @@ exports.uploadFile = (req, res, next) => {
 
 exports.createFolder = async (req, res, next) => {
   const title = req.body.title;
-  const filter = { children: req.body.parentID };
-  const checkParentID = await proofFolder.find({ children: filter });
+  const filter = req.body.parentID;
+  //check parentID exist
+  const checkParentID = await proofFolder.find({ _id: req.body.parentID });
+  const checkDuplicateData = await proofFolder.findById(req.body.parentID) 
 
   if (title === "") {
     res.send("Name must be provided");
-  } else if (checkParentID) {
-    const dir = await proofFolder.create({ title });
+  } 
+  //Nếu parentID tồn tại trong db
+  else if (checkParentID) {
+      const dir = await proofFolder.create({ title });
 
-    const element = await proofFolder.findOneAndUpdate(filter, {
-      $push: dir,
-    });
-  } else {
-    const dir = await proofFolder.create({ title });
-
-    res.status(201).json({
-      success: true,
-      message: "New folder was created",
-    });
-  }
+      const element = await proofFolder.findByIdAndUpdate(filter, {
+        $push: { children : dir._id},
+      });
+      return res.send(dir);
+    
+  } 
+  //Nếu không có parentID
+  const folder = await proofFolder.create({ title });
+  res.send(folder)
 };
 
 //In danh sách file

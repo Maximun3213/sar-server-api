@@ -72,22 +72,38 @@ exports.createFolder = async (req, res, next) => {
   res.send(folder);
 };
 
-//In danh sách file
 exports.getFileList = async (req, res) => {
-  await Proof.find({}, (err, items) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send("An error occurred", err);
-    } else {
+  await proofFolder
+    .find({}, (err, items) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("An error occurred", err);
+      }
       res.send(items);
-    }
-  })
-    .select("name mimeType size parentID")
+    })
+    .populate("children")
     .clone()
     .catch(function (err) {
       console.log(err);
     });
 };
+
+//In danh sách file
+// exports.getFileList = async (req, res) => {
+//   await Proof.find({}, (err, items) => {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).send("An error occurred", err);
+//     } else {
+//       res.send(items);
+//     }
+//   })
+//     .select("name mimeType size parentID")
+//     .clone()
+//     .catch(function (err) {
+//       console.log(err);
+//     });
+// };
 
 exports.getFileFromFolder = async (req, res, next) => {
   const storage = await Proof.find({ parentID: req.params.id });

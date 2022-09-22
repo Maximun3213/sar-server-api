@@ -30,15 +30,16 @@ exports.uploadFile = (req, res, next) => {
 
     const fileList = req.files;
     // const parentID = req.body.parentID.toString().slice(0, 24)
-    fileList[0] && fileList.map((file, index) => {
-      const newImage = new proofFile({
-        name: file.originalname,
-        data: fs.readFileSync(file.path),
-        mimeType: file.mimetype,
-        size: file.size,
+    fileList[0] &&
+      fileList.map((file, index) => {
+        const newImage = new proofFile({
+          name: file.originalname,
+          data: fs.readFileSync(file.path),
+          mimeType: file.mimetype,
+          size: file.size,
+        });
+        newImage.save();
       });
-      newImage.save();
-    });
     res.status(200).json({
       success: true,
       message: "Upload file successfully",
@@ -48,12 +49,20 @@ exports.uploadFile = (req, res, next) => {
 };
 
 exports.createFolder = async (req, res, next) => {
-  const { name, parentID } = req.body;
+  const title = req.body.title;
+  const filter = { children: req.body.parentID };
+  const checkParentID = await proofFolder.find({ children: filter });
 
-  if (name === "") {
+  if (title === "") {
     res.send("Name must be provided");
+  } else if (checkParentID) {
+    const dir = await proofFolder.create({ title });
+
+    const element = await proofFolder.findOneAndUpdate(filter, {
+      $push: dir,
+    });
   } else {
-    const dir = await Proof.create({ name, parentID });
+    const dir = await proofFolder.create({ title });
 
     res.status(201).json({
       success: true,

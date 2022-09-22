@@ -1,5 +1,5 @@
 const Proof = require("../models/proofsModel");
-const mongoose = require("mongoose")
+const mongoose = require("mongoose");
 const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
@@ -78,14 +78,14 @@ exports.uploadFile = (req, res, next) => {
 
     const fileList = req.files;
     // console.log(typeof req.body.parentID)
-    const parentID = req.body.parentID.toString().slice(0, 24)
+    const parentID = req.body.parentID.toString().slice(0, 24);
     fileList.map((file, index) => {
       const newImage = new Proof({
         name: file.originalname,
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
-        parentID: parentID
+        parentID: parentID,
       });
       newImage.save();
     });
@@ -114,14 +114,19 @@ exports.createFolder = async (req, res, next) => {
 
 //In danh sách file
 exports.getFileList = async (req, res) => {
-    await Proof.find({}, (err, items) => {
+  await Proof.find({}, (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
     } else {
       res.send(items);
     }
-  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
+  })
+    .select("name mimeType size parentID")
+    .clone()
+    .catch(function (err) {
+      console.log(err);
+    });
 };
 
 exports.getFileFromFolder = async (req, res, next) => {
@@ -137,7 +142,7 @@ exports.getFileFromFolder = async (req, res, next) => {
 };
 
 exports.postDeleteFile = async (req, res, next) => {
-  const file = await Proof.findOne({ _id: req.params.id });
+  const file = await Proof.findById({ _id: req.params.id });
 
   if (!file) {
     return next(new Error("404 not found"));
@@ -150,18 +155,43 @@ exports.postDeleteFile = async (req, res, next) => {
 };
 
 exports.getDataFromFile = async (req, res, next) => {
-  const file = await Proof.findById(req.params.id).select("data")
-  const data = file.data
-  if(!file) {
-    next(new Error("Data not found!!!"))
+  const file = await Proof.findById(req.params.id).select("data");
+  const data = file.data;
+  if (!file) {
+    next(new Error("Data not found!!!"));
   }
   res.status(200).json({
     success: true,
-    data
-  })
+    data,
+  });
+};
 
+exports.getProofFolderById = async (req, res, next) => {
+  const file = await Proof.findOne({ _id: req.params.id });
+  if (!file) {
+    next(new Error("Folder not found!!!"));
+  }
+  res.status(200).json({
+    success: true,
+    file,
+  });
+};
 
-}
+exports.updateFolder = async (req, res, next) => {
+  const { name, parentID } = req.body;
+
+  if (name === "") {
+    res.send("Name must be provided");
+  } else {
+    var myquery = { _id: req.params.id };
+    var newvalues = { $set: { name: name, parentID: parentID } };
+    await Proof.updateOne(myquery, newvalues, { upsert: true });
+    res.status(200).json({
+      success: true,
+      message: "Update success",
+    });
+  }
+};
 
 //Search module
 // exports.searchProof = async (req, res) => {

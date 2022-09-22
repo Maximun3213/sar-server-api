@@ -13,13 +13,13 @@ const proofFolderSchema = new Schema({
   proofFiles: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "proofFile",
+      ref: "proof_file",
     },
   ],
   children: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "proofFolder",
+      ref: "proof_folder",
 
     },
   ],

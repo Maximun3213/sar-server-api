@@ -53,42 +53,57 @@ exports.createFolder = async (req, res, next) => {
   const filter = req.body.parentID;
   //check parentID exist
   const checkParentID = await proofFolder.find({ _id: req.body.parentID });
-  const checkDuplicateData = await proofFolder.findById(req.body.parentID) 
+  const checkDuplicateData = await proofFolder.findById(req.body.parentID);
 
   if (title === "") {
     res.send("Name must be provided");
-  } 
+  }
   //Nếu parentID tồn tại trong db
   else if (checkParentID) {
-      const dir = await proofFolder.create({ title });
+    const dir = await proofFolder.create({ title });
 
-      const element = await proofFolder.findByIdAndUpdate(filter, {
-        $push: { children : dir._id},
-      });
-      return res.send(dir);
-    
-  } 
+    const element = await proofFolder.findByIdAndUpdate(filter, {
+      $push: { children: dir._id },
+    });
+    return res.send(dir);
+  }
   //Nếu không có parentID
   const folder = await proofFolder.create({ title });
-  res.send(folder)
+  res.send(folder);
 };
 
-//In danh sách file
 exports.getFileList = async (req, res) => {
-  await Proof.find({}, (err, items) => {
-    if (err) {
-      console.log(err);
-      res.status(500).send("An error occurred", err);
-    } else {
+  await proofFolder
+    .find({}, (err, items) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("An error occurred", err);
+      }
       res.send(items);
-    }
-  })
-    .select("name mimeType size parentID")
+    })
+    .populate("children")
     .clone()
     .catch(function (err) {
       console.log(err);
     });
 };
+
+//In danh sách file
+// exports.getFileList = async (req, res) => {
+//   await Proof.find({}, (err, items) => {
+//     if (err) {
+//       console.log(err);
+//       res.status(500).send("An error occurred", err);
+//     } else {
+//       res.send(items);
+//     }
+//   })
+//     .select("name mimeType size parentID")
+//     .clone()
+//     .catch(function (err) {
+//       console.log(err);
+//     });
+// };
 
 exports.getFileFromFolder = async (req, res, next) => {
   const storage = await Proof.find({ parentID: req.params.id });

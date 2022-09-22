@@ -1,57 +1,9 @@
-const Proof = require("../models/proofsModel");
-const mongoose = require("mongoose")
+const { proofFile, proofFolder } = require("../models/proofsModel");
+const mongoose = require("mongoose");
 const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
-// const { GridFsStorage } = require("multer-gridfs-storage");
-// var Grid = require('gridfs-stream');
-// const url = "mongodb+srv://sar_api:LxLNhLkVHcRveiC9@cluster0.n8drxfd.mongodb.net/sar?retryWrites=true&w=majority";
-// const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-//   bucketName: 'proof'
-// })
-// // Create a storage object with a given configuration
-// const storage = new GridFsStorage({
-//   url: url,
-//   file: (req, file) => {
-//     return new Promise((resolve, reject) => {
-//       const filename = file.originalname;
-//       const fileInfo = {
-//         filename: filename,
-//         bucketName: "proof",
-//       };
-//       resolve(fileInfo);
-//     });
-//   },
-// });
-
-// // Set multer storage engine to the newly created object
-// const upload = multer({ storage }).array("uploadedFiles", 4);
-
-// exports.uploadFile = (req, res, next) => {
-//   upload(req, res, (err) => {
-//     if (err) {
-//       return res
-//         .status(400)
-//         .send({ success: false, message: "Tối đa 4 tệp được upload" });
-//     }
-//     res.status(200).json({
-//       success: true,
-//       message: `${req.files.length} files uploaded successfully`,
-//     });
-//   });
-// };
-
-// exports.getFileList = async (req, res) => {
-//   const file = bucket.find({}).toArray((err, files) => {
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({
-//         err: "no files exist",
-//       });
-//     }
-//     bucket.openDownloadStreamByName(req.params.filename).pipe(res);
-//   });
-// };
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -77,15 +29,14 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-    // console.log(typeof req.body.parentID)
-    const parentID = req.body.parentID.toString().slice(0, 24)
+    console.log(fileList)
+    // const parentID = req.body.parentID.toString().slice(0, 24)
     fileList.map((file, index) => {
-      const newImage = new Proof({
+      const newImage = new proofFile({
         name: file.originalname,
         data: fs.readFileSync(file.path),
         mimeType: file.mimetype,
         size: file.size,
-        parentID: parentID
       });
       newImage.save();
     });
@@ -114,14 +65,19 @@ exports.createFolder = async (req, res, next) => {
 
 //In danh sách file
 exports.getFileList = async (req, res) => {
-    await Proof.find({}, (err, items) => {
+  await Proof.find({}, (err, items) => {
     if (err) {
       console.log(err);
       res.status(500).send("An error occurred", err);
     } else {
       res.send(items);
     }
-  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
+  })
+    .select("name mimeType size parentID")
+    .clone()
+    .catch(function (err) {
+      console.log(err);
+    });
 };
 
 exports.getFileFromFolder = async (req, res, next) => {
@@ -150,18 +106,16 @@ exports.postDeleteFile = async (req, res, next) => {
 };
 
 exports.getDataFromFile = async (req, res, next) => {
-  const file = await Proof.findById(req.params.id).select("data")
-  const data = file.data
-  if(!file) {
-    next(new Error("Data not found!!!"))
+  const file = await Proof.findById(req.params.id).select("data");
+  const data = file.data;
+  if (!file) {
+    next(new Error("Data not found!!!"));
   }
   res.status(200).json({
     success: true,
-    data
-  })
-
-
-}
+    data,
+  });
+};
 
 //Search module
 // exports.searchProof = async (req, res) => {

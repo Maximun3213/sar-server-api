@@ -29,9 +29,8 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-    console.log(fileList)
     // const parentID = req.body.parentID.toString().slice(0, 24)
-    fileList.map((file, index) => {
+    fileList[0] && fileList.map((file, index) => {
       const newImage = new proofFile({
         name: file.originalname,
         data: fs.readFileSync(file.path),

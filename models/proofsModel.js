@@ -38,10 +38,8 @@ const proofFileSchema = new Schema({
     type: Number,
     required: false,
   },
-  
-});
 
-// const Proof = mongoose.model("proof", ProofSchema);
+});
 
 const proofFolder = mongoose.model("proof_folder", proofFolderSchema);
 

@@ -17,10 +17,10 @@ const proofFolderSchema = new Schema({
     },
   ],
   children: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "proofFolder",
-    },
+    // {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "proofFolder",
+    // },
   ],
 });
 

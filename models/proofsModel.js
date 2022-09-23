@@ -17,11 +17,11 @@ const proofFolderSchema = new Schema({
     },
   ],
   children: [
-    {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "proof_folder",
+    // {
+    //   type: mongoose.Schema.Types.ObjectId,
+    //   ref: "proof_folder",
 
-    },
+    // },
   ],
 });
 
@@ -39,10 +39,8 @@ const proofFileSchema = new Schema({
     type: Number,
     required: false,
   },
-  
-});
 
-// const Proof = mongoose.model("proof", ProofSchema);
+});
 
 const proofFolder = mongoose.model("proof_folder", proofFolderSchema);
 

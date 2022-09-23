@@ -59,11 +59,18 @@ exports.createFolder = async (req, res, next) => {
   }
   //Nếu parentID tồn tại trong db
   else if (checkParentID) {
-    const dir = await proofFolder.create({ title });
+    // const dir = await proofFolder.create({ _id: ObjectID, title: title, user_access: [], proofFiles: [], children: [] });
+    ObjectID = require('mongodb').ObjectId;
+    var obj = {};
+    obj._id = new ObjectID();
+    obj.title = title;
+    obj.user_access= []
+    obj.proofFiles= []
+    obj.children= []
     const element = await proofFolder.findByIdAndUpdate(filter, {
-      $push: { children: dir._id },
+      $push: { children: obj },
     });
-    return res.send('Create a new folder successfully');
+    return res.send(obj);
   }
   //Nếu không có parentID
   await proofFolder.create({ title });
@@ -117,7 +124,7 @@ exports.getFileFromFolder = async (req, res, next) => {
 };
 
 exports.postDeleteFile = async (req, res, next) => {
-  const file = await Proof.findOne({ _id: req.params.id });
+  const file = await Proof.findById({ _id: req.params.id });
 
   if (!file) {
     return next(new Error("404 not found"));
@@ -139,6 +146,33 @@ exports.getDataFromFile = async (req, res, next) => {
     success: true,
     data,
   });
+};
+
+exports.getProofFolderById = async (req, res, next) => {
+  const file = await Proof.findOne({ _id: req.params.id });
+  if (!file) {
+    next(new Error("Folder not found!!!"));
+  }
+  res.status(200).json({
+    success: true,
+    file,
+  });
+};
+
+exports.updateFolder = async (req, res, next) => {
+  const { name, parentID } = req.body;
+
+  if (name === "") {
+    res.send("Name must be provided");
+  } else {
+    var myquery = { _id: req.params.id };
+    var newvalues = { $set: { name: name, parentID: parentID } };
+    await Proof.updateOne(myquery, newvalues, { upsert: true });
+    res.status(200).json({
+      success: true,
+      message: "Update success",
+    });
+  }
 };
 
 //Search module

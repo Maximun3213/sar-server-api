@@ -53,7 +53,6 @@ exports.createFolder = async (req, res, next) => {
   const filter = req.body.parentID;
   //check parentID exist
   const checkParentID = await proofFolder.find({ _id: req.body.parentID });
-  const checkDuplicateData = await proofFolder.findById(req.body.parentID);
 
   if (title === "") {
     res.send("Name must be provided");
@@ -61,16 +60,16 @@ exports.createFolder = async (req, res, next) => {
   //Nếu parentID tồn tại trong db
   else if (checkParentID) {
     const dir = await proofFolder.create({ title });
-
     const element = await proofFolder.findByIdAndUpdate(filter, {
       $push: { children: dir._id },
     });
-    return res.send(dir);
+    return res.send('Create a new folder successfully');
   }
   //Nếu không có parentID
-  const folder = await proofFolder.create({ title });
-  res.send(folder);
+  await proofFolder.create({ title });
+  res.send('Create a new folder successfully')
 };
+
 
 exports.getFileList = async (req, res) => {
   await proofFolder
@@ -158,17 +157,3 @@ exports.getDataFromFile = async (req, res, next) => {
 //     });
 //   }
 // };
-// const emptyFolder = async (folderPath) => {
-//   try {
-//       // Find all files in the folder
-//       const files = await fsPromises.readdir(folderPath);
-//       for (const file of files) {
-//           await fsPromises.unlink(path.resolve(folderPath, file));
-//           console.log(`${folderPath}/${file} has been removed successfully`);
-//       }
-//   } catch (err){
-//       console.log(err);
-//   }
-// }
-
-// emptyFolder('./files');

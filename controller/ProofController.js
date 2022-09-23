@@ -54,30 +54,21 @@ exports.createFolder = async (req, res, next) => {
   const parentID = req.body.parentID;
   //check parentID exist
   const checkParentID = await proofFolder.findById(req.body.parentID);
-  // const checkChildrenID = await proofFolder.find({}).select('children');
 
-  // checkChildrenID.forEach(children => {
-  //   console.log(children.children._id)
-  //   if(children.children[0]._id == filter){
-  //     return res.send('Okkk')
-  //   }
-  //   return res.send('Not same')
-  // })
+  if (title === "") {
+    res.send("Name must be provided");
+  }
 
-  // if (title === "") {
-  //   res.send("Name must be provided");
-  // }
-
-  //Nếu parentID tồn tại trong db\
-  if (parentID) {
-    //Tối ưu lại
-    ObjectID = require("mongodb").ObjectId;
-    var obj = {};
-    obj._id = new ObjectID();
-    obj.title = title;
-    obj.user_access = [];
-    obj.proofFiles = [];
-    obj.children = [];
+  else if (parentID) {
+    const data = {
+      _id : new mongoose.Types.ObjectId(),
+      title : title,
+      user_access : [],
+      proofFiles : [],
+      children : [],
+    }
+    const obj = []
+    obj.push(data)
 
     const pipeline = [
       { $unwind: "$children" },

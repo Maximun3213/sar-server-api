@@ -53,7 +53,15 @@ exports.createFolder = async (req, res, next) => {
   const filter = req.body.parentID;
   //check parentID exist
   const checkParentID = await proofFolder.findById(req.body.parentID);
-
+  const checkChildrenID = await proofFolder.find({}).select('children')
+  checkChildrenID.forEach(children => {
+    console.log(children.children._id)
+    if(children.children[0]._id == filter){
+      return res.send('Okkk')
+    }
+    return res.send('Not same')
+  })
+  
   // if (title === "") {
   //   res.send("Name must be provided");
   // }

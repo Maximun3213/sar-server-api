@@ -4,6 +4,7 @@ const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
+const { ObjectId } = require("mongodb");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -50,10 +51,11 @@ exports.uploadFile = (req, res, next) => {
 
 exports.createFolder = async (req, res, next) => {
   const title = req.body.title;
-  const filter = req.body.parentID;
+  const parentID = req.body.parentID;
   //check parentID exist
   const checkParentID = await proofFolder.findById(req.body.parentID);
-  // const checkChildrenID = await proofFolder.find({}).select('children')
+  // const checkChildrenID = await proofFolder.find({}).select('children');
+
   // checkChildrenID.forEach(children => {
   //   console.log(children.children._id)
   //   if(children.children[0]._id == filter){
@@ -61,23 +63,14 @@ exports.createFolder = async (req, res, next) => {
   //   }
   //   return res.send('Not same')
   // })
-  const pipeLine = [
-    { $match: { _id: filter } },
-    { $unwind: "$children" },
-    { $match: { "children._id": filter } },
-  ]
-
-  const child = proofFolder.aggregate(pipeLine).pipeline().unwind("children")
-  console.log(child)
-  
-  
 
   // if (title === "") {
   //   res.send("Name must be provided");
   // }
+
   //Nếu parentID tồn tại trong db\
-  if (checkParentID) {
-    // const dir = await proofFolder.create({ _id: ObjectID, title: title, user_access: [], proofFiles: [], children: [] });
+  if (parentID) {
+    //Tối ưu lại
     ObjectID = require("mongodb").ObjectId;
     var obj = {};
     obj._id = new ObjectID();
@@ -85,14 +78,32 @@ exports.createFolder = async (req, res, next) => {
     obj.user_access = [];
     obj.proofFiles = [];
     obj.children = [];
-    const element = await proofFolder.findByIdAndUpdate(filter, {
-      $push: { children: obj },
+
+    const pipeline = [
+      { $unwind: "$children" },
+      { $match: { "children._id": ObjectId(parentID) } },
+    ];
+
+    await proofFolder.aggregate(pipeline).then(
+      (res) => {
+        console.log(res[0].children);
+      },
+      (err) => {
+        console.log(err);
+      }
+    );
+
+    // const element = await proofFolder.findByIdAndUpdate(filter, {
+    //   $push: { children: obj },
+    // });
+    // return res.send(obj);
+    return res.status(200).json({
+      success: true,
     });
-    return res.send(obj);
   }
   //Nếu không có parentID
   await proofFolder.create({ title });
-  res.send("Create a new folder successfully");
+  return res.send("Create a new folder successfully");
 };
 
 exports.getFileList = async (req, res) => {

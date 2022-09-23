@@ -60,12 +60,18 @@ exports.createFolder = async (req, res, next) => {
   }
   //Nếu parentID tồn tại trong db
   else if (checkParentID) {
-    const dir = await proofFolder.create({ title });
-
+    // const dir = await proofFolder.create({ _id: ObjectID, title: title, user_access: [], proofFiles: [], children: [] });
+    ObjectID = require('mongodb').ObjectId;
+    var obj = {};
+    obj._id = new ObjectID();
+    obj.title = title;
+    obj.user_access= []
+    obj.proofFiles= []
+    obj.children= []
     const element = await proofFolder.findByIdAndUpdate(filter, {
-      $push: { children: dir._id },
+      $push: { children: obj },
     });
-    return res.send(dir);
+    return res.send(obj);
   }
   //Nếu không có parentID
   const folder = await proofFolder.create({ title });

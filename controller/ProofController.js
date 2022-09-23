@@ -61,7 +61,7 @@ exports.createFolder = async (req, res, next) => {
 
   else if (parentID) {
     const data = {
-      _id : new mongoose.Types.ObjectId(),
+      _id : new ObjectId,
       title : title,
       user_access : [],
       proofFiles : [],

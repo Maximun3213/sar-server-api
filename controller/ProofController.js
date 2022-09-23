@@ -53,28 +53,38 @@ exports.createFolder = async (req, res, next) => {
   const filter = req.body.parentID;
   //check parentID exist
   const checkParentID = await proofFolder.findById(req.body.parentID);
-  const checkChildrenID = await proofFolder.find({}).select('children')
-  checkChildrenID.forEach(children => {
-    console.log(children.children._id)
-    if(children.children[0]._id == filter){
-      return res.send('Okkk')
-    }
-    return res.send('Not same')
-  })
+  // const checkChildrenID = await proofFolder.find({}).select('children')
+  // checkChildrenID.forEach(children => {
+  //   console.log(children.children._id)
+  //   if(children.children[0]._id == filter){
+  //     return res.send('Okkk')
+  //   }
+  //   return res.send('Not same')
+  // })
+  const pipeLine = [
+    { $match: { _id: filter } },
+    { $unwind: "$children" },
+    { $match: { "children._id": filter } },
+  ]
+
+  const child = proofFolder.aggregate(pipeLine).pipeline().unwind("children")
+  console.log(child)
   
+  
+
   // if (title === "") {
   //   res.send("Name must be provided");
   // }
   //Nếu parentID tồn tại trong db\
   if (checkParentID) {
     // const dir = await proofFolder.create({ _id: ObjectID, title: title, user_access: [], proofFiles: [], children: [] });
-    ObjectID = require('mongodb').ObjectId;
+    ObjectID = require("mongodb").ObjectId;
     var obj = {};
     obj._id = new ObjectID();
     obj.title = title;
-    obj.user_access= []
-    obj.proofFiles= []
-    obj.children= []
+    obj.user_access = [];
+    obj.proofFiles = [];
+    obj.children = [];
     const element = await proofFolder.findByIdAndUpdate(filter, {
       $push: { children: obj },
     });
@@ -82,9 +92,8 @@ exports.createFolder = async (req, res, next) => {
   }
   //Nếu không có parentID
   await proofFolder.create({ title });
-  res.send('Create a new folder successfully')
+  res.send("Create a new folder successfully");
 };
-
 
 exports.getFileList = async (req, res) => {
   await proofFolder

@@ -52,13 +52,13 @@ exports.createFolder = async (req, res, next) => {
   const title = req.body.title;
   const filter = req.body.parentID;
   //check parentID exist
-  const checkParentID = await proofFolder.find({ _id: req.body.parentID });
+  const checkParentID = await proofFolder.findById(req.body.parentID);
 
-  if (title === "") {
-    res.send("Name must be provided");
-  }
-  //Nếu parentID tồn tại trong db
-  else if (checkParentID) {
+  // if (title === "") {
+  //   res.send("Name must be provided");
+  // }
+  //Nếu parentID tồn tại trong db\
+  if (checkParentID) {
     // const dir = await proofFolder.create({ _id: ObjectID, title: title, user_access: [], proofFiles: [], children: [] });
     ObjectID = require('mongodb').ObjectId;
     var obj = {};

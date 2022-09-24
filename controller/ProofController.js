@@ -84,10 +84,21 @@ exports.createFolder = async (req, res, next) => {
       await proofFolder.aggregate(pipeline).then(
         async (res) => {
           const children = res[0].children;
+          const idParent = res.map((value) => value._id).toString();
+          const idChildren = children._id.toString();
           console.log(children);
-          // await children.fi(filter, {
-          //   $push: { children: data },
-          // });
+          console.log(idParent);
+          await proofFolder.updateOne(
+            { _id: idParent, "children._id": ObjectId(idChildren) },
+            {
+              $push: { "children.$.children": data },
+            },
+            {
+              new: true,
+              runValidators: true,
+              useFindAndModify: false,
+            }
+          );
         },
         (err) => {
           console.log(err);

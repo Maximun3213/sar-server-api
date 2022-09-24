@@ -52,54 +52,53 @@ exports.uploadFile = (req, res, next) => {
 exports.createFolder = async (req, res, next) => {
   const title = req.body.title;
   const parentID = req.body.parentID;
-  // const checkParentID = await proofFolder.find({ _id: parentID }).select("_id");
-  const checkParentID = await proofFolder..aggregate([{ $match: { '_id': parentID } }]);
+  //check parentID exist
 
   if (title === "") {
     res.send("Name must be provided");
-  } 
-  else if (parentID) {
-    // tạo object data mới
-    const obj = {
+  }
+
+  // Nếu có parentID từ client trả về
+  if (parentID) {
+    const checkParentID = await proofFolder.findById(req.body.parentID);
+
+    const data = {
       _id: new ObjectId(),
       title: title,
       user_access: [],
       proofFiles: [],
       children: [],
     };
-    
-    //lấy children _id
-    // const pipeline = [
-    //   { $unwind: "$children" },
-    //   { $match: { "children._id": ObjectId(parentID) } },
-    // ];
-
-    // const children = await proofFolder.aggregate(pipeline).then(
-    //   (res) => {
-    //     // console.log(res[0].children._id);
-    //     return res[0].children._id;
-    //   },
-    //   (err) => {
-    //     console.log(err);
-    //   }
-    // );
 
     if (checkParentID) {
-      await proofFolder.findByIdAndUpdate(parentID, {
-        $push: { children: obj },
+      await proofFolder.findByIdAndUpdate(checkParentID, {
+        $push: { children: data },
       });
-      res.send(checkParentID)
-    }
-    //điều kiện so sánh _id children vs parentJD
-    else if (parentID == children) {
-      res.send('ChildrenID existed')
-    }
+      return res.send(data);
+    } else {
+      const pipeline = [
+        { $unwind: "$children" },
+        { $match: { "children._id": ObjectId(parentID) } },
+      ];
 
-    return res.status(404).json({
-      message: 'ID not found'
-    });
+      await proofFolder.aggregate(pipeline).then(
+        async (res) => {
+          const children = res[0].children;
+          console.log(children);
+          // await children.fi(filter, {
+          //   $push: { children: data },
+          // });
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+      return res.status(200).json({
+        success: true,
+      });
+    }
   }
-  //Nếu không có parentID
+  // Nếu không có parentID từ client trả về
   await proofFolder.create({ title });
   return res.send("Create a new folder successfully");
 };

@@ -53,46 +53,52 @@ exports.createFolder = async (req, res, next) => {
   const title = req.body.title;
   const parentID = req.body.parentID;
   //check parentID exist
-  const checkParentID = await proofFolder.findById(req.body.parentID);
 
   if (title === "") {
     res.send("Name must be provided");
   }
 
-  else if (parentID) {
+  // Nếu có parentID từ client trả về
+  if (parentID) {
+    const checkParentID = await proofFolder.findById(req.body.parentID);
+
     const data = {
-      _id : new ObjectId,
-      title : title,
-      user_access : [],
-      proofFiles : [],
-      children : [],
+      _id: new ObjectId(),
+      title: title,
+      user_access: [],
+      proofFiles: [],
+      children: [],
+    };
+
+    if (checkParentID) {
+      await proofFolder.findByIdAndUpdate(checkParentID, {
+        $push: { children: data },
+      });
+      return res.send(data);
+    } else {
+      const pipeline = [
+        { $unwind: "$children" },
+        { $match: { "children._id": ObjectId(parentID) } },
+      ];
+
+      await proofFolder.aggregate(pipeline).then(
+        async (res) => {
+          const children = res[0].children;
+          console.log(children);
+          // await children.fi(filter, {
+          //   $push: { children: data },
+          // });
+        },
+        (err) => {
+          console.log(err);
+        }
+      );
+      return res.status(200).json({
+        success: true,
+      });
     }
-    const obj = []
-    obj.push(data)
-
-    const pipeline = [
-      { $unwind: "$children" },
-      { $match: { "children._id": ObjectId(parentID) } },
-    ];
-
-    await proofFolder.aggregate(pipeline).then(
-      (res) => {
-        console.log(res[0].children);
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
-
-    // const element = await proofFolder.findByIdAndUpdate(filter, {
-    //   $push: { children: obj },
-    // });
-    // return res.send(obj);
-    return res.status(200).json({
-      success: true,
-    });
   }
-  //Nếu không có parentID
+  // Nếu không có parentID từ client trả về
   await proofFolder.create({ title });
   return res.send("Create a new folder successfully");
 };

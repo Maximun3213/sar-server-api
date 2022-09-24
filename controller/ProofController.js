@@ -84,10 +84,23 @@ exports.createFolder = async (req, res, next) => {
       await proofFolder.aggregate(pipeline).then(
         async (res) => {
           const children = res[0].children;
-          console.log(children);
-          // await children.fi(filter, {
-          //   $push: { children: data },
-          // });
+          const childList = proofFolder.aggregate([
+            {"$unwind":"$children"},
+            {"$match": {
+              "children._id": children._id
+            }},
+            {
+              "$project": {
+                "children": children
+              }
+            },
+          ]).then((res) => {
+            proofFolder.updateOne({ _id:res[0]._id, "children._id": res[0].children._id},
+            {
+              $push: { "res[0].children" : data}
+            })
+            console.log(res[0])            
+          })
         },
         (err) => {
           console.log(err);

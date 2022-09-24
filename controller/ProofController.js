@@ -52,44 +52,51 @@ exports.uploadFile = (req, res, next) => {
 exports.createFolder = async (req, res, next) => {
   const title = req.body.title;
   const parentID = req.body.parentID;
-  //check parentID exist
-  const checkParentID = await proofFolder.findById(req.body.parentID);
+  // const checkParentID = await proofFolder.find({ _id: parentID }).select("_id");
+  const checkParentID = await proofFolder..aggregate([{ $match: { '_id': parentID } }]);
 
   if (title === "") {
     res.send("Name must be provided");
-  }
-
+  } 
   else if (parentID) {
-    const data = {
-      _id : new ObjectId,
-      title : title,
-      user_access : [],
-      proofFiles : [],
-      children : [],
+    // tạo object data mới
+    const obj = {
+      _id: new ObjectId(),
+      title: title,
+      user_access: [],
+      proofFiles: [],
+      children: [],
+    };
+    
+    //lấy children _id
+    // const pipeline = [
+    //   { $unwind: "$children" },
+    //   { $match: { "children._id": ObjectId(parentID) } },
+    // ];
+
+    // const children = await proofFolder.aggregate(pipeline).then(
+    //   (res) => {
+    //     // console.log(res[0].children._id);
+    //     return res[0].children._id;
+    //   },
+    //   (err) => {
+    //     console.log(err);
+    //   }
+    // );
+
+    if (checkParentID) {
+      await proofFolder.findByIdAndUpdate(parentID, {
+        $push: { children: obj },
+      });
+      res.send(checkParentID)
     }
-    const obj = []
-    obj.push(data)
+    //điều kiện so sánh _id children vs parentJD
+    else if (parentID == children) {
+      res.send('ChildrenID existed')
+    }
 
-    const pipeline = [
-      { $unwind: "$children" },
-      { $match: { "children._id": ObjectId(parentID) } },
-    ];
-
-    await proofFolder.aggregate(pipeline).then(
-      (res) => {
-        console.log(res[0].children);
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
-
-    // const element = await proofFolder.findByIdAndUpdate(filter, {
-    //   $push: { children: obj },
-    // });
-    // return res.send(obj);
-    return res.status(200).json({
-      success: true,
+    return res.status(404).json({
+      message: 'ID not found'
     });
   }
   //Nếu không có parentID

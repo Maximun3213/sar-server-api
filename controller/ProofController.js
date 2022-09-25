@@ -76,41 +76,60 @@ exports.createFolder = async (req, res, next) => {
       });
       return res.send(data);
     } else {
-      const pipeline = [
-        { $unwind: "$children" },
-        { $match: { "children._id": ObjectId(parentID) } },
-      ];
+      // const pipeline = [
+      //   { $unwind: "$children" },
+      //   { $match: { "children._id": ObjectId(parentID) } },
+      // ];
+      // const pipeline = [
+      //   { $unwind: "$children" },
+      //   { $match: { "children._id": ObjectId(parentID) } },
+      //   { $project: { _id: "$children._id", title: "$children.title" } },
+      // ];
 
-      await proofFolder.aggregate(pipeline).then(
-        async (res) => {
-          const children = res[0].children;
-          const idParent = res.map((value) => value._id).toString();
-          const idChildren = children._id.toString();
-          console.log(children);
-          console.log(idParent);
-          await proofFolder.updateOne(
-            { _id: idParent, "children._id": ObjectId(idChildren) },
-            {
-              $push: { "children.$.children": data },
-            },
-            {
-              new: true,
-              runValidators: true,
-              useFindAndModify: false,
+      await proofFolder
+        .findOne({
+          "_id": ObjectId("632d706fa00af3a744dc5a9b"),
+          'children': {
+            '$elemMatch': {
+              '_id': ObjectId("632e6a7fc2f25c2ebac5ffa2")
             }
-          );
+          }
         },
-        (err) => {
-          console.log(err);
-        }
-      );
+        // {
+        //   $push: { "children": data },
+        // }
+        ).then((data)=>console.log(data))
+
+      // await proofFolder.aggregate(pipeline).then(
+      //   async (res) => {
+      // const children = res[0].children;
+      // const idParent = res.map((value) => value._id).toString();
+      // const idChildren = children._id.toString();
+      // console.log(children);
+      // console.log(idParent);
+      // await proofFolder.updateOne(
+      //   { _id: idParent, "children._id": ObjectId(idChildren) },
+      //   {
+      //     $push: { "children.$.children": data },
+      //   },
+      //   {
+      //     new: true,
+      //     runValidators: true,
+      //     useFindAndModify: false,
+      //   }
+      // );
+      // },
+      // (err) => {
+      //   console.log(err);
+      // }
+      // );
       return res.status(200).json({
         success: true,
       });
     }
   }
   // Nếu không có parentID từ client trả về
-  await proofFolder.create({ title });
+  // await proofFolder.create({ title });
   return res.send("Create a new folder successfully");
 };
 

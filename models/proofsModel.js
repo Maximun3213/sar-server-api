@@ -16,13 +16,11 @@ const proofFolderSchema = new Schema({
       ref: "proof_file",
     },
   ],
-  children: [
-    // {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "proof_folder",
-
-    // },
-  ],
+  parentID: {
+    type: mongoose.Schema.Types.ObjectId,
+    default: null,
+    ref: "proof_folder",
+  },
 });
 
 const proofFileSchema = new Schema({

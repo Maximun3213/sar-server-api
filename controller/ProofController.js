@@ -51,141 +51,30 @@ exports.uploadFile = (req, res, next) => {
 };
 
 exports.createFolder = async (req, res, next) => {
-  const title = req.body.title;
-  const parentID = req.body.parentID;
-  const checkParentID = await proofFolder.find({ _id: req.body.parentID });
+  const { name, parentID } = req.body;
 
-  //check parentID exist
-
-  if (title === "") {
+  if (name === "") {
     res.send("Name must be provided");
-  } else if (checkParentID) {
-    const dir = await proofFolder.create({ title });
+  } else {
+    const dir = await Proof.create({ name, parentID });
 
-    await proofFolder.findByIdAndUpdate(parentID, {
-      $push: { children: dir._id },
+    res.status(201).json({
+      success: true,
+      message: "New folder was created",
     });
-    return res.send("Create a new folder successfully");
   }
-  await proofFolder.create({ title });
-  res.send("Create folder outside");
 };
 
-// exports.createFolder = async (req, res, next) => {
-//   const title = req.body.title;
-//   const parentID = req.body.parentID;
-//   //check parentID exist
-
-//   if (title === "") {
-//     res.send("Name must be provided");
-//   }
-
-//   // Nếu có parentID từ client trả về
-//   if (parentID) {
-//     const checkParentID = await proofFolder.findById(req.body.parentID);
-
-//     const data = {
-//       _id: new ObjectId(),
-//       title: title,
-//       user_access: [],
-//       proofFiles: [],
-//       children: [],
-//     };
-
-//     if (checkParentID) {
-//       await proofFolder.findByIdAndUpdate(checkParentID, {
-//         $push: { children: data },
-//       });
-//       return res.send(data);
-//     } else {
-//       const pipeline = [
-//         { $unwind: "$children" },
-//         { $match: { "children._id": ObjectId(parentID) } },
-//       ];
-//       await proofFolder.aggregate(pipeline).then(
-//         async (res) => {
-//           const children = res[0].children;
-//           const idParent = res.map((value) => value._id).toString();
-//           const idChildren = children._id.toString();
-//           console.log(children);
-//           console.log(idParent);
-//           await proofFolder.updateOne(
-//             { _id: idParent, "children._id": ObjectId(idChildren) },
-//             {
-//               $push: { "children.$.children": data },
-//             },
-//             {
-//               new: true,
-//               runValidators: true,
-//               useFindAndModify: false,
-//             }
-//           );
-//         },
-//         (err) => {
-//           console.log(err);
-//         }
-//       );
-//       return res.status(200).json({
-//         success: true,
-//       });
-//     }
-//   }
-//   // Nếu không có parentID từ client trả về
-//   await proofFolder.create({ title });
-//   return res.send("Create a new folder successfully");
-// };
 
 exports.getFileList = async (req, res) => {
-  const children = await proofFolder.aggregate([
-    { $unwind:
-      {
-      path:"$children", 
-      preserveNullAndEmptyArrays: true
-      }
-    }, 
-    {
-      $lookup: {
-        from: 'proof_folder', 
-        localField: 'children._id', 
-        foreignField: '_id', 
-        as: 'children2'
-      }
-    },
-    // { $graphLookup: 
-    //   {
-    //       from:"proof_folder", 
-    //       startWith:"$_id", 
-    //       connectFromField:"_id", 
-    //       connectToField:"children", 
-    //       maxDepth: 4,
-    //       as:"myparents",  
-    //       // restrictSearchWithMatch: {}
-    //   }
-    // }, 
-    {$match: {"_id": ObjectId('632fbf2490af93a827402b08') } },
-    {$group:{
-          _id:"$children", 
-          children: {
-            $push: {
-              '$first': '$children2'
-            }
-          }
-    }},
-    
-  ])
-  res.send(children)
-    // .find({}, (err, items) => {
-    //   if (err) {
-    //     console.log(err);
-    //     res.status(500).send("An error occurred", err);
-    //   }
-    //   res.send(items);
-    // })
-    // // .populate("children")
-    // .clone()
-    // .catch(function (err) {
-    //   console.log(err);
-    // });
+  await Proof.find({}, (err, items) => {
+    if (err) {
+      console.log(err);
+      res.status(500).send("An error occurred", err);
+    } else {
+      res.send(items);
+    }
+  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
 };
 
 //In danh sách file

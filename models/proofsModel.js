@@ -17,11 +17,11 @@ const proofFolderSchema = new Schema({
     },
   ],
   children: [
-    // {
-    //   type: mongoose.Schema.Types.ObjectId,
-    //   ref: "proof_folder",
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "proof_folder",
 
-    // },
+    },
   ],
 });
 

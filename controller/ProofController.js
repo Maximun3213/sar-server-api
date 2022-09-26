@@ -7,36 +7,6 @@ const path = require("path");
 const { ObjectId } = require("mongodb");
 const { title } = require("process");
 
-
-function useSortArrayParentID(data) {
-  const childMap = data.reduce((map, child) => {
-    return {
-      ...map,
-      [child.value]: {
-        ...child,
-      },
-    };
-  }, {});
-  const root = [];
-  Object.values(childMap).forEach((child) => {
-    if (child.parentID) {
-      if (childMap[child.parentID]) {
-        const parent = childMap[child.parentID];
-        if (!parent.children) {
-          parent.children = [];
-        }
-
-        parent.children.push(child);
-      }
-    } else {
-      root.push(child);
-      
-    }
-  });
-
-  return root;
-}
-
 const Str = multer.diskStorage({
   destination: "uploads",
   filename: (req, file, cb) => {
@@ -61,17 +31,34 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-    // const parentID = req.body.parentID.toString().slice(0, 24)
+
+    const folderID = req.body.folderID;
+
     fileList[0] &&
       fileList.map((file, index) => {
+        const ids = new ObjectId();
         const newImage = new proofFile({
+          _id: ids,
           name: file.originalname,
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
           size: file.size,
         });
+        // push to proofFolder
+        proofFolder
+          .findByIdAndUpdate(folderID, {
+            $push: { proofFiles: ids },
+          })
+          .exec(function (err, data) {
+            if (err) {
+              console.log(err);
+            }
+            console.log(data);
+          });
+
         newImage.save();
       });
+
     res.status(200).json({
       success: true,
       message: "Upload file successfully",
@@ -81,13 +68,12 @@ exports.uploadFile = (req, res, next) => {
 };
 
 exports.createFolder = async (req, res, next) => {
-  const { name, parentID } = req.body;
+  const { title, parentID } = req.body;
 
-  if (name === "") {
+  if (title === "") {
     res.send("Name must be provided");
   } else {
-    const dir = await proofFolder.create({ name, parentID });
-
+    const dir = await proofFolder.create({ title, parentID });
     res.status(201).json({
       success: true,
       message: "New folder was created",
@@ -95,18 +81,20 @@ exports.createFolder = async (req, res, next) => {
   }
 };
 
-
 exports.getFileList = async (req, res) => {
-  await proofFolder.find({}, (err, items) => {
-    if (err) {
+  await proofFolder
+    .find({}, (err, items) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("An error occurred", err);
+      } else {
+        res.send(items);
+      }
+    })
+    .clone()
+    .catch(function (err) {
       console.log(err);
-      res.status(500).send("An error occurred", err);
-    } else {
-      // console.log(useSortArrayParentID(items))
-      console.log("items", items)
-      res.send(items);
-    }
-  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
+    });
 };
 
 //In danh sách file
@@ -189,9 +177,6 @@ exports.updateFolder = async (req, res, next) => {
     });
   }
 };
-
-
-
 
 //Search module
 // exports.searchProof = async (req, res) => {

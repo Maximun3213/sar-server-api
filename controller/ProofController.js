@@ -31,17 +31,34 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-    // const parentID = req.body.parentID.toString().slice(0, 24)
+
+    const folderID = req.body.folderID;
+
     fileList[0] &&
       fileList.map((file, index) => {
+        const ids = new ObjectId();
         const newImage = new proofFile({
+          _id: ids,
           name: file.originalname,
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
           size: file.size,
         });
+        // push to proofFolder
+        proofFolder
+          .findByIdAndUpdate(folderID, {
+            $push: { proofFiles: ids },
+          })
+          .exec(function (err, data) {
+            if (err) {
+              console.log(err);
+            }
+            console.log(data);
+          });
+
         newImage.save();
       });
+
     res.status(200).json({
       success: true,
       message: "Upload file successfully",
@@ -57,7 +74,6 @@ exports.createFolder = async (req, res, next) => {
     res.send("Name must be provided");
   } else {
     const dir = await proofFolder.create({ title, parentID });
-
     res.status(201).json({
       success: true,
       message: "New folder was created",

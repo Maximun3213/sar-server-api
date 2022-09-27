@@ -5,6 +5,7 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 const { ObjectId } = require("mongodb");
+const { title } = require("process");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -16,6 +17,7 @@ const Str = multer.diskStorage({
   },
 });
 
+//Hoàn thành
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
@@ -30,17 +32,34 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-    // const parentID = req.body.parentID.toString().slice(0, 24)
+
+    const folderID = req.body.folderID;
+
     fileList[0] &&
       fileList.map((file, index) => {
+        const ids = new ObjectId();
         const newImage = new proofFile({
+          _id: ids,
           name: file.originalname,
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
           size: file.size,
         });
+        // push to proofFolder
+        proofFolder
+          .findByIdAndUpdate(folderID, {
+            $push: { proofFiles: ids },
+          })
+          .exec(function (err, data) {
+            if (err) {
+              console.log(err);
+            }
+            console.log(data);
+          });
+
         newImage.save();
       });
+
     res.status(200).json({
       success: true,
       message: "Upload file successfully",
@@ -49,64 +68,32 @@ exports.uploadFile = (req, res, next) => {
   });
 };
 
+//Hoàn thành
 exports.createFolder = async (req, res, next) => {
-  const title = req.body.title;
-  const parentID = req.body.parentID;
-  //check parentID exist
-  const checkParentID = await proofFolder.findById(req.body.parentID);
+  const { title, parentID } = req.body;
 
   if (title === "") {
     res.send("Name must be provided");
-  }
-
-  else if (parentID) {
-    const data = {
-      _id : new ObjectId,
-      title : title,
-      user_access : [],
-      proofFiles : [],
-      children : [],
-    }
-    const obj = []
-    obj.push(data)
-
-    const pipeline = [
-      { $unwind: "$children" },
-      { $match: { "children._id": ObjectId(parentID) } },
-    ];
-
-    await proofFolder.aggregate(pipeline).then(
-      (res) => {
-        console.log(res[0].children);
-      },
-      (err) => {
-        console.log(err);
-      }
-    );
-
-    // const element = await proofFolder.findByIdAndUpdate(filter, {
-    //   $push: { children: obj },
-    // });
-    // return res.send(obj);
-    return res.status(200).json({
+  } else {
+    const dir = await proofFolder.create({ title, parentID });
+    res.status(201).json({
       success: true,
+      message: "New folder was created",
     });
   }
-  //Nếu không có parentID
-  await proofFolder.create({ title });
-  return res.send("Create a new folder successfully");
 };
 
+//Hoàn thành
 exports.getFileList = async (req, res) => {
   await proofFolder
     .find({}, (err, items) => {
       if (err) {
         console.log(err);
         res.status(500).send("An error occurred", err);
+      } else {
+        res.send(items);
       }
-      res.send(items);
     })
-    .populate("children")
     .clone()
     .catch(function (err) {
       console.log(err);
@@ -130,33 +117,36 @@ exports.getFileList = async (req, res) => {
 //     });
 // };
 
+// Hoàn thành
 exports.getFileFromFolder = async (req, res, next) => {
-  const storage = await Proof.find({ parentID: req.params.id });
+  const storage = await proofFolder
+    .find({ _id: req.params.id })
+    .select("proofFiles")
+    .populate("proofFiles", "name mimeType size");
 
   if (!storage) {
     return next(new Error("404 not found"));
   }
-  res.status(200).json({
-    success: true,
-    storage,
-  });
+  res.send(storage)
 };
 
+//Cần sửa lại
 exports.postDeleteFile = async (req, res, next) => {
-  const file = await Proof.findById({ _id: req.params.id });
+  const file = await proofFile.findById({ _id: req.params.id });
 
   if (!file) {
     return next(new Error("404 not found"));
   }
-  await Proof.deleteOne(file);
+  await proofFile.deleteOne(file);
   res.status(200).json({
     success: true,
     message: "Delete success",
   });
 };
 
+//Hoàn thành
 exports.getDataFromFile = async (req, res, next) => {
-  const file = await Proof.findById(req.params.id).select("data");
+  const file = await proofFile.findById(req.params.id).select("data");
   const data = file.data;
   if (!file) {
     next(new Error("Data not found!!!"));
@@ -178,15 +168,16 @@ exports.getProofFolderById = async (req, res, next) => {
   });
 };
 
+//Hoàn thành
 exports.updateFolder = async (req, res, next) => {
-  const { name, parentID } = req.body;
+  const { title, parentID } = req.body;
 
-  if (name === "") {
+  if (title === "") {
     res.send("Name must be provided");
   } else {
     var myquery = { _id: req.params.id };
-    var newvalues = { $set: { name: name, parentID: parentID } };
-    await Proof.updateOne(myquery, newvalues, { upsert: true });
+    var newvalues = { $set: { title: title, parentID: parentID } };
+    await proofFolder.updateOne(myquery, newvalues, { upsert: true });
     res.status(200).json({
       success: true,
       message: "Update success",

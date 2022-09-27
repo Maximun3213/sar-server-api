@@ -44,6 +44,7 @@ exports.uploadFile = (req, res, next) => {
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
           size: file.size,
+          proofFolder: folderID,
         });
         // push to proofFolder
         proofFolder
@@ -127,7 +128,38 @@ exports.getFileFromFolder = async (req, res, next) => {
   if (!storage) {
     return next(new Error("404 not found"));
   }
-  res.send(storage)
+  res.send(storage);
+};
+//Xóa thư mục
+exports.removeDirectory = async (req, res, next) => {
+  //----
+  const key = req.params.id;
+  const files = await proofFolder
+    .find({_id: key}, (err, file) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("An error occurred", err);
+      } else {
+        return file
+      }
+    }).clone().select("proofFiles")
+    
+    
+  files.map(file => {
+    console.log(file.proofFiles)
+    console.log(file.proofFiles[0]._id)
+    proofFolder
+    .deleteMany({ proofFiles: file.proofFiles[0]._id }, function (err) {
+      console.log(err)
+    })
+    .clone();
+
+    res.status(200).json({
+      success: true,
+      message: "Delete folder successfully",
+    });
+  })
+  
 };
 
 //Cần sửa lại

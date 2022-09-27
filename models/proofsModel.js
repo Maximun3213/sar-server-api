@@ -37,6 +37,10 @@ const proofFileSchema = new Schema({
     type: Number,
     required: false,
   },
+  proofFolder: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'proof_folder'
+  }
 
 });
 

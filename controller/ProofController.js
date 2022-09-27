@@ -132,12 +132,12 @@ exports.getFileFromFolder = async (req, res, next) => {
 
 //Cần sửa lại
 exports.postDeleteFile = async (req, res, next) => {
-  const file = await proofFolder.findById({ _id: req.params.id });
+  const file = await proofFile.findById({ _id: req.params.id });
 
   if (!file) {
     return next(new Error("404 not found"));
   }
-  await Proof.deleteOne(file);
+  await proofFile.deleteOne(file);
   res.status(200).json({
     success: true,
     message: "Delete success",

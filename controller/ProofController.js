@@ -127,12 +127,12 @@ exports.getFileFromFolder = async (req, res, next) => {
 };
 
 exports.postDeleteFile = async (req, res, next) => {
-  const file = await Proof.findById({ _id: req.params.id });
+  const file = await proofFile.findById({ _id: req.params.id });
 
   if (!file) {
     return next(new Error("404 not found"));
   }
-  await Proof.deleteOne(file);
+  await proofFile.deleteOne(file);
   res.status(200).json({
     success: true,
     message: "Delete success",
@@ -140,7 +140,7 @@ exports.postDeleteFile = async (req, res, next) => {
 };
 
 exports.getDataFromFile = async (req, res, next) => {
-  const file = await Proof.findById(req.params.id).select("data");
+  const file = await proofFile.findById(req.params.id).select("data");
   const data = file.data;
   if (!file) {
     next(new Error("Data not found!!!"));

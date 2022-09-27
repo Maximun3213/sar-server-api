@@ -99,7 +99,16 @@ exports.grantProofKey = async (req, res, next) => {
   });
 };
 //get proofStore API
-
+exports.getProofStore = async (req, res, next) => {
+  await User.findById(req.params.id)
+    .select("proofStore")
+    .exec((data, err) => {
+      if (err) {
+        return res.send(err);
+      }
+      res.send(data);
+    });
+};
 // exports.getOwnStorage = async (req, res, next) => {
 //   const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
 //   const checkRoleID = await User.findById(req.params.id).populate("roleID");

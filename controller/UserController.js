@@ -1,6 +1,6 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
-const Proof = require("../models/proofsModel");
+const {proofFolder} = require("../models/proofsModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
@@ -11,7 +11,7 @@ exports.userLogin = async (req, res) => {
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
   const role = await Role.findById(user.roleID);
-  // const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
+
 
   const permission = await Role.findById(role._id)
     .populate("permissionID")
@@ -31,16 +31,32 @@ exports.userLogin = async (req, res) => {
       message: "Invalid password",
     });
 
-  //Nếu đúng thì tạo và gửi token về client
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-  res.status(200).json({
-    success: true,
-    user,
-    role,
-    permission,
-    token,
-    // IdFolderRoot,
-  });
+  const IdFolderRoot = await proofFolder.findOne({ parentID: null}).select("_id");
+
+  if (role.roleID === "ADMIN") {
+    res.status(200).json({
+      success: true,
+      user,
+      role,
+      permission,
+      token,
+      IdFolderRoot,
+    });
+  } else if (role.roleID === "MP") {
+    const proofStore = user.proofStore
+    res.status(200).json({
+      success: true,
+      user,
+      role,
+      permission,
+      token,
+      proofStore,
+    });
+  }
+
+  //Nếu đúng thì tạo và gửi token về client
+  
 };
 
 exports.userList = (req, res) => {

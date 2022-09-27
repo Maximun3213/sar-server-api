@@ -7,36 +7,6 @@ const path = require("path");
 const { ObjectId } = require("mongodb");
 const { title } = require("process");
 
-
-function useSortArrayParentID(data) {
-  const childMap = data.reduce((map, child) => {
-    return {
-      ...map,
-      [child.value]: {
-        ...child,
-      },
-    };
-  }, {});
-  const root = [];
-  Object.values(childMap).forEach((child) => {
-    if (child.parentID) {
-      if (childMap[child.parentID]) {
-        const parent = childMap[child.parentID];
-        if (!parent.children) {
-          parent.children = [];
-        }
-
-        parent.children.push(child);
-      }
-    } else {
-      root.push(child);
-      
-    }
-  });
-
-  return root;
-}
-
 const Str = multer.diskStorage({
   destination: "uploads",
   filename: (req, file, cb) => {
@@ -81,12 +51,12 @@ exports.uploadFile = (req, res, next) => {
 };
 
 exports.createFolder = async (req, res, next) => {
-  const { name, parentID } = req.body;
+  const { title, parentID } = req.body;
 
-  if (name === "") {
+  if (title === "") {
     res.send("Name must be provided");
   } else {
-    const dir = await proofFolder.create({ name, parentID });
+    const dir = await proofFolder.create({ title, parentID });
 
     res.status(201).json({
       success: true,
@@ -95,18 +65,20 @@ exports.createFolder = async (req, res, next) => {
   }
 };
 
-
 exports.getFileList = async (req, res) => {
-  await proofFolder.find({}, (err, items) => {
-    if (err) {
+  await proofFolder
+    .find({}, (err, items) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("An error occurred", err);
+      } else {
+        res.send(items);
+      }
+    })
+    .clone()
+    .catch(function (err) {
       console.log(err);
-      res.status(500).send("An error occurred", err);
-    } else {
-      // console.log(useSortArrayParentID(items))
-      console.log("items", items)
-      res.send(items);
-    }
-  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
+    });
 };
 
 //In danh sách file
@@ -189,9 +161,6 @@ exports.updateFolder = async (req, res, next) => {
     });
   }
 };
-
-
-
 
 //Search module
 // exports.searchProof = async (req, res) => {

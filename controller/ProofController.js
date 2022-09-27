@@ -163,14 +163,14 @@ exports.getProofFolderById = async (req, res, next) => {
 };
 
 exports.updateFolder = async (req, res, next) => {
-  const { name, parentID } = req.body;
+  const { title, parentID } = req.body;
 
-  if (name === "") {
+  if (title === "") {
     res.send("Name must be provided");
   } else {
     var myquery = { _id: req.params.id };
-    var newvalues = { $set: { name: name, parentID: parentID } };
-    await Proof.updateOne(myquery, newvalues, { upsert: true });
+    var newvalues = { $set: { title: title, parentID: parentID } };
+    await proofFolder.updateOne(myquery, newvalues, { upsert: true });
     res.status(200).json({
       success: true,
       message: "Update success",

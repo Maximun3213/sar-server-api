@@ -37,7 +37,7 @@ exports.userLogin = async (req, res) => {
     .select("_id");
 
   if (role.roleID === "ADMIN") {
-    return res.send({ 
+    return res.send({
       user,
       role,
       permission,

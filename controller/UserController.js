@@ -1,6 +1,6 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
-const {proofFolder} = require("../models/proofsModel");
+const { proofFolder } = require("../models/proofsModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
@@ -11,7 +11,6 @@ exports.userLogin = async (req, res) => {
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
   const role = await Role.findById(user.roleID);
-
 
   const permission = await Role.findById(role._id)
     .populate("permissionID")
@@ -32,31 +31,22 @@ exports.userLogin = async (req, res) => {
     });
 
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-  const IdFolderRoot = await proofFolder.findOne({ parentID: null}).select("_id");
 
+  const IdFolderRoot = await proofFolder
+    .findOne({ parentID: null })
+    .select("_id");
+  const profile = {
+    user,
+    role,
+    permission,
+    token,
+  };
   if (role.roleID === "ADMIN") {
-    res.status(200).json({
-      success: true,
-      user,
-      role,
-      permission,
-      token,
-      IdFolderRoot,
-    });
-  } else if (role.roleID === "MP") {
-    const proofStore = user.proofStore
-    res.status(200).json({
-      success: true,
-      user,
-      role,
-      permission,
-      token,
-      proofStore,
-    });
+    return res.send({ profile, IdFolderRoot });
   }
+  res.send({ profile });
 
   //Nếu đúng thì tạo và gửi token về client
-
 };
 
 exports.userList = (req, res) => {
@@ -108,14 +98,24 @@ exports.grantProofKey = async (req, res, next) => {
     message: "Thư mục đã được cấp quyền",
   });
 };
-
-exports.getOwnStorage = async (req, res, next) => {
-  const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
-  const checkRoleID = await User.findById(req.params.id).populate("roleID");
-  if (checkRoleID.roleID.roleID === "ADMIN") {
-    return res.send({ IdFolderRoot: IdFolderRoot });
-  } else if (checkRoleID.roleID.roleID === "MP") {
-    return res.send({ proofStore: checkRoleID.proofStore });
-  }
-  res.send('Nothing happens')
+//get proofStore API
+exports.getProofStore = async (req, res, next) => {
+  await User.findById(req.params.id)
+    .select("proofStore")
+    .exec((data, err) => {
+      if (err) {
+        return res.send(err);
+      }
+      res.send(data);
+    });
 };
+// exports.getOwnStorage = async (req, res, next) => {
+//   const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
+//   const checkRoleID = await User.findById(req.params.id).populate("roleID");
+//   if (checkRoleID.roleID.roleID === "ADMIN") {
+//     return res.send({ IdFolderRoot: IdFolderRoot });
+//   } else if (checkRoleID.roleID.roleID === "MP") {
+//     return res.send({ proofStore: checkRoleID.proofStore });
+//   }
+//   res.send('Nothing happens')
+// };

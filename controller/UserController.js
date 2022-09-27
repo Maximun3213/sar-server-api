@@ -35,16 +35,22 @@ exports.userLogin = async (req, res) => {
   const IdFolderRoot = await proofFolder
     .findOne({ parentID: null })
     .select("_id");
-  const profile = {
+
+  if (role.roleID === "ADMIN") {
+    return res.send({ 
+      user,
+      role,
+      permission,
+      token,
+      IdFolderRoot
+     });
+  }
+  res.send({
     user,
     role,
     permission,
     token,
-  };
-  if (role.roleID === "ADMIN") {
-    return res.send({ profile, IdFolderRoot });
-  }
-  res.send({ profile });
+  });
 
   //Nếu đúng thì tạo và gửi token về client
 };

@@ -115,15 +115,15 @@ exports.getFileList = async (req, res) => {
 // };
 
 exports.getFileFromFolder = async (req, res, next) => {
-  const storage = await Proof.find({ parentID: req.params.id });
+  const storage = await proofFolder
+    .find({ _id: req.params.id })
+    .select("proofFiles")
+    .populate("proofFiles", "name mimeType size");
 
   if (!storage) {
     return next(new Error("404 not found"));
   }
-  res.status(200).json({
-    success: true,
-    storage,
-  });
+  res.send(storage)
 };
 
 exports.postDeleteFile = async (req, res, next) => {

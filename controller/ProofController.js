@@ -17,6 +17,7 @@ const Str = multer.diskStorage({
   },
 });
 
+//Hoàn thành
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
@@ -67,6 +68,7 @@ exports.uploadFile = (req, res, next) => {
   });
 };
 
+//Hoàn thành
 exports.createFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
 
@@ -81,6 +83,7 @@ exports.createFolder = async (req, res, next) => {
   }
 };
 
+//Hoàn thành
 exports.getFileList = async (req, res) => {
   await proofFolder
     .find({}, (err, items) => {
@@ -114,6 +117,7 @@ exports.getFileList = async (req, res) => {
 //     });
 // };
 
+// Hoàn thành
 exports.getFileFromFolder = async (req, res, next) => {
   const storage = await proofFolder
     .find({ _id: req.params.id })
@@ -126,8 +130,9 @@ exports.getFileFromFolder = async (req, res, next) => {
   res.send(storage)
 };
 
+//Cần sửa lại
 exports.postDeleteFile = async (req, res, next) => {
-  const file = await Proof.findById({ _id: req.params.id });
+  const file = await proofFolder.findById({ _id: req.params.id });
 
   if (!file) {
     return next(new Error("404 not found"));
@@ -139,6 +144,7 @@ exports.postDeleteFile = async (req, res, next) => {
   });
 };
 
+//Hoàn thành
 exports.getDataFromFile = async (req, res, next) => {
   const file = await proofFile.findById(req.params.id).select("data");
   const data = file.data;
@@ -162,6 +168,7 @@ exports.getProofFolderById = async (req, res, next) => {
   });
 };
 
+//Hoàn thành
 exports.updateFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
 

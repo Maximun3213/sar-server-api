@@ -37,13 +37,13 @@ exports.userLogin = async (req, res) => {
     .select("_id");
 
   if (role.roleID === "ADMIN") {
-    return res.send({ 
+    return res.send({
       user,
       role,
       permission,
       token,
-      IdFolderRoot
-     });
+      IdFolderRoot,
+    });
   }
   res.send({
     user,
@@ -115,13 +115,3 @@ exports.getProofStore = async (req, res, next) => {
       res.send(data);
     });
 };
-// exports.getOwnStorage = async (req, res, next) => {
-//   const IdFolderRoot = await Proof.findOne({ parentID: null }).select("_id");
-//   const checkRoleID = await User.findById(req.params.id).populate("roleID");
-//   if (checkRoleID.roleID.roleID === "ADMIN") {
-//     return res.send({ IdFolderRoot: IdFolderRoot });
-//   } else if (checkRoleID.roleID.roleID === "MP") {
-//     return res.send({ proofStore: checkRoleID.proofStore });
-//   }
-//   res.send('Nothing happens')
-// };

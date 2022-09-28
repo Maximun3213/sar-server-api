@@ -20,7 +20,7 @@ router.route("/createDir").post(createFolder);
 
 router.route("/deleteFile/:id").delete(postDeleteFile);
 
-router.route("/folder/:id").delete(removeDirectory);
+router.route("/deleteFolder/:id").delete(removeDirectory);
 
 router.route("/updateFolder/:id").put(updateFolder);
 

@@ -5,7 +5,7 @@ const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
 const { ObjectId } = require("mongodb");
-const { title } = require("process");
+// const { title } = require("process");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -79,6 +79,7 @@ exports.createFolder = async (req, res, next) => {
     res.send("Name must be provided");
   } else {
     const dir = await proofFolder.create({ title, parentID });
+
     res.status(201).json({
       success: true,
       message: "New folder was created",
@@ -123,18 +124,48 @@ exports.getFileFromFolder = async (req, res, next) => {
 exports.removeDirectory = async (req, res, next) => {
   //----
   try {
-    const fileList = await proofFolder
-      .findById(req.params.id)
-      .select("proofFiles");
-    await proofFile
-      .deleteMany({ _id: fileList.proofFiles })
-      .exec(function (err, result) {
-        if (err) {
-          return console.log(err);
-        }
-        console.log("fileList successfully removed", result);
-      });
+    const fileList = await proofFolder.findById(req.params.id);
 
+    //---Delete all files at root
+    await proofFile.deleteMany({ _id: fileList.proofFiles }).exec();
+    
+    //---Delete all file and folders inside root
+    await proofFolder
+    .aggregate([
+      { $match: { _id: fileList._id } },
+      {
+        $graphLookup: {
+          from: "proof_folders",
+          startWith: "$_id",
+          connectFromField: "_id",
+          connectToField: "parentID",
+          as: "children",
+          maxDepth: 4,
+          depthField: "level",
+          restrictSearchWithMatch: {},
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          proofFiles: 1,
+          "children._id": 1,
+          "children.title": 1,
+          "children.proofFiles": 1,
+        },
+      },
+
+    ])
+    .then((data) => {
+      data.forEach((child) => {
+        child.children.forEach((childList) => {
+          proofFolder.deleteOne({ _id: childList._id }).exec();
+          proofFile.deleteMany({ _id: childList.proofFiles }).exec();
+        });
+      });
+    });
+    //---Delete root
     await proofFolder.deleteOne({ _id: req.params.id });
 
     res.status(200).json({
@@ -189,7 +220,7 @@ exports.getDataFromFile = async (req, res, next) => {
   });
 };
 
-//---Sửa folder
+//----Cập nhật folder
 
 exports.updateFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
@@ -207,7 +238,6 @@ exports.updateFolder = async (req, res, next) => {
   }
 };
 
-
 //----
 // exports.getProofFolderById = async (req, res, next) => {
 //   const file = await Proof.findOne({ _id: req.params.id });
@@ -219,7 +249,6 @@ exports.updateFolder = async (req, res, next) => {
 //     file,
 //   });
 // };
-
 
 //Search module
 // exports.searchProof = async (req, res) => {

@@ -21,12 +21,7 @@ const proofFolderSchema = new Schema({
     default: null,
     ref: "proof_folder",
   },
-  // children: [
-  //   {
-  //     type: mongoose.Schema.Types.ObjectId,
-  //     ref: "proof_folder",
-  //   }
-  // ]
+
 });
 
 const proofFileSchema = new Schema({

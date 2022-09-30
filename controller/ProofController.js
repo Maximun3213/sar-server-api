@@ -38,7 +38,7 @@ exports.uploadFile = (req, res, next) => {
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
     const {enactNum, enactAddress, releaseDate, description} = req.body
-    
+
     fileList[0] &&
       fileList.map((file, index) => {
         const ids = new ObjectId();
@@ -49,10 +49,10 @@ exports.uploadFile = (req, res, next) => {
           mimeType: file.mimetype,
           size: file.size,
           proofFolder: folderID,
-          enactNum: enactNum,
-          enactAddress: enactAddress,
-          releaseDate: moment(releaseDate, "DD-MM-YYYY"),
-          description: description
+          enactNum: enactNum && enactNum[0],
+          enactAddress: enactAddress && enactAddress[0],
+          releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
+          description: description && description[0]
         });
         // push to proofFolder
         proofFolder.findByIdAndUpdate(folderID, {

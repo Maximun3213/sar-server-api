@@ -29,10 +29,10 @@ const permission = require("./routes/PermissionRoute");
 const proof = require("./routes/ProofRoute");
 
 
-app.use("/api", user);
-app.use("/api", role);
-app.use("/api", permission);
-app.use("/api", proof);
+app.use("/api/user", user);
+app.use("/api/role", role);
+app.use("/api/permission", permission);
+app.use("/api/proofStore", proof);
 
 
 module.exports = app;

@@ -1,4 +1,6 @@
 const { proofFile, proofFolder } = require("../models/proofsModel");
+const User = require("../models/usersModel");
+const Role = require("../models/rolesModel");
 const mongoose = require("mongoose");
 const json = require("body-parser");
 const fs = require("fs");
@@ -37,7 +39,7 @@ exports.uploadFile = (req, res, next) => {
 
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
-    const {enactNum, enactAddress, releaseDate, description} = req.body
+    const { enactNum, enactAddress, releaseDate, description } = req.body;
 
     fileList[0] &&
       fileList.map((file, index) => {
@@ -49,22 +51,24 @@ exports.uploadFile = (req, res, next) => {
           mimeType: file.mimetype,
           size: file.size,
           proofFolder: folderID,
-          enactNum: enactNum && enactNum[0],
-          enactAddress: enactAddress && enactAddress[0],
-          releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
-          description: description && description[0]
+          enactNum: enactNum,
+          enactAddress: enactAddress,
+          releaseDate: moment(releaseDate, "DD-MM-YYYY"),
+          description: description,
         });
         // push to proofFolder
-        proofFolder.findByIdAndUpdate(folderID, {
+        proofFolder
+          .findByIdAndUpdate(folderID, {
             $push: { proofFiles: ids },
-          }).exec();
+          })
+          .exec();
 
         newImage.save();
       });
 
     res.status(200).json({
       success: true,
-      message: "Tải file lên thành công",
+      message: "Upload file successfully",
       fileList,
     });
   });
@@ -78,11 +82,11 @@ exports.createFolder = async (req, res, next) => {
   if (title === "") {
     res.send("Name must be provided");
   } else {
-    await proofFolder.create({ title, parentID });
+    const dir = await proofFolder.create({ title, parentID });
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
-      message: `Thư mục ${title} đã được tạo`,
+      message: "New folder was created",
     });
   }
 };
@@ -131,40 +135,39 @@ exports.removeDirectory = async (req, res, next) => {
 
     //---Delete all file and folders inside root
     await proofFolder
-    .aggregate([
-      { $match: { _id: fileList._id } },
-      {
-        $graphLookup: {
-          from: "proof_folders",
-          startWith: "$_id",
-          connectFromField: "_id",
-          connectToField: "parentID",
-          as: "children",
-          maxDepth: 4,
-          depthField: "level",
-          restrictSearchWithMatch: {},
+      .aggregate([
+        { $match: { _id: fileList._id } },
+        {
+          $graphLookup: {
+            from: "proof_folders",
+            startWith: "$_id",
+            connectFromField: "_id",
+            connectToField: "parentID",
+            as: "children",
+            maxDepth: 4,
+            depthField: "level",
+            restrictSearchWithMatch: {},
+          },
         },
-      },
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          proofFiles: 1,
-          "children._id": 1,
-          "children.title": 1,
-          "children.proofFiles": 1,
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            proofFiles: 1,
+            "children._id": 1,
+            "children.title": 1,
+            "children.proofFiles": 1,
+          },
         },
-      },
-
-    ])
-    .then((data) => {
-      data.forEach((child) => {
-        child.children.forEach((childList) => {
-          proofFolder.deleteOne({ _id: childList._id }).exec();
-          proofFile.deleteMany({ _id: childList.proofFiles }).exec();
+      ])
+      .then((data) => {
+        data.forEach((child) => {
+          child.children.forEach((childList) => {
+            proofFolder.deleteOne({ _id: childList._id }).exec();
+            proofFile.deleteMany({ _id: childList.proofFiles }).exec();
+          });
         });
       });
-    });
     //---Delete root
     await proofFolder.deleteOne({ _id: req.params.id });
 
@@ -266,3 +269,42 @@ exports.updateFolder = async (req, res, next) => {
 //     });
 //   }
 // };
+
+//Lấy tài liệu minh chứng theo từng người dùng
+exports.getAllDocumentByRole = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  const role = await Role.findById(user.roleID);
+
+  if (role.roleID === "ADMIN") {
+    await proofFile
+      .find({}, (err, result) => {
+        if (err) {
+          console.log(err);
+        }
+        res.send(result);
+      })
+      .select("-data")
+      .clone();
+  }
+  await user.proofStore.forEach((item) => {
+    proofFile.aggregate(
+      [
+        {
+          $match: {
+            proofFolder: item,
+          },
+        },
+        {
+          $project: {
+            name: 1,
+            mimeType: 1,
+          },
+        },
+      ],
+      (err, result) => {
+        console.log(result);
+        return res.send(result);
+      }
+    );
+  });
+};

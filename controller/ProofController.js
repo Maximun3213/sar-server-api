@@ -1,57 +1,12 @@
-const Proof = require("../models/proofsModel");
-const mongoose = require("mongoose")
+const { proofFile, proofFolder } = require("../models/proofsModel");
+const mongoose = require("mongoose");
 const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
-// const { GridFsStorage } = require("multer-gridfs-storage");
-// var Grid = require('gridfs-stream');
-// const url = "mongodb+srv://sar_api:LxLNhLkVHcRveiC9@cluster0.n8drxfd.mongodb.net/sar?retryWrites=true&w=majority";
-// const bucket = new mongoose.mongo.GridFSBucket(mongoose.connection.db, {
-//   bucketName: 'proof'
-// })
-// // Create a storage object with a given configuration
-// const storage = new GridFsStorage({
-//   url: url,
-//   file: (req, file) => {
-//     return new Promise((resolve, reject) => {
-//       const filename = file.originalname;
-//       const fileInfo = {
-//         filename: filename,
-//         bucketName: "proof",
-//       };
-//       resolve(fileInfo);
-//     });
-//   },
-// });
-
-// // Set multer storage engine to the newly created object
-// const upload = multer({ storage }).array("uploadedFiles", 4);
-
-// exports.uploadFile = (req, res, next) => {
-//   upload(req, res, (err) => {
-//     if (err) {
-//       return res
-//         .status(400)
-//         .send({ success: false, message: "Tối đa 4 tệp được upload" });
-//     }
-//     res.status(200).json({
-//       success: true,
-//       message: `${req.files.length} files uploaded successfully`,
-//     });
-//   });
-// };
-
-// exports.getFileList = async (req, res) => {
-//   const file = bucket.find({}).toArray((err, files) => {
-//     if (!files || files.length === 0) {
-//       return res.status(404).json({
-//         err: "no files exist",
-//       });
-//     }
-//     bucket.openDownloadStreamByName(req.params.filename).pipe(res);
-//   });
-// };
+const moment = require("moment");
+const { ObjectId } = require("mongodb");
+// const { title } = require("process");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -68,6 +23,8 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 }).any("uploadedFiles", 4);
 
+//----hàm upload file
+
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {
     if (err) {
@@ -77,91 +34,221 @@ exports.uploadFile = (req, res, next) => {
     }
 
     const fileList = req.files;
-    // console.log(typeof req.body.parentID)
-    const parentID = req.body.parentID.toString().slice(0, 24)
-    fileList.map((file, index) => {
-      const newImage = new Proof({
-        name: file.originalname,
-        data: fs.readFileSync(file.path),
-        mimeType: file.mimetype,
-        size: file.size,
-        parentID: parentID
+
+    // const folderID = req.body.folderID;
+    const folderID = req.params.id;
+    const {enactNum, enactAddress, releaseDate, description} = req.body
+
+    fileList[0] &&
+      fileList.map((file, index) => {
+        const ids = new ObjectId();
+        const newImage = new proofFile({
+          _id: ids,
+          name: file.originalname,
+          data: fs.readFileSync(file.path),
+          mimeType: file.mimetype,
+          size: file.size,
+          proofFolder: folderID,
+          enactNum: enactNum && enactNum[0],
+          enactAddress: enactAddress && enactAddress[0],
+          releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
+          description: description && description[0]
+        });
+        // push to proofFolder
+        proofFolder.findByIdAndUpdate(folderID, {
+            $push: { proofFiles: ids },
+          }).exec();
+
+        newImage.save();
       });
-      newImage.save();
-    });
+
     res.status(200).json({
       success: true,
-      message: "Upload file successfully",
+      message: "Tải file lên thành công",
       fileList,
     });
   });
 };
 
-exports.createFolder = async (req, res, next) => {
-  const { name, parentID } = req.body;
+//----Tạo folder
 
-  if (name === "") {
+exports.createFolder = async (req, res, next) => {
+  const { title, parentID } = req.body;
+
+  if (title === "") {
     res.send("Name must be provided");
   } else {
-    const dir = await Proof.create({ name, parentID });
+    await proofFolder.create({ title, parentID });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "New folder was created",
+      message: `Thư mục ${title} đã được tạo`,
     });
   }
 };
 
-//In danh sách file
+//----Xuất all files
+
 exports.getFileList = async (req, res) => {
-    await Proof.find({}, (err, items) => {
-    if (err) {
+  await proofFolder
+    .find({}, (err, items) => {
+      if (err) {
+        console.log(err);
+        res.status(500).send("An error occurred", err);
+      } else {
+        res.send(items);
+      }
+    })
+    .clone()
+    .catch(function (err) {
       console.log(err);
-      res.status(500).send("An error occurred", err);
-    } else {
-      res.send(items);
-    }
-  }).select("name mimeType size parentID").clone().catch(function(err){ console.log(err)});
+    });
 };
 
+//----Lấy file trong folder
+
 exports.getFileFromFolder = async (req, res, next) => {
-  const storage = await Proof.find({ parentID: req.params.id });
+  const storage = await proofFolder
+    .find({ _id: req.params.id })
+    .select("proofFiles")
+    .populate("proofFiles", "name mimeType size");
 
   if (!storage) {
     return next(new Error("404 not found"));
   }
-  res.status(200).json({
-    success: true,
-    storage,
-  });
+  res.send(storage);
 };
+
+//----Xóa thư mục
+
+exports.removeDirectory = async (req, res, next) => {
+  //----
+  try {
+    const fileList = await proofFolder.findById(req.params.id);
+
+    //---Delete all files at root
+    await proofFile.deleteMany({ _id: fileList.proofFiles }).exec();
+
+    //---Delete all file and folders inside root
+    await proofFolder
+    .aggregate([
+      { $match: { _id: fileList._id } },
+      {
+        $graphLookup: {
+          from: "proof_folders",
+          startWith: "$_id",
+          connectFromField: "_id",
+          connectToField: "parentID",
+          as: "children",
+          maxDepth: 4,
+          depthField: "level",
+          restrictSearchWithMatch: {},
+        },
+      },
+      {
+        $project: {
+          _id: 1,
+          title: 1,
+          proofFiles: 1,
+          "children._id": 1,
+          "children.title": 1,
+          "children.proofFiles": 1,
+        },
+      },
+
+    ])
+    .then((data) => {
+      data.forEach((child) => {
+        child.children.forEach((childList) => {
+          proofFolder.deleteOne({ _id: childList._id }).exec();
+          proofFile.deleteMany({ _id: childList.proofFiles }).exec();
+        });
+      });
+    });
+    //---Delete root
+    await proofFolder.deleteOne({ _id: req.params.id });
+
+    res.status(200).json({
+      success: true,
+      message: "Folder removed successfully",
+    });
+  } catch (error) {
+    // This is where you handle the error
+    res.status(500).send(error);
+  }
+};
+
+//----Xóa file
 
 exports.postDeleteFile = async (req, res, next) => {
-  const file = await Proof.findOne({ _id: req.params.id });
+  try {
+    const getFolderId = await proofFile
+      .findById(req.params.id)
+      .select("proofFolder");
+    await proofFolder.updateMany(
+      { _id: getFolderId.proofFolder },
+      {
+        $pull: {
+          proofFiles: req.params.id,
+        },
+      }
+    );
 
-  if (!file) {
-    return next(new Error("404 not found"));
+    await proofFile.deleteOne({ _id: req.params.id });
+
+    res.status(200).json({
+      success: true,
+      message: "Delete success",
+    });
+  } catch (error) {
+    // This is where you handle the error
+    res.status(500).send(error);
   }
-  await Proof.deleteOne(file);
+};
+
+//----Lấy data từ file
+
+exports.getDataFromFile = async (req, res, next) => {
+  const file = await proofFile.findById(req.params.id).select("data");
+  const data = file.data;
+  if (!file) {
+    next(new Error("Data not found!!!"));
+  }
   res.status(200).json({
     success: true,
-    message: "Delete success",
+    data,
   });
 };
 
-exports.getDataFromFile = async (req, res, next) => {
-  const file = await Proof.findById(req.params.id).select("data")
-  const data = file.data
-  if(!file) {
-    next(new Error("Data not found!!!"))
+//----Cập nhật folder
+
+exports.updateFolder = async (req, res, next) => {
+  const { title, parentID } = req.body;
+
+  if (title === "") {
+    res.send("Name must be provided");
+  } else {
+    var myquery = { _id: req.params.id };
+    var newvalues = { $set: { title: title, parentID: parentID } };
+    await proofFolder.updateOne(myquery, newvalues, { upsert: true });
+    res.status(200).json({
+      success: true,
+      message: "Update success",
+    });
   }
-  res.status(200).json({
-    success: true,
-    data
-  })
+};
 
-
-}
+//----
+// exports.getProofFolderById = async (req, res, next) => {
+//   const file = await Proof.findOne({ _id: req.params.id });
+//   if (!file) {
+//     next(new Error("Folder not found!!!"));
+//   }
+//   res.status(200).json({
+//     success: true,
+//     file,
+//   });
+// };
 
 //Search module
 // exports.searchProof = async (req, res) => {
@@ -179,17 +266,3 @@ exports.getDataFromFile = async (req, res, next) => {
 //     });
 //   }
 // };
-// const emptyFolder = async (folderPath) => {
-//   try {
-//       // Find all files in the folder
-//       const files = await fsPromises.readdir(folderPath);
-//       for (const file of files) {
-//           await fsPromises.unlink(path.resolve(folderPath, file));
-//           console.log(`${folderPath}/${file} has been removed successfully`);
-//       }
-//   } catch (err){
-//       console.log(err);
-//   }
-// }
-
-// emptyFolder('./files');

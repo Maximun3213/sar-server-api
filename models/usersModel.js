@@ -33,7 +33,13 @@ const userSchema = new Schema({
   creatAt: {
     type: Date,
     default: Date.now()
-  }
+  },
+  proofStore: [
+    {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "proof"
+    }
+  ]
 })
 
 //hash password

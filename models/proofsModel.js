@@ -41,7 +41,11 @@ const proofFileSchema = new Schema({
   proofFolder: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'proof_folder'
-  }
+  },
+  enactNum: String,
+  enactAddress: String,
+  releaseDate: Date,
+  description: String,
 
 });
 

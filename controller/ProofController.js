@@ -4,6 +4,7 @@ const json = require("body-parser");
 const fs = require("fs");
 const multer = require("multer");
 const path = require("path");
+const moment = require("moment");
 const { ObjectId } = require("mongodb");
 // const { title } = require("process");
 
@@ -36,7 +37,8 @@ exports.uploadFile = (req, res, next) => {
 
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
-
+    const {enactNum, enactAddress, releaseDate, description} = req.body
+    
     fileList[0] &&
       fileList.map((file, index) => {
         const ids = new ObjectId();
@@ -47,18 +49,15 @@ exports.uploadFile = (req, res, next) => {
           mimeType: file.mimetype,
           size: file.size,
           proofFolder: folderID,
+          enactNum: enactNum,
+          enactAddress: enactAddress,
+          releaseDate: moment(releaseDate, "DD-MM-YYYY"),
+          description: description
         });
         // push to proofFolder
-        proofFolder
-          .findByIdAndUpdate(folderID, {
+        proofFolder.findByIdAndUpdate(folderID, {
             $push: { proofFiles: ids },
-          })
-          .exec(function (err, data) {
-            if (err) {
-              console.log(err);
-            }
-            console.log(data);
-          });
+          }).exec();
 
         newImage.save();
       });

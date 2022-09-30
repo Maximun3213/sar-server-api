@@ -34,7 +34,8 @@ exports.uploadFile = (req, res, next) => {
 
     const fileList = req.files;
 
-    const folderID = req.body.folderID;
+    // const folderID = req.body.folderID;
+    const folderID = req.params.id;
 
     fileList[0] &&
       fileList.map((file, index) => {

@@ -65,7 +65,7 @@ exports.uploadFile = (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Upload file successfully",
+      message: "Tải file lên thành công",
       fileList,
     });
   });
@@ -79,11 +79,11 @@ exports.createFolder = async (req, res, next) => {
   if (title === "") {
     res.send("Name must be provided");
   } else {
-    const dir = await proofFolder.create({ title, parentID });
+    await proofFolder.create({ title, parentID });
 
-    res.status(201).json({
+    res.status(200).json({
       success: true,
-      message: "New folder was created",
+      message: `Thư mục ${title} đã được tạo`,
     });
   }
 };
@@ -129,7 +129,7 @@ exports.removeDirectory = async (req, res, next) => {
 
     //---Delete all files at root
     await proofFile.deleteMany({ _id: fileList.proofFiles }).exec();
-    
+
     //---Delete all file and folders inside root
     await proofFolder
     .aggregate([

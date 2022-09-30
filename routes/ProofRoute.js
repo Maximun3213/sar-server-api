@@ -14,7 +14,7 @@ const {
 
 const router = express.Router();
 
-router.route("/upload").post(uploadFile);
+router.route("/upload/:id").post(uploadFile);
 
 router.route("/createDir").post(createFolder);
 

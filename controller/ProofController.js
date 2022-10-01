@@ -283,28 +283,20 @@ exports.getAllDocumentByRole = async (req, res) => {
         }
         res.send(result);
       })
+      .populate("proofFolder", "title")
       .select("-data")
       .clone();
   }
-  await user.proofStore.forEach((item) => {
-    proofFile.aggregate(
-      [
-        {
-          $match: {
-            proofFolder: item,
-          },
-        },
-        {
-          $project: {
-            name: 1,
-            mimeType: 1,
-          },
-        },
-      ],
-      (err, result) => {
-        console.log(result);
-        return res.send(result);
-      }
-    );
+  await user.proofStore.map(store => {
+    const output = proofFile
+      .find({ proofFolder: store }, (err, files) => {
+        files.map(file => {
+          console.log(file)
+        })
+      })
+      .select("name mimeType")
+      .clone();
+  
+    console.log(output)
   });
 };

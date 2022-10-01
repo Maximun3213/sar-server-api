@@ -287,7 +287,7 @@ exports.getAllDocumentByRole = async (req, res) => {
       .select("-data")
       .clone();
   }
-  proofFile
+  await proofFile
     .aggregate()
     .match({ proofFolder: { $in: proofStore } })
     .project({

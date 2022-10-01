@@ -316,12 +316,19 @@ exports.getAllDocumentByRole = async (req, res) => {
       } else {
         proofFile.populate(
           result,
-          {
-            path: "proofFolder",
-            select: { title: 1, _id: 0 },
-            path: "userCreate",
-            select: { fullName: 1, _id: 0 },
-          },
+          [
+            {
+              path: "userCreate",
+              select: { fullName: 1, _id: 0 },
+              model: "user",
+            },
+            {
+              path: "proofFolder",
+              select: { title: 1, _id: 0 },
+              model: "proof_folder",
+            },
+          ],
+
           (err, list) => {
             res.send(list);
           }

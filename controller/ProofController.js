@@ -39,7 +39,13 @@ exports.uploadFile = (req, res, next) => {
 
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
-    const { enactNum, enactAddress, releaseDate, description, userCreate } = req.body;
+    const {
+      enactNum,
+      enactAddress,
+      releaseDate,
+      description,
+      userCreate,
+    } = req.body;
 
     fileList[0] &&
       fileList.map((file, index) => {
@@ -55,7 +61,7 @@ exports.uploadFile = (req, res, next) => {
           enactAddress: enactAddress,
           releaseDate: moment(releaseDate, "DD-MM-YYYY"),
           description: description,
-          userCreate: userCreate
+          userCreate: userCreate,
         });
         // push to proofFolder
         proofFolder
@@ -285,14 +291,16 @@ exports.getAllDocumentByRole = async (req, res) => {
         return res.send(result);
       })
       .populate("proofFolder", "title")
-      .populate([{
-        path: 'userCreate',
-        model: 'user',
-        select: {
-          'fullName': 1,
-          '_id': 0
-        }
-      }])
+      .populate([
+        {
+          path: "userCreate",
+          model: "user",
+          select: {
+            fullName: 1,
+            _id: 0,
+          },
+        },
+      ])
       .select("-data")
       .clone();
   }
@@ -308,7 +316,19 @@ exports.getAllDocumentByRole = async (req, res) => {
       } else {
         proofFile.populate(
           result,
-          { path: "proofFolder", select: { title: 1, _id: 0 } },
+          [
+            {
+              path: "userCreate",
+              select: { fullName: 1, _id: 0 },
+              model: "user",
+            },
+            {
+              path: "proofFolder",
+              select: { title: 1, _id: 0 },
+              model: "proof_folder",
+            },
+          ],
+
           (err, list) => {
             res.send(list);
           }

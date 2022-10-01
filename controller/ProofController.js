@@ -274,6 +274,7 @@ exports.updateFolder = async (req, res, next) => {
 exports.getAllDocumentByRole = async (req, res) => {
   const user = await User.findById(req.params.id);
   const role = await Role.findById(user.roleID);
+  const proofStore = user.proofStore;
   if (role.roleID === "ADMIN") {
     await proofFile
       .find({}, (err, result) => {
@@ -286,21 +287,23 @@ exports.getAllDocumentByRole = async (req, res) => {
       .select("-data")
       .clone();
   }
-  var arr = [];
-  const fileList = await user.proofStore.map((store) => {
-    proofFile
-      .find({ proofFolder: store }, (err, files) => {
-        return files.map((file) => {
-          arr.push(file);
-        });
-      })
-      .select("-data")
-      .populate("proofFolder", "title")
-      .clone()
-      .then((err, file) => {
-        if (arr.length > 0) {
-          res.send(arr);
-        }
-      });
-  });
+  proofFile
+    .aggregate()
+    .match({ proofFolder: { $in: proofStore } })
+    .project({
+      data: 0,
+    })
+    .exec(function (err, result) {
+      if (err) {
+        return console.log(err);
+      } else {
+        proofFile.populate(
+          result,
+          { path: "proofFolder", select: { title: 1, _id: 0 } },
+          (err, list) => {
+            res.send(list);
+          }
+        );
+      }
+    });
 };

@@ -45,9 +45,17 @@ const proofFileSchema = new Schema({
   enactAddress: String,
   releaseDate: Date,
   description: String,
+  userCreate: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+  },
+  status: {
+    type: Number,
+    default: 1,
+  },
   creatAt: {
     type: Date,
-    default: Date.now()
+    default: Date.now(),
   },
 });
 

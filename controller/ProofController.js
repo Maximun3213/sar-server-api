@@ -274,7 +274,6 @@ exports.updateFolder = async (req, res, next) => {
 exports.getAllDocumentByRole = async (req, res) => {
   const user = await User.findById(req.params.id);
   const role = await Role.findById(user.roleID);
-
   if (role.roleID === "ADMIN") {
     await proofFile
       .find({}, (err, result) => {
@@ -287,16 +286,21 @@ exports.getAllDocumentByRole = async (req, res) => {
       .select("-data")
       .clone();
   }
-  await user.proofStore.map(store => {
-    const output = proofFile
+  var arr = [];
+  const fileList = await user.proofStore.map((store) => {
+    proofFile
       .find({ proofFolder: store }, (err, files) => {
-        files.map(file => {
-          console.log(file)
-        })
+        return files.map((file) => {
+          arr.push(file);
+        });
       })
-      .select("name mimeType")
-      .clone();
-  
-    console.log(output)
+      .select("-data")
+      .populate("proofFolder", "title")
+      .clone()
+      .then((err, file) => {
+        if (arr.length > 0) {
+          res.send(arr);
+        }
+      });
   });
 };

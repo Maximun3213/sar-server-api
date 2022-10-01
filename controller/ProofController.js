@@ -45,6 +45,7 @@ exports.uploadFile = (req, res, next) => {
       releaseDate,
       description,
       userCreate,
+      status,
     } = req.body;
 
     fileList[0] &&
@@ -61,6 +62,7 @@ exports.uploadFile = (req, res, next) => {
           enactAddress: enactAddress,
           releaseDate: moment(releaseDate, "DD-MM-YYYY"),
           description: description,
+          status: status,
           userCreate: userCreate,
         });
         // push to proofFolder
@@ -75,7 +77,7 @@ exports.uploadFile = (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Upload file successfully",
+      message: "Tải tệp lên thành công",
       fileList,
     });
   });
@@ -116,7 +118,7 @@ exports.getFileList = async (req, res) => {
     });
 
   //------
-  
+
 };
 
 //----Lấy file trong folder

@@ -68,7 +68,7 @@ exports.uploadFile = (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Upload file successfully",
+      message: "Tải tệp lên thành công",
       fileList,
     });
   });
@@ -276,12 +276,12 @@ exports.getAllDocumentByRole = async (req, res) => {
   const role = await Role.findById(user.roleID);
   const proofStore = user.proofStore;
   if (role.roleID === "ADMIN") {
-    await proofFile
+    return proofFile
       .find({}, (err, result) => {
         if (err) {
           console.log(err);
         }
-        res.send(result);
+        return res.send(result);
       })
       .populate("proofFolder", "title")
       .select("-data")

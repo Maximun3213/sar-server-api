@@ -4,6 +4,7 @@ const { proofFolder } = require("../models/proofsModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
+const { ObjectId } = require("mongodb");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -94,17 +95,56 @@ exports.grantProofKey = async (req, res, next) => {
   const checkProofStoreExist = await User.findById(req.body.id);
 
   if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
-    const users = await User.findByIdAndUpdate(filter, {
-      $push: { proofStore: req.body.proofStore },
-    });
-    return res.send(users);
+    return proofFolder
+      .aggregate([
+        {
+          $match: {
+            _id: ObjectId(req.body.proofStore),
+          },
+        },
+        {
+          $graphLookup: {
+            from: "proof_folders",
+            startWith: "$_id",
+            connectFromField: "_id",
+            connectToField: "parentID",
+            as: "children",
+            maxDepth: 4,
+            depthField: "level",
+            restrictSearchWithMatch: {},
+          },
+        },
+        {
+          $project: {
+            "children._id": 1,
+            "children.title": 1,
+          },
+        },
+      ])
+      .then((data) => {
+        data.forEach((child) => {
+          child.children.forEach((childList) => {
+            User.findByIdAndUpdate(filter, {
+              $push: {
+                proofStore: childList._id,
+              },
+            }).exec();
+          });
+        });
+        User.findByIdAndUpdate(filter, {
+          $push: { proofStore: req.body.proofStore },
+        }).exec();
+        return res.send("Grant key successfully");
+      });
   }
   return res.status(400).json({
     success: false,
     message: "Thư mục đã được cấp quyền",
   });
 };
+
 //get proofStore API
+
 exports.getProofStore = async (req, res, next) => {
   await User.findById(req.params.id)
     .select("proofStore")

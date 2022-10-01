@@ -114,6 +114,9 @@ exports.getFileList = async (req, res) => {
     .catch(function (err) {
       console.log(err);
     });
+
+  //------
+  
 };
 
 //----Lấy file trong folder

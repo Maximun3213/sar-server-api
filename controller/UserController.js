@@ -122,6 +122,10 @@ exports.grantProofKey = async (req, res, next) => {
         },
       ])
       .then((data) => {
+        User.findByIdAndUpdate(filter, {
+          $push: { proofStore: req.body.proofStore },
+        }).exec();
+        
         data.forEach((child) => {
           child.children.forEach((childList) => {
             User.findByIdAndUpdate(filter, {
@@ -131,9 +135,7 @@ exports.grantProofKey = async (req, res, next) => {
             }).exec();
           });
         });
-        User.findByIdAndUpdate(filter, {
-          $push: { proofStore: req.body.proofStore },
-        }).exec();
+
         return res.send("Grant key successfully");
       });
   }

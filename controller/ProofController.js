@@ -39,7 +39,7 @@ exports.uploadFile = (req, res, next) => {
 
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
-    const { enactNum, enactAddress, releaseDate, description } = req.body;
+    const { enactNum, enactAddress, releaseDate, description, userCreate } = req.body;
 
     fileList[0] &&
       fileList.map((file, index) => {
@@ -55,6 +55,7 @@ exports.uploadFile = (req, res, next) => {
           enactAddress: enactAddress,
           releaseDate: moment(releaseDate, "DD-MM-YYYY"),
           description: description,
+          userCreate: userCreate,
         });
         // push to proofFolder
         proofFolder

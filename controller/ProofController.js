@@ -48,8 +48,8 @@ exports.uploadFile = (req, res, next) => {
       status,
     } = req.body;
 
-    fileList[0] &&
-      fileList.map((file, index) => {
+    if (fileList.length === 1) {
+      fileList.map(async (file, index) => {
         const ids = new ObjectId();
         const newImage = new proofFile({
           _id: ids,
@@ -66,14 +66,61 @@ exports.uploadFile = (req, res, next) => {
           userCreate: userCreate,
         });
         // push to proofFolder
-        proofFolder
-          .findByIdAndUpdate(folderID, {
-            $push: { proofFiles: ids },
-          })
-          .exec();
+        try {
+          //listing messages in users mailbox
+          await proofFolder
+            .findByIdAndUpdate(folderID, {
+              $push: { proofFiles: ids },
+            })
+            .exec();
 
-        newImage.save();
+          newImage.save();
+        } catch (err) {
+          next(err);
+        }
       });
+    } else {
+      fileList.map(async (file, index) => {
+        const ids = new ObjectId();
+        const newImage = new proofFile({
+          _id: ids,
+          name: file.originalname,
+          data: fs.readFileSync(file.path),
+          mimeType: file.mimetype,
+          size: file.size,
+          proofFolder: folderID,
+          enactNum: enactNum && enactNum[0],
+          enactAddress: enactAddress && enactAddress[0],
+          releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
+          description: description && description[0],
+          status: status && status[0],
+          userCreate: userCreate && userCreate[0],
+        });
+        // push to proofFolder
+        try {
+          //listing messages in users mailbox
+          await proofFolder
+            .findByIdAndUpdate(folderID, {
+              $push: { proofFiles: ids },
+            })
+            .exec();
+
+          newImage.save();
+          res.status(200).json({
+            success: true,
+            message: "Tải tệp lên thành công",
+            fileList,
+          });
+        } catch (err) {
+          next(err);
+          res.status(200).json({
+            success: true,
+            message: "Tải tệp lên thất bại",
+            fileList,
+          });
+        }
+      });
+    }
 
     res.status(200).json({
       success: true,
@@ -118,7 +165,6 @@ exports.getFileList = async (req, res) => {
     });
 
   //------
-
 };
 
 //----Lấy file trong folder
@@ -224,7 +270,7 @@ exports.postDeleteFile = async (req, res, next) => {
 //----Lấy data từ file
 
 exports.getDataFromFile = async (req, res, next) => {
-  const file = await proofFile.findById(req.params.id).select("data");
+  const file = await proofFile.findById(req.params.id).select("data name");
   const data = file.data;
   if (!file) {
     next(new Error("Data not found!!!"));
@@ -232,6 +278,7 @@ exports.getDataFromFile = async (req, res, next) => {
   res.status(200).json({
     success: true,
     data,
+    file,
   });
 };
 

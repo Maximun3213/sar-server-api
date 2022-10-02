@@ -125,7 +125,7 @@ exports.grantProofKey = async (req, res, next) => {
         User.findByIdAndUpdate(filter, {
           $push: { proofStore: req.body.proofStore },
         }).exec();
-        
+
         data.forEach((child) => {
           child.children.forEach((childList) => {
             User.findByIdAndUpdate(filter, {
@@ -156,4 +156,29 @@ exports.getProofStore = async (req, res, next) => {
       }
       res.send(data);
     });
+};
+//get all  data for each MP
+exports.getAllDataForEachMP = async (req, res) => {
+  const role = await Role.find({ roleID: "MP" });
+  role.map((item) => {
+    User.find({ roleID: item._id })
+      .select("cbID fullName email")
+      .populate([
+        {
+          path: "proofStore",
+          match: { parentID: null },
+          select: "title",
+        },
+      ])
+      .exec((err, users) => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.status(200).json({
+            users,
+            role,
+          });
+        }
+      });
+  });
 };

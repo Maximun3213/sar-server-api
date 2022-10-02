@@ -6,6 +6,7 @@ const {
   getAllProofManager,
   grantProofKey,
   getProofStore,
+  getAllDataForEachMP,
 } = require("../controller/UserController");
 const { authenToken } = require("../middleware/verifyToken");
 
@@ -23,6 +24,10 @@ router.route("/getAllProofManager").get(getAllProofManager);
 router.route("/grantProofKey").put(grantProofKey);
 
 router.route("/proofStore/:id").get(getProofStore)
+
+router.route("/getMPList").get(getAllDataForEachMP)
+
+
 
 // router.route("/getOwnStorage/:id").get(getOwnStorage)
 

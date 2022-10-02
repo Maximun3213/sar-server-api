@@ -169,6 +169,10 @@ exports.getAllDataForEachMP = async (req, res) => {
           match: { parentID: null },
           select: "title",
         },
+        {
+          path: "roleID",
+          select: "roleName",
+        },
       ])
       .exec((err, users) => {
         if (err) {
@@ -176,7 +180,6 @@ exports.getAllDataForEachMP = async (req, res) => {
         } else {
           res.status(200).json({
             users,
-            role,
           });
         }
       });

@@ -37,7 +37,7 @@ const userSchema = new Schema({
   proofStore: [
     {
       type: mongoose.Schema.Types.ObjectId,
-      ref: "proof"
+      ref: "proof_folder"
     }
   ]
 })

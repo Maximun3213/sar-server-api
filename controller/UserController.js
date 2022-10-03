@@ -5,6 +5,7 @@ const { proofFolder, proofFile } = require("../models/proofsModel");
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
+const { populate } = require("../models/rolesModel");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -196,4 +197,41 @@ exports.getAllDataForEachMP = async (req, res) => {
         }
       });
   });
+};
+
+//
+exports.getListUserAccessFromFolder = async (req, res) => {
+  const folderID = req.params;
+  await proofFolder
+    .aggregate([
+      {
+        $match: {
+          _id: ObjectId(folderID),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user_access",
+          foreignField: "_id",
+          as: "user_access",
+        },
+      },
+      {
+        $project: {
+          "title": 1,
+          "user_access.cbID": 1,
+          "user_access.email": 1,
+          "user_access.fullName": 1,
+          "user_access.roleID": 1
+        },
+      },
+
+    ])
+    .exec((err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      return res.send(result);
+    });
 };

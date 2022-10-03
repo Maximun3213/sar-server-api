@@ -227,6 +227,27 @@ exports.getListUserAccessFromFolder = async (req, res) => {
           "user_access.roleID": 1,
         },
       },
+      {
+        $unwind: "$user_access",
+      },
+      {
+        $lookup: {
+          from: "roles",
+          localField: "user_access.roleID",
+          foreignField: "_id",
+          as: "user_access.roleID",
+        },
+      },
+      {
+        $match: {
+          _id: ObjectId(folderID),
+        },
+      },
+      { "$group": {
+        "_id": "$_id",
+        "title": { "$first": "$title" },
+        "user_access": { "$push": "$user_access" }
+    }}
 
     ])
     .exec((err, result) => {

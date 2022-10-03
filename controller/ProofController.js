@@ -74,7 +74,8 @@ exports.uploadFile = (req, res, next) => {
             })
             .exec();
 
-          newImage.save();
+          await newImage.save();
+          next();
         } catch (err) {
           next(err);
         }
@@ -105,19 +106,15 @@ exports.uploadFile = (req, res, next) => {
             })
             .exec();
 
-          newImage.save();
-          res.status(200).json({
-            success: true,
-            message: "Tải tệp lên thành công",
-            fileList,
-          });
+          await newImage.save();
+          next()
         } catch (err) {
           next(err);
-          res.status(200).json({
-            success: true,
-            message: "Tải tệp lên thất bại",
-            fileList,
-          });
+          // res.status(200).json({
+          //   success: true,
+          //   message: "Tải tệp lên thất bại",
+          //   fileList,
+          // });
         }
       });
     }

@@ -7,6 +7,7 @@ const {
   grantProofKey,
   getProofStore,
   getAllDataForEachMP,
+  getListUserAccessFromFolder
 } = require("../controller/UserController");
 const { authenToken } = require("../middleware/verifyToken");
 
@@ -26,6 +27,10 @@ router.route("/grantProofKey").put(grantProofKey);
 router.route("/proofStore/:id").get(getProofStore)
 
 router.route("/getMPList").get(getAllDataForEachMP)
+
+router.route("/getListUserAccess/:id").get(getListUserAccessFromFolder)
+
+
 
 
 

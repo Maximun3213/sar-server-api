@@ -106,14 +106,14 @@ exports.uploadFile = (req, res, next) => {
             .exec();
 
           newImage.save();
-          res.status(200).json({
+          return res.status(200).json({
             success: true,
             message: "Tải tệp lên thành công",
             fileList,
           });
         } catch (err) {
           next(err);
-          res.status(200).json({
+          return res.status(200).json({
             success: true,
             message: "Tải tệp lên thất bại",
             fileList,
@@ -121,12 +121,6 @@ exports.uploadFile = (req, res, next) => {
         }
       });
     }
-
-    res.status(200).json({
-      success: true,
-      message: "Tải tệp lên thành công",
-      fileList,
-    });
   });
 };
 

@@ -215,40 +215,42 @@ exports.getListUserAccessFromFolder = async (req, res) => {
           from: "users",
           localField: "user_access",
           foreignField: "_id",
-          as: "user_access",
+          as: "storage",
         },
       },
       {
         $project: {
+          _id : 0,
           title: 1,
-          "user_access.cbID": 1,
-          "user_access.email": 1,
-          "user_access.fullName": 1,
-          "user_access.roleID": 1,
+          "storage.cbID": 1,
+          "storage.email": 1,
+          "storage.fullName": 1,
+          "storage.roleID": 1,
         },
       },
-      {
-        $unwind: "$user_access",
-      },
-      {
-        $lookup: {
-          from: "roles",
-          localField: "user_access.roleID",
-          foreignField: "_id",
-          as: "user_access.roleID",
-        },
-      },
-      {
-        $match: {
-          _id: ObjectId(folderID),
-        },
-      },
-      { "$group": {
-        "_id": "$_id",
-        "title": { "$first": "$title" },
-        "user_access": { "$push": "$user_access" }
-    }}
-
+      // {
+      //   $unwind: "$storage",
+      // },
+      // {
+      //   $lookup: {
+      //     from: "roles",
+      //     localField: "storage.roleID",
+      //     foreignField: "_id",
+      //     as: "storage.roleID",
+      //   },
+      // },
+      // {
+      //   $match: {
+      //     _id: ObjectId(folderID),
+      //   },
+      // },
+      // {
+      //   $group: {
+      //     _id: "$_id",
+      //     title: { $first: "$title" },
+      //     storage: { $push: "$storage" },
+      //   },
+      // },
     ])
     .exec((err, result) => {
       if (err) {

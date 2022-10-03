@@ -202,7 +202,7 @@ exports.getAllDataForEachMP = async (req, res) => {
 //
 exports.getListUserAccessFromFolder = async (req, res) => {
   const folderID = req.params;
-  const roleName = await proofFolder
+  const roleName = await proofFolder;
   await proofFolder
     .aggregate([
       {
@@ -220,30 +220,19 @@ exports.getListUserAccessFromFolder = async (req, res) => {
       },
       {
         $project: {
-          "title": 1,
+          title: 1,
           "user_access.cbID": 1,
           "user_access.email": 1,
           "user_access.fullName": 1,
-          "user_access.roleID": 1
+          "user_access.roleID": 1,
         },
       },
-      {
-        $unwind: '$user_access'
-      },
-      {
-        $lookup: {
-          from: "roles",
-          localField: "user_access.roleID",
-          foreignField: "_id",
-          as: "user_access.roleID",
-        }
-      }
 
     ])
     .exec((err, result) => {
       if (err) {
         console.log(err);
       }
-      res.send(result)
+      res.send(result);
     });
 };

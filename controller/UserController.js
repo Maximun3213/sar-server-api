@@ -1,6 +1,6 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
-const { proofFolder } = require("../models/proofsModel");
+const { proofFolder, proofFile } = require("../models/proofsModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
@@ -125,7 +125,13 @@ exports.grantProofKey = async (req, res, next) => {
         User.findByIdAndUpdate(filter, {
           $push: { proofStore: req.body.proofStore },
         }).exec();
-
+        proofFolder
+          .findByIdAndUpdate(req.body.proofStore, {
+            $push: {
+              user_access: req.body.id,
+            },
+          })
+          .exec();
         data.forEach((child) => {
           child.children.forEach((childList) => {
             User.findByIdAndUpdate(filter, {
@@ -133,6 +139,13 @@ exports.grantProofKey = async (req, res, next) => {
                 proofStore: childList._id,
               },
             }).exec();
+            proofFolder
+              .findByIdAndUpdate(childList._id, {
+                $push: {
+                  user_access: req.body.id,
+                },
+              })
+              .exec();
           });
         });
 
@@ -166,8 +179,7 @@ exports.getAllDataForEachMP = async (req, res) => {
       .populate([
         {
           path: "proofStore",
-          match: { parentID: null },
-          select: "title",
+          select: "title parentID",
         },
         {
           path: "roleID",

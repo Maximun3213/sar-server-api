@@ -66,6 +66,19 @@ exports.uploadFile = (req, res, next) => {
           userCreate: userCreate,
         });
         // push to proofFolder
+        // try {
+        //   //listing messages in users mailbox
+        //   await proofFolder
+        //     .findByIdAndUpdate(folderID, {
+        //       $push: { proofFiles: ids },
+        //     })
+        //     .exec();
+
+        //   await newImage.save();
+        //   next();
+        // } catch (err) {
+        //   next(err);
+        // }
         try {
           //listing messages in users mailbox
           await proofFolder
@@ -74,10 +87,19 @@ exports.uploadFile = (req, res, next) => {
             })
             .exec();
 
-          await newImage.save();
-          next();
+          newImage.save();
+          return res.status(200).json({
+            success: true,
+            message: "Tải tệp lên thành công",
+            fileList,
+          });
         } catch (err) {
           next(err);
+          return res.status(400).json({
+            success: true,
+            message: "Tải tệp lên thất bại",
+            fileList,
+          });
         }
       });
     } else {
@@ -107,23 +129,22 @@ exports.uploadFile = (req, res, next) => {
             .exec();
 
           await newImage.save();
-          next()
+          next();
+          return res.status(200).json({
+            success: true,
+            message: "Tải tệp lên thành công",
+            fileList,
+          });
         } catch (err) {
           next(err);
-          // res.status(200).json({
-          //   success: true,
-          //   message: "Tải tệp lên thất bại",
-          //   fileList,
-          // });
+          return res.status(400).json({
+            success: false,
+            message: "Tải tệp lên thất bại",
+            fileList,
+          });
         }
       });
     }
-
-    res.status(200).json({
-      success: true,
-      message: "Tải tệp lên thành công",
-      fileList,
-    });
   });
 };
 

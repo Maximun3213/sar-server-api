@@ -135,11 +135,6 @@ exports.grantProofKey = async (req, res, next) => {
           .exec();
         data.forEach((child) => {
           child.children.forEach((childList) => {
-            User.findByIdAndUpdate(filter, {
-              $push: {
-                proofStore: childList._id,
-              },
-            }).exec();
             proofFolder
               .findByIdAndUpdate(childList._id, {
                 $push: {
@@ -220,7 +215,7 @@ exports.getListUserAccessFromFolder = async (req, res) => {
       },
       {
         $project: {
-          _id : 0,
+          _id: 0,
           title: 1,
           "storage.cbID": 1,
           "storage.email": 1,
@@ -258,4 +253,32 @@ exports.getListUserAccessFromFolder = async (req, res) => {
       }
       res.send(result);
     });
+};
+
+// Xóa quyền trên thư mục
+
+exports.removeProofKey = async (req, res, next) => {
+  //----
+  try {
+    const { fid, uid } = req.params;
+    console.log(req.params);
+    await proofFolder
+      .aggregate([
+        {
+          $match: {
+            _id: ObjectId(fid),
+            // user_access: uid,
+          },
+        },
+      ])
+      .exec((err, result) => {
+        if (err) {
+          console.log(err);
+        }
+        res.send(result);
+      });
+  } catch (error) {
+    // This is where you handle the error
+    res.status(500).send(error);
+  }
 };

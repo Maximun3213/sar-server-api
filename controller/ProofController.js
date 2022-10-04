@@ -65,20 +65,6 @@ exports.uploadFile = (req, res, next) => {
           status: status,
           userCreate: userCreate,
         });
-        // push to proofFolder
-        // try {
-        //   //listing messages in users mailbox
-        //   await proofFolder
-        //     .findByIdAndUpdate(folderID, {
-        //       $push: { proofFiles: ids },
-        //     })
-        //     .exec();
-
-        //   await newImage.save();
-        //   next();
-        // } catch (err) {
-        //   next(err);
-        // }
         try {
           //listing messages in users mailbox
           await proofFolder
@@ -128,8 +114,8 @@ exports.uploadFile = (req, res, next) => {
             })
             .exec();
 
-          await newImage.save();
-          next();
+          newImage.save();
+
           return res.status(200).json({
             success: true,
             message: "Tải tệp lên thành công",
@@ -145,45 +131,6 @@ exports.uploadFile = (req, res, next) => {
         }
       });
     }
-    fileList.map(async (file, index) => {
-      const ids = new ObjectId();
-      const newImage = new proofFile({
-        _id: ids,
-        name: file.originalname,
-        data: fs.readFileSync(file.path),
-        mimeType: file.mimetype,
-        size: file.size,
-        proofFolder: folderID,
-        enactNum: enactNum && enactNum[0],
-        enactAddress: enactAddress && enactAddress[0],
-        releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
-        description: description && description[0],
-        status: status && status[0],
-        userCreate: userCreate && userCreate[0],
-      });
-      // push to proofFolder
-      newImage.save();
-
-      try {
-        //listing messages in users mailbox
-        await proofFolder
-          .findByIdAndUpdate(folderID, {
-            $push: { proofFiles: ids },
-          })
-          .exec();
-
-        return res.status(200).json({
-          success: true,
-          message: "Tải tệp lên thành công",
-          fileList,
-        });
-      } catch (err) {
-        return res.status(400).json({
-          success: false,
-          message: "Tải tệp lên thất bại",
-        });
-      }
-    });
   });
 };
 

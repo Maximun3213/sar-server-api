@@ -25,7 +25,6 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 }).any("uploadedFiles", 4);
 
-//----hàm upload file
 
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {
@@ -134,7 +133,6 @@ exports.uploadFile = (req, res, next) => {
   });
 };
 
-//----Tạo folder
 
 exports.createFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
@@ -151,7 +149,6 @@ exports.createFolder = async (req, res, next) => {
   }
 };
 
-//----Xuất all files
 
 exports.getFileList = async (req, res) => {
   await proofFolder
@@ -171,7 +168,6 @@ exports.getFileList = async (req, res) => {
   //------
 };
 
-//----Lấy file trong folder
 
 exports.getFileFromFolder = async (req, res, next) => {
   const storage = await proofFolder
@@ -185,7 +181,6 @@ exports.getFileFromFolder = async (req, res, next) => {
   res.send(storage);
 };
 
-//----Xóa thư mục
 
 exports.removeDirectory = async (req, res, next) => {
   //----
@@ -243,7 +238,6 @@ exports.removeDirectory = async (req, res, next) => {
   }
 };
 
-//----Xóa file
 
 exports.postDeleteFile = async (req, res, next) => {
   try {
@@ -271,7 +265,7 @@ exports.postDeleteFile = async (req, res, next) => {
   }
 };
 
-//----Lấy data từ file
+
 
 exports.getDataFromFile = async (req, res, next) => {
   const file = await proofFile.findById(req.params.id).select("data name");
@@ -286,7 +280,6 @@ exports.getDataFromFile = async (req, res, next) => {
   });
 };
 
-//----Cập nhật folder
 
 exports.updateFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
@@ -304,24 +297,7 @@ exports.updateFolder = async (req, res, next) => {
   }
 };
 
-//Search module
-// exports.searchProof = async (req, res) => {
-//   const file = await Image.find({
-//     $or: [{ name: { $regex: req.params.key } }],
-//   });
-//   if (file) {
-//     res.status(200).json({
-//       success: true,
-//       file,
-//     });
-//   } else {
-//     res.status(404).json({
-//       message: "Not found everything else",
-//     });
-//   }
-// };
 
-//Lấy tài liệu minh chứng theo từng người dùng
 exports.getAllDocumentByRole = async (req, res) => {
   const user = await User.findById(req.params.id);
   const role = await Role.findById(user.roleID);
@@ -380,3 +356,100 @@ exports.getAllDocumentByRole = async (req, res) => {
       }
     });
 };
+
+
+exports.changeFileLocation = async (req, res) => {
+  const { fileID, location } = req.body;
+
+  const folderID = await proofFolder.find({ proofFiles: fileID });
+  if (folderID) {
+    //Remove
+    folderID.map((result) => {
+      proofFolder
+        .updateOne(
+          { _id: { $in: result._id } },
+          {
+            $pull: {
+              proofFiles: fileID,
+            },
+          }
+        )
+        .exec();
+    });
+    //Replace
+    proofFolder
+      .updateOne(
+        {
+          _id: location,
+        },
+        {
+          $push: {
+            proofFiles: fileID,
+          },
+        }
+      )
+      .exec();
+    //update proofFolder
+    proofFile
+      .updateOne(
+        {
+          _id: fileID,
+        },
+        {
+          $set: {
+            proofFolder: location,
+          },
+        }
+      )
+      .exec();
+    return res.send("File moved successfully");
+  }
+  res.status(400).json({
+    success: false,
+    message: "Something went wrong",
+  });
+};
+
+
+exports.modifyProofData = async (req, res) => {
+  const { filename, enactNum, address, date, desc } = req.body;
+
+  await proofFile
+    .updateOne(
+      {
+        _id: req.params.id,
+      },
+      {
+        $set: {
+          name: filename,
+          enactNum: enactNum,
+          enactAddress: address,
+          releaseDate: date,
+          description: desc,
+        },
+      }
+    )
+    .exec((err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send("Update folder successfully");
+    });
+};
+
+//Search module
+// exports.searchProof = async (req, res) => {
+//   const file = await Image.find({
+//     $or: [{ name: { $regex: req.params.key } }],
+//   });
+//   if (file) {
+//     res.status(200).json({
+//       success: true,
+//       file,
+//     });
+//   } else {
+//     res.status(404).json({
+//       message: "Not found everything else",
+//     });
+//   }
+// };

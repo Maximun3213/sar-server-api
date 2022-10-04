@@ -217,6 +217,7 @@ exports.getListUserAccessFromFolder = async (req, res) => {
         $project: {
           _id: 0,
           title: 1,
+          "storage._id": 1,
           "storage.cbID": 1,
           "storage.email": 1,
           "storage.fullName": 1,
@@ -286,7 +287,7 @@ exports.removeProofKey = async (req, res, next) => {
           if (err) {
             console.log(err);
           }
-          return res.send("Delete key successfully");
+          return res.send("Xoá thành công");
         });
       });
   } catch (error) {

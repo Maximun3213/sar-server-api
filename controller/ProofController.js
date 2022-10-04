@@ -65,14 +65,84 @@ exports.uploadFile = (req, res, next) => {
           status: status,
           userCreate: userCreate,
         });
-        newImage.save();
-
         // push to proofFolder
-        await proofFolder
-          .findByIdAndUpdate(folderID, {
-            $push: { proofFiles: ids },
-          })
-          .exec();
+        // try {
+        //   //listing messages in users mailbox
+        //   await proofFolder
+        //     .findByIdAndUpdate(folderID, {
+        //       $push: { proofFiles: ids },
+        //     })
+        //     .exec();
+
+        //   await newImage.save();
+        //   next();
+        // } catch (err) {
+        //   next(err);
+        // }
+        try {
+          //listing messages in users mailbox
+          await proofFolder
+            .findByIdAndUpdate(folderID, {
+              $push: { proofFiles: ids },
+            })
+            .exec();
+
+          newImage.save();
+          return res.status(200).json({
+            success: true,
+            message: "Tải tệp lên thành công",
+            fileList,
+          });
+        } catch (err) {
+          next(err);
+          return res.status(400).json({
+            success: true,
+            message: "Tải tệp lên thất bại",
+            fileList,
+          });
+        }
+      });
+    } else {
+      fileList.map(async (file, index) => {
+        const ids = new ObjectId();
+        const newImage = new proofFile({
+          _id: ids,
+          name: file.originalname,
+          data: fs.readFileSync(file.path),
+          mimeType: file.mimetype,
+          size: file.size,
+          proofFolder: folderID,
+          enactNum: enactNum && enactNum[0],
+          enactAddress: enactAddress && enactAddress[0],
+          releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
+          description: description && description[0],
+          status: status && status[0],
+          userCreate: userCreate && userCreate[0],
+        });
+        // push to proofFolder
+        try {
+          //listing messages in users mailbox
+          await proofFolder
+            .findByIdAndUpdate(folderID, {
+              $push: { proofFiles: ids },
+            })
+            .exec();
+
+          await newImage.save();
+          next();
+          return res.status(200).json({
+            success: true,
+            message: "Tải tệp lên thành công",
+            fileList,
+          });
+        } catch (err) {
+          next(err);
+          return res.status(400).json({
+            success: false,
+            message: "Tải tệp lên thất bại",
+            fileList,
+          });
+        }
       });
     }
     fileList.map(async (file, index) => {

@@ -8,7 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
-// const { title } = require("process");
+
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -24,7 +24,6 @@ const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 }).any("uploadedFiles", 4);
-
 
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {
@@ -133,7 +132,6 @@ exports.uploadFile = (req, res, next) => {
   });
 };
 
-
 exports.createFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
 
@@ -148,7 +146,6 @@ exports.createFolder = async (req, res, next) => {
     });
   }
 };
-
 
 exports.getFileList = async (req, res) => {
   await proofFolder
@@ -168,7 +165,6 @@ exports.getFileList = async (req, res) => {
   //------
 };
 
-
 exports.getFileFromFolder = async (req, res, next) => {
   const storage = await proofFolder
     .find({ _id: req.params.id })
@@ -180,7 +176,6 @@ exports.getFileFromFolder = async (req, res, next) => {
   }
   res.send(storage);
 };
-
 
 exports.removeDirectory = async (req, res, next) => {
   //----
@@ -238,7 +233,6 @@ exports.removeDirectory = async (req, res, next) => {
   }
 };
 
-
 exports.postDeleteFile = async (req, res, next) => {
   try {
     const getFolderId = await proofFile
@@ -265,8 +259,6 @@ exports.postDeleteFile = async (req, res, next) => {
   }
 };
 
-
-
 exports.getDataFromFile = async (req, res, next) => {
   const file = await proofFile.findById(req.params.id).select("data name");
   const data = file.data;
@@ -279,7 +271,6 @@ exports.getDataFromFile = async (req, res, next) => {
     file,
   });
 };
-
 
 exports.updateFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
@@ -296,7 +287,6 @@ exports.updateFolder = async (req, res, next) => {
     });
   }
 };
-
 
 exports.getAllDocumentByRole = async (req, res) => {
   const user = await User.findById(req.params.id);
@@ -357,7 +347,6 @@ exports.getAllDocumentByRole = async (req, res) => {
     });
 };
 
-
 exports.changeFileLocation = async (req, res) => {
   const { fileID, location } = req.body;
 
@@ -409,7 +398,6 @@ exports.changeFileLocation = async (req, res) => {
     message: "Something went wrong",
   });
 };
-
 
 exports.modifyProofData = async (req, res) => {
   const { filename, enactNum, address, date, desc } = req.body;

@@ -99,11 +99,11 @@ exports.uploadFile = (req, res, next) => {
           size: file.size,
           proofFolder: folderID,
           enactNum: enactNum && enactNum[0],
-          enactAddress: enactAddress && enactAddress[0],
-          releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
-          description: description && description[0],
-          status: status && status[0],
-          userCreate: userCreate && userCreate[0],
+          enactAddress: enactAddress[0],
+          releaseDate: moment(releaseDate[0], "DD-MM-YYYY"),
+          description:  description[0],
+          status: status[0],
+          userCreate: userCreate[0],
         });
         // push to proofFolder
         try {

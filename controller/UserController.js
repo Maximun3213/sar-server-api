@@ -133,17 +133,17 @@ exports.grantProofKey = async (req, res, next) => {
             },
           })
           .exec();
-        data.forEach((child) => {
-          child.children.forEach((childList) => {
-            proofFolder
-              .findByIdAndUpdate(childList._id, {
-                $push: {
-                  user_access: req.body.id,
-                },
-              })
-              .exec();
-          });
-        });
+        // data.forEach((child) => {
+        //   child.children.forEach((childList) => {
+        //     proofFolder
+        //       .findByIdAndUpdate(childList._id, {
+        //         $push: {
+        //           user_access: req.body.id,
+        //         },
+        //       })
+        //       .exec();
+        //   });
+        // });
 
         return res.send("Grant key successfully");
       });
@@ -261,21 +261,33 @@ exports.removeProofKey = async (req, res, next) => {
   //----
   try {
     const { fid, uid } = req.params;
-    console.log(req.params);
-    await proofFolder
-      .aggregate([
+
+    proofFolder
+      .updateMany(
+        { _id: ObjectId(fid) },
         {
-          $match: {
-            _id: ObjectId(fid),
-            // user_access: uid,
+          $pull: {
+            user_access: uid,
           },
-        },
-      ])
+        }
+      )
       .exec((err, result) => {
         if (err) {
           console.log(err);
         }
-        res.send(result);
+        User.updateMany(
+          { _id: ObjectId(uid) },
+          {
+            $pull: {
+              proofStore: fid,
+            },
+          }
+        ).exec((err, result) => {
+          if (err) {
+            console.log(err);
+          }
+          return res.send("Delete key successfully");
+        });
       });
   } catch (error) {
     // This is where you handle the error

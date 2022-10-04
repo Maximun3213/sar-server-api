@@ -89,24 +89,25 @@ exports.uploadFile = (req, res, next) => {
         }
       });
     } else {
-      fileList.map(async (file, index) => {
-        const ids = new ObjectId();
-        const newImage = new proofFile({
-          _id: ids,
-          name: file.originalname,
-          data: fs.readFileSync(file.path),
-          mimeType: file.mimetype,
-          size: file.size,
-          proofFolder: folderID,
-          enactNum: enactNum && enactNum[0],
-          enactAddress: enactAddress[0],
-          releaseDate: moment(releaseDate[0], "DD-MM-YYYY"),
-          description:  description[0],
-          status: status[0],
-          userCreate: userCreate[0],
-        });
-        // push to proofFolder
-        try {
+      try {
+        fileList.map(async (file, index) => {
+          const ids = new ObjectId();
+          const newImage = new proofFile({
+            _id: ids,
+            name: file.originalname,
+            data: fs.readFileSync(file.path),
+            mimeType: file.mimetype,
+            size: file.size,
+            proofFolder: folderID,
+            enactNum: enactNum && enactNum[0],
+            enactAddress: enactAddress[0],
+            releaseDate: moment(releaseDate[0], "DD-MM-YYYY"),
+            description: description[0],
+            status: status[0],
+            userCreate: userCreate[0],
+          });
+          // push to proofFolder
+          // try {
           //listing messages in users mailbox
           await proofFolder
             .findByIdAndUpdate(folderID, {
@@ -115,21 +116,20 @@ exports.uploadFile = (req, res, next) => {
             .exec();
 
           newImage.save();
-
-          return res.status(200).json({
-            success: true,
-            message: "Tải tệp lên thành công",
-            fileList,
-          });
-        } catch (err) {
-          next(err);
-          return res.status(400).json({
-            success: false,
-            message: "Tải tệp lên thất bại",
-            fileList,
-          });
-        }
-      });
+        });
+        return res.status(200).json({
+          success: true,
+          message: "Tải tệp lên thành công",
+          fileList,
+        });
+      } catch (error) {
+        next(err);
+        return res.status(400).json({
+          success: false,
+          message: "Tải tệp lên thất bại",
+          fileList,
+        });
+      }
     }
   });
 };

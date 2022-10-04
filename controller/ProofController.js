@@ -65,19 +65,14 @@ exports.uploadFile = (req, res, next) => {
           status: status,
           userCreate: userCreate,
         });
-        // push to proofFolder
-        try {
-          //listing messages in users mailbox
-          await proofFolder
-            .findByIdAndUpdate(folderID, {
-              $push: { proofFiles: ids },
-            })
-            .exec();
+        newImage.save();
 
-          newImage.save();
-        } catch (err) {
-          next(err);
-        }
+        // push to proofFolder
+        await proofFolder
+          .findByIdAndUpdate(folderID, {
+            $push: { proofFiles: ids },
+          })
+          .exec();
       });
     }
     fileList.map(async (file, index) => {
@@ -97,6 +92,8 @@ exports.uploadFile = (req, res, next) => {
         userCreate: userCreate && userCreate[0],
       });
       // push to proofFolder
+      newImage.save();
+
       try {
         //listing messages in users mailbox
         await proofFolder
@@ -105,7 +102,6 @@ exports.uploadFile = (req, res, next) => {
           })
           .exec();
 
-        newImage.save();
         return res.status(200).json({
           success: true,
           message: "Tải tệp lên thành công",
@@ -290,18 +286,6 @@ exports.updateFolder = async (req, res, next) => {
     });
   }
 };
-
-//----
-// exports.getProofFolderById = async (req, res, next) => {
-//   const file = await Proof.findOne({ _id: req.params.id });
-//   if (!file) {
-//     next(new Error("Folder not found!!!"));
-//   }
-//   res.status(200).json({
-//     success: true,
-//     file,
-//   });
-// };
 
 //Search module
 // exports.searchProof = async (req, res) => {

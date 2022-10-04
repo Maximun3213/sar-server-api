@@ -2,6 +2,7 @@ const express = require("express");
 const multer = require("multer");
 const {
   getFileList,
+  searchProof,
   uploadFile,
   createFolder,
   getFileFromFolder,
@@ -38,6 +39,6 @@ router.route("/changeFileLocation").put(changeFileLocation);
 
 router.route("/modifyProofData/:id").put(modifyProofData);
 
-// router.route("/search/:key").get(searchProof);
+router.route("/search/:id").post(searchProof);
 
 module.exports = router;

@@ -9,7 +9,6 @@ const path = require("path");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
 
-
 const Str = multer.diskStorage({
   destination: "uploads",
   filename: (req, file, cb) => {
@@ -425,19 +424,23 @@ exports.modifyProofData = async (req, res) => {
     });
 };
 
-//Search module
-// exports.searchProof = async (req, res) => {
-//   const file = await Image.find({
-//     $or: [{ name: { $regex: req.params.key } }],
-//   });
-//   if (file) {
-//     res.status(200).json({
-//       success: true,
-//       file,
-//     });
-//   } else {
-//     res.status(404).json({
-//       message: "Not found everything else",
-//     });
-//   }
-// };
+exports.searchProof = async (req, res) => {
+  const result = await proofFile
+    .find({
+      $and: [
+        { name: { $regex: req.body.key } },
+        { proofFolder: req.params.id },
+      ],
+    })
+    .select("-data");
+  if (result) {
+    res.status(200).json({
+      success: true,
+      result,
+    });
+  } else {
+    res.status(404).json({
+      message: "Not found anything else",
+    });
+  }
+};

@@ -333,7 +333,7 @@ exports.getAllDocumentByRole = async (req, res) => {
       .select("-data")
       .clone();
   }
-  
+
   proofFile
     .aggregate()
     .match({ proofFolder: { $in: user.proofStore } })

@@ -290,7 +290,27 @@ exports.updateFolder = async (req, res, next) => {
 exports.getAllDocumentByRole = async (req, res) => {
   const user = await User.findById(req.params.id);
   const role = await Role.findById(user.roleID);
-  const proofStore = user.proofStore;
+  const child = await proofFolder
+    .aggregate([
+      { $match: { _id: { $in: user.proofStore } } },
+      {
+        $graphLookup: {
+          from: "proof_folders",
+          startWith: "$_id",
+          connectFromField: "_id",
+          connectToField: "parentID",
+          as: "children",
+          maxDepth: 4,
+          depthField: "level",
+          restrictSearchWithMatch: {},
+        },
+      },
+      {
+        $unwind: "$children"
+      }
+    ])
+    .exec();
+  console.log(child);
   if (role.roleID === "ADMIN") {
     return proofFile
       .find({}, (err, result) => {
@@ -313,9 +333,10 @@ exports.getAllDocumentByRole = async (req, res) => {
       .select("-data")
       .clone();
   }
-  await proofFile
+  
+  proofFile
     .aggregate()
-    .match({ proofFolder: { $in: proofStore } })
+    .match({ proofFolder: { $in: user.proofStore } })
     .project({
       data: 0,
     })

@@ -12,7 +12,7 @@ const {
   removeDirectory,
   getAllDocumentByRole,
   changeFileLocation,
-  modifyProofData
+  modifyProofData,
 } = require("../controller/ProofController");
 
 const router = express.Router();

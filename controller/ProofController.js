@@ -477,7 +477,7 @@ exports.searchProof = async (req, res) => {
         { name: { $regex: req.body.key, '$options': 'i' } },
         { proofFolder: req.params.id },
       ],
-    })
+    }).collation( { locale: "en_US", strength: 1 } )
     .select("-data");
   if (result) {
     res.status(200).json({

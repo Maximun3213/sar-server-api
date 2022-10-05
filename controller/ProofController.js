@@ -420,7 +420,7 @@ exports.changeFileLocation = async (req, res) => {
 };
 
 exports.modifyProofData = async (req, res) => {
-  const { fileName, enactNum, address, date, desc } = req.body;
+  const { fileName, enactNum, address, date, desc, proofFolder } = req.body;
 
   await proofFile
     .updateOne(
@@ -434,6 +434,7 @@ exports.modifyProofData = async (req, res) => {
           enactAddress: address,
           releaseDate:  moment(date, "DD-MM-YYYY"),
           description: desc,
+          proofFolder: proofFolder
         },
       }
     )

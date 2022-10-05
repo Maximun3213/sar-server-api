@@ -50,7 +50,7 @@ exports.uploadFile = (req, res, next) => {
         const ids = new ObjectId();
         const newImage = new proofFile({
           _id: ids,
-          name: Buffer.from(file.originalname, 'latin1').toString('utf8'),
+          name: Buffer.from(file.originalname, "latin1").toString("utf8"),
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
           size: file.size,
@@ -91,7 +91,7 @@ exports.uploadFile = (req, res, next) => {
           const ids = new ObjectId();
           const newImage = new proofFile({
             _id: ids,
-            name: Buffer.from(file.originalname, 'latin1').toString('utf8'),
+            name: Buffer.from(file.originalname, "latin1").toString("utf8"),
             data: fs.readFileSync(file.path),
             mimeType: file.mimetype,
             size: file.size,
@@ -310,6 +310,7 @@ exports.getAllDocumentByRole = async (req, res) => {
       },
     ])
     .exec();
+
   if (role.roleID === "ADMIN") {
     return proofFile
       .find({}, (err, result) => {
@@ -332,10 +333,17 @@ exports.getAllDocumentByRole = async (req, res) => {
       .select("-data")
       .clone();
   }
+  const arr = [];
+  child.map((result) => {
+    return arr.push(result.children._id);
+  });
 
   proofFile
     .aggregate()
-    .match({ proofFolder: { $in: user.proofStore } })
+    .match(
+      { proofFolder: { $in: user.proofStore } },
+      { proofFolder: { $in: arr } }
+    )
     .project({
       data: 0,
     })
@@ -473,10 +481,11 @@ exports.searchProof = async (req, res) => {
   const result = await proofFile
     .find({
       $and: [
-        { name: { $regex: req.body.key, '$options': 'i' } },
+        { name: { $regex: req.body.key, $options: "i" } },
         { proofFolder: req.params.id },
       ],
-    }).collation( { locale: "en_US", strength: 1 } )
+    })
+    .collation({ locale: "en_US", strength: 1 })
     .select("-data");
   if (result) {
     res.status(200).json({

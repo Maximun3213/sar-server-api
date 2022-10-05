@@ -50,7 +50,7 @@ exports.uploadFile = (req, res, next) => {
         const ids = new ObjectId();
         const newImage = new proofFile({
           _id: ids,
-          name: file.originalname,
+          name: Buffer.from(file.originalname, 'latin1').toString('utf8'),
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
           size: file.size,
@@ -91,7 +91,7 @@ exports.uploadFile = (req, res, next) => {
           const ids = new ObjectId();
           const newImage = new proofFile({
             _id: ids,
-            name: file.originalname,
+            name: Buffer.from(file.originalname, 'latin1').toString('utf8'),
             data: fs.readFileSync(file.path),
             mimeType: file.mimetype,
             size: file.size,
@@ -310,7 +310,6 @@ exports.getAllDocumentByRole = async (req, res) => {
       },
     ])
     .exec();
-  console.log(child);
   if (role.roleID === "ADMIN") {
     return proofFile
       .find({}, (err, result) => {

@@ -306,8 +306,8 @@ exports.getAllDocumentByRole = async (req, res) => {
         },
       },
       {
-        $unwind: "$children"
-      }
+        $unwind: "$children",
+      },
     ])
     .exec();
   console.log(child);
@@ -420,7 +420,31 @@ exports.changeFileLocation = async (req, res) => {
 };
 
 exports.modifyProofData = async (req, res) => {
-  const { fileName, enactNum, address, date, desc, proofFolder } = req.body;
+  const { fileName, enactNum, address, date, desc, folderID } = req.body;
+
+  await proofFolder
+    .updateOne(
+      { proofFiles: req.params.id },
+      {
+        $pull: {
+          proofFiles: req.params.id,
+        },
+      }
+    )
+    .exec();
+
+  await proofFolder
+    .updateOne(
+      {
+        _id: ObjectId(folderID),
+      },
+      {
+        $push: {
+          proofFiles: req.params.id,
+        },
+      }
+    )
+    .exec();
 
   await proofFile
     .updateOne(
@@ -432,9 +456,9 @@ exports.modifyProofData = async (req, res) => {
           name: fileName,
           enactNum: enactNum,
           enactAddress: address,
-          releaseDate:  moment(date, "DD-MM-YYYY"),
+          releaseDate: moment(date, "DD-MM-YYYY"),
           description: desc,
-          proofFolder: proofFolder
+          proofFolder: folderID,
         },
       }
     )

@@ -290,6 +290,7 @@ exports.updateFolder = async (req, res, next) => {
 exports.getAllDocumentByRole = async (req, res) => {
   const user = await User.findById(req.params.id);
   const role = await Role.findById(user.roleID);
+  const arr = [];
   const child = await proofFolder
     .aggregate([
       { $match: { _id: { $in: user.proofStore } } },
@@ -310,6 +311,14 @@ exports.getAllDocumentByRole = async (req, res) => {
       },
     ])
     .exec();
+
+  child.map((result) => {
+    arr.push(result.children._id);
+  });
+  user.proofStore.map((result) => {
+    arr.push(result);
+  });
+
 
   if (role.roleID === "ADMIN") {
     return proofFile
@@ -333,20 +342,16 @@ exports.getAllDocumentByRole = async (req, res) => {
       .select("-data")
       .clone();
   }
-  const arr = [];
-  child.map((result) => {
-    return arr.push(result.children._id);
-  });
 
   proofFile
     .aggregate()
-    .match(
-      { proofFolder: { $in: user.proofStore } },
-      { proofFolder: { $in: arr } }
-    )
+    .match({
+      $and: [{ proofFolder: { $in: arr } }],
+    })
     .project({
       data: 0,
     })
+    
     .exec(function (err, result) {
       if (err) {
         return console.log(err);

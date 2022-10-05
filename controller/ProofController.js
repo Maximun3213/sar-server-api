@@ -310,7 +310,6 @@ exports.getAllDocumentByRole = async (req, res) => {
       },
     ])
     .exec();
-  console.log(child);
   if (role.roleID === "ADMIN") {
     return proofFile
       .find({}, (err, result) => {

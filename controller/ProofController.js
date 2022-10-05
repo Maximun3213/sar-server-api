@@ -473,7 +473,7 @@ exports.searchProof = async (req, res) => {
   const result = await proofFile
     .find({
       $and: [
-        { name: { $regex: req.body.key } },
+        { name: { $regex: req.body.key, '$options': 'i' } },
         { proofFolder: req.params.id },
       ],
     })

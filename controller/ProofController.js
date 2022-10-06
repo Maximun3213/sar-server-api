@@ -170,22 +170,19 @@ exports.getFileFromFolder = async (req, res, next) => {
     .find({ _id: req.params.id })
     .select("proofFiles")
     .populate({
-      path: 'proofFiles',
-      model: 'proof_file',
+      path: "proofFiles",
+      model: "proof_file",
       select: {
-        'data': 0
+        data: 0,
       },
       populate: {
-        path: 'proofFolder',
-        model: 'proof_folder',
+        path: "proofFolder",
+        model: "proof_folder",
         select: {
-          'title': 1
-        }
-      }   
-      
-      
+          title: 1,
+        },
+      },
     });
-    
 
   if (!storage) {
     return next(new Error("404 not found"));
@@ -335,7 +332,6 @@ exports.getAllDocumentByRole = async (req, res) => {
   user.proofStore.map((result) => {
     arr.push(result);
   });
-
 
   if (role.roleID === "ADMIN") {
     return proofFile
@@ -500,7 +496,7 @@ exports.modifyProofData = async (req, res) => {
 };
 
 exports.searchProof = async (req, res) => {
-  const user = User.find({ _id : req.params._id }).populate()
+  const user = User.find({ _id: req.params._id }).populate();
   const result = await proofFile
     .find({
       $and: [

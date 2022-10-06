@@ -319,7 +319,6 @@ exports.getAllDocumentByRole = async (req, res) => {
     arr.push(result);
   });
 
-
   if (role.roleID === "ADMIN") {
     return proofFile
       .find({}, (err, result) => {
@@ -484,13 +483,14 @@ exports.modifyProofData = async (req, res) => {
 
 exports.searchProof = async (req, res) => {
   const result = await proofFile
-    .find({
-      $and: [
-        { name: { $regex: req.body.key, $options: "i" } },
-        { proofFolder: req.params.id },
-      ],
-    })
-    .collation({ locale: "en_US", strength: 1 })
+    .find(
+      {
+        $and: [
+          { $text: { $search: req.body.key, $caseSensitive: false } }, 
+          { proofFolder: req.params.id },
+        ]
+      }
+    )
     .select("-data");
   if (result) {
     res.status(200).json({

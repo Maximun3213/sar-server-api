@@ -351,7 +351,7 @@ exports.getAllDocumentByRole = async (req, res) => {
     .project({
       data: 0,
     })
-    
+
     .exec(function (err, result) {
       if (err) {
         return console.log(err);

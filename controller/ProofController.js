@@ -8,6 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
+const { populate } = require("../models/rolesModel");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -168,7 +169,23 @@ exports.getFileFromFolder = async (req, res, next) => {
   const storage = await proofFolder
     .find({ _id: req.params.id })
     .select("proofFiles")
-    .populate("proofFiles", "-data");
+    .populate({
+      path: 'proofFiles',
+      model: 'proof_file',
+      select: {
+        'data': 0
+      },
+      populate: {
+        path: 'proofFolder',
+        model: 'proof_folder',
+        select: {
+          'title': 1
+        }
+      }   
+      
+      
+    });
+    
 
   if (!storage) {
     return next(new Error("404 not found"));
@@ -483,7 +500,7 @@ exports.modifyProofData = async (req, res) => {
 };
 
 exports.searchProof = async (req, res) => {
-
+  const user = User.find({ _id : req.params._id }).populate()
   const result = await proofFile
     .find({
       $and: [

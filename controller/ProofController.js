@@ -168,7 +168,7 @@ exports.getFileFromFolder = async (req, res, next) => {
   const storage = await proofFolder
     .find({ _id: req.params.id })
     .select("proofFiles")
-    .populate("proofFiles", "name mimeType size");
+    .populate("proofFiles", "-data");
 
   if (!storage) {
     return next(new Error("404 not found"));
@@ -483,6 +483,7 @@ exports.modifyProofData = async (req, res) => {
 };
 
 exports.searchProof = async (req, res) => {
+
   const result = await proofFile
     .find({
       $and: [

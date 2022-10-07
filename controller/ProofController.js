@@ -533,7 +533,7 @@ exports.searchProof = async (req, res) => {
     arr.push(result);
   });
   if(req.body.key === ""){
-    const result = await proofFile.findById(req.body.currentFolder)
+    const result = await proofFile.find({proofFolder: req.body.currentFolder}).select('-data')
     return res.send(result)
   }
 

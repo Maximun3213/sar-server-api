@@ -8,7 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
-const { populate } = require("../models/rolesModel");
+const { populate, find } = require("../models/rolesModel");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -526,6 +526,10 @@ exports.searchProof = async (req, res) => {
   user.proofStore.map((result) => {
     arr.push(result);
   });
+  if(req.body.key === ""){
+    const result = await proofFile.findById(req.body.currentFolder)
+    return res.send(result)
+  }
 
   if (role.roleID === "MP") {
     const result = await proofFile

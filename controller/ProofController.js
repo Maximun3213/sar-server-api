@@ -182,6 +182,13 @@ exports.getFileFromFolder = async (req, res, next) => {
           title: 1,
         },
       },
+      populate: {
+        path: "userCreate",
+        model: "user",
+        select: {
+          fullName: 1,
+        },
+      }
     });
 
   if (!storage) {

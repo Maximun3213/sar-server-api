@@ -39,6 +39,6 @@ router.route("/changeFileLocation").put(changeFileLocation);
 
 router.route("/modifyProofData/:id").put(modifyProofData);
 
-router.route("/search/:id").post(searchProof);
+router.route("/search/:id").get(searchProof);
 
 module.exports = router;

@@ -502,24 +502,71 @@ exports.modifyProofData = async (req, res) => {
 };
 
 exports.searchProof = async (req, res) => {
-  const user = User.find({ _id: req.params._id }).populate();
-  const result = await proofFile
-    .find({
-      $and: [
-        { name: { $regex: req.body.key, $options: "i" } },
-        { proofFolder: req.params.id },
-      ],
-    })
-    .collation({ locale: "en_US", strength: 1 })
-    .select("-data");
-  if (result) {
-    res.status(200).json({
-      success: true,
-      result,
-    });
+  const user = await User.findById(req.params.id);
+  const role = await Role.findById(user.roleID);
+  const arr = [];
+  const child = await proofFolder
+    .aggregate([
+      { $match: { _id: { $in: user.proofStore } } },
+      {
+        $graphLookup: {
+          from: "proof_folders",
+          startWith: "$_id",
+          connectFromField: "_id",
+          connectToField: "parentID",
+          as: "children",
+          maxDepth: 4,
+          depthField: "level",
+          restrictSearchWithMatch: {},
+        },
+      },
+      {
+        $unwind: "$children",
+      },
+    ])
+    .exec();
+
+  child.map((result) => {
+    arr.push(result.children._id);
+  });
+  user.proofStore.map((result) => {
+    arr.push(result);
+  });
+
+  if (role.roleID === "MP") {
+    const result = await proofFile
+      .find({
+        $and: [
+          {
+            $or: [
+              { name: { $regex: req.body.key, $options: "i" } },
+              { description: { $regex: req.body.key, $options: "i" } },
+            ],
+          },
+          { proofFolder: { $in: arr } },
+        ],
+      })
+      .select("-data");
+
+    if (result) {
+      return res.status(200).json({
+        result,
+      });
+    }
+    res.send("Not found");
   } else {
-    res.status(404).json({
-      message: "Not found anything else",
-    });
+    const result = await proofFile
+      .find({
+        $or: [
+          { name: { $regex: req.body.key, $options: "i" } },
+          { description: { $regex: req.body.key, $options: "i" } },
+        ],
+      })
+      .select("-data");
+
+    if (result) {
+      return res.status(200).json({ result });
+    }
+    res.send("Not found");
   }
 };

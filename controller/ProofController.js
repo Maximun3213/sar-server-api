@@ -175,20 +175,22 @@ exports.getFileFromFolder = async (req, res, next) => {
       select: {
         data: 0,
       },
-      populate: {
-        path: "proofFolder",
-        model: "proof_folder",
-        select: {
-          title: 1,
+      populate: [
+        {
+          path: "proofFolder",
+          model: "proof_folder",
+          select: {
+            title: 1,
+          },
         },
-      },
-      // populate: {
-      //   path: "userCreate",
-      //   model: "user",
-      //   select: {
-      //     fullName: 1,
-      //   },
-      // }
+        {
+          path: "userCreate",
+          model: "user",
+          select: {
+            fullName: 1,
+          },
+        },
+      ],
     });
 
   if (!storage) {
@@ -532,8 +534,10 @@ exports.searchProof = async (req, res) => {
   user.proofStore.map((result) => {
     arr.push(result);
   });
-  if(req.body.key === ""){
-    const result = await proofFile.find({proofFolder: req.body.currentFolder}).select('-data')
+  if (req.body.key === "") {
+    const result = await proofFile
+      .find({ proofFolder: req.body.currentFolder })
+      .select("-data");
     return res.status(200).json({
       result,
     });

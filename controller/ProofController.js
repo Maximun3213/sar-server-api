@@ -355,7 +355,7 @@ exports.getAllDocumentByRole = async (req, res) => {
           model: "user",
           select: {
             fullName: 1,
-            _id: 0,
+            _id: 1,
           },
         },
       ])

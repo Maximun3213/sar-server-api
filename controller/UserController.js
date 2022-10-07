@@ -1,9 +1,11 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
-const { proofFolder } = require("../models/proofsModel");
+const { proofFolder, proofFile } = require("../models/proofsModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
+const { ObjectId } = require("mongodb");
+const { populate } = require("../models/rolesModel");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -94,17 +96,66 @@ exports.grantProofKey = async (req, res, next) => {
   const checkProofStoreExist = await User.findById(req.body.id);
 
   if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
-    const users = await User.findByIdAndUpdate(filter, {
-      $push: { proofStore: req.body.proofStore },
-    });
-    return res.send(users);
+    return proofFolder
+      .aggregate([
+        {
+          $match: {
+            _id: ObjectId(req.body.proofStore),
+          },
+        },
+        {
+          $graphLookup: {
+            from: "proof_folders",
+            startWith: "$_id",
+            connectFromField: "_id",
+            connectToField: "parentID",
+            as: "children",
+            maxDepth: 4,
+            depthField: "level",
+            restrictSearchWithMatch: {},
+          },
+        },
+        {
+          $project: {
+            "children._id": 1,
+            "children.title": 1,
+          },
+        },
+      ])
+      .then((data) => {
+        User.findByIdAndUpdate(filter, {
+          $push: { proofStore: req.body.proofStore },
+        }).exec();
+        proofFolder
+          .findByIdAndUpdate(req.body.proofStore, {
+            $push: {
+              user_access: req.body.id,
+            },
+          })
+          .exec();
+        // data.forEach((child) => {
+        //   child.children.forEach((childList) => {
+        //     proofFolder
+        //       .findByIdAndUpdate(childList._id, {
+        //         $push: {
+        //           user_access: req.body.id,
+        //         },
+        //       })
+        //       .exec();
+        //   });
+        // });
+
+        return res.send("Grant key successfully");
+      });
   }
   return res.status(400).json({
     success: false,
     message: "Thư mục đã được cấp quyền",
   });
 };
+
 //get proofStore API
+
 exports.getProofStore = async (req, res, next) => {
   await User.findById(req.params.id)
     .select("proofStore")
@@ -114,4 +165,133 @@ exports.getProofStore = async (req, res, next) => {
       }
       res.send(data);
     });
+};
+//get all  data for each MP
+exports.getAllDataForEachMP = async (req, res) => {
+  const role = await Role.find({ roleID: "MP" });
+  role.map((item) => {
+    User.find({ roleID: item._id })
+      .select("cbID fullName email")
+      .populate([
+        {
+          path: "proofStore",
+          select: "title parentID",
+        },
+        {
+          path: "roleID",
+          select: "roleName",
+        },
+      ])
+      .exec((err, users) => {
+        if (err) {
+          console.log(err);
+        } else {
+          res.status(200).json({
+            users,
+          });
+        }
+      });
+  });
+};
+
+//
+exports.getListUserAccessFromFolder = async (req, res) => {
+  const folderID = req.params;
+  const roleName = await proofFolder;
+  await proofFolder
+    .aggregate([
+      {
+        $match: {
+          _id: ObjectId(folderID),
+        },
+      },
+      {
+        $lookup: {
+          from: "users",
+          localField: "user_access",
+          foreignField: "_id",
+          as: "storage",
+        },
+      },
+      {
+        $project: {
+          _id: 0,
+          title: 1,
+          "storage._id": 1,
+          "storage.cbID": 1,
+          "storage.email": 1,
+          "storage.fullName": 1,
+          "storage.roleID": 1,
+        },
+      },
+      // {
+      //   $unwind: "$storage",
+      // },
+      // {
+      //   $lookup: {
+      //     from: "roles",
+      //     localField: "storage.roleID",
+      //     foreignField: "_id",
+      //     as: "storage.roleID",
+      //   },
+      // },
+      // {
+      //   $match: {
+      //     _id: ObjectId(folderID),
+      //   },
+      // },
+      // {
+      //   $group: {
+      //     _id: "$_id",
+      //     title: { $first: "$title" },
+      //     storage: { $push: "$storage" },
+      //   },
+      // },
+    ])
+    .exec((err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send(result);
+    });
+};
+
+// Xóa quyền trên thư mục
+
+exports.removeProofKey = async (req, res, next) => {
+  //----
+  try {
+    const { fid, uid } = req.params;
+
+    proofFolder
+      .updateMany(
+        { _id: ObjectId(fid) },
+        {
+          $pull: {
+            user_access: uid,
+          },
+        }
+      )
+      .exec((err, result) => {
+        if (err) {
+          console.log(err);
+        }
+        User.updateMany(
+          { _id: ObjectId(uid) },
+          {
+            $pull: {
+              proofStore: fid,
+            },
+          }
+        ).exec((err, result) => {
+          if (err) {
+            console.log(err);
+          }
+          return res.send("Xoá thành công");
+        });
+      });
+  } catch (error) {
+    // This is where you handle the error
+    res.status(500).send(error);
+  }
 };

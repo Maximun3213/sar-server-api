@@ -1,8 +1,8 @@
 const express = require("express");
 const multer = require("multer");
-// const { getFileList, uploadFile, searchProof } = require("../controller/ProofController");
 const {
   getFileList,
+  searchProof,
   uploadFile,
   createFolder,
   getFileFromFolder,
@@ -10,6 +10,9 @@ const {
   getDataFromFile,
   updateFolder,
   removeDirectory,
+  getAllDocumentByRole,
+  changeFileLocation,
+  modifyProofData,
 } = require("../controller/ProofController");
 
 const router = express.Router();
@@ -29,7 +32,13 @@ router.route("/fileList").get(getFileList);
 router.route("/fileList/:id").get(getFileFromFolder);
 
 router.route("/fileData/:id").get(getDataFromFile);
-// router.route("/proofFolder/:id").get(getProofFolderById);
-// router.route("/search/:key").get(searchProof);
+
+router.route("/getAllDocumentByRole/:id").get(getAllDocumentByRole);
+
+router.route("/changeFileLocation").put(changeFileLocation);
+
+router.route("/modifyProofData/:id").put(modifyProofData);
+
+router.route("/search/:id").post(searchProof);
 
 module.exports = router;

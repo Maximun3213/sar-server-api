@@ -182,6 +182,13 @@ exports.getFileFromFolder = async (req, res, next) => {
           title: 1,
         },
       },
+      populate: {
+        path: "userCreate",
+        model: "user",
+        select: {
+          fullName: 1,
+        },
+      }
     });
 
   if (!storage) {
@@ -364,7 +371,6 @@ exports.getAllDocumentByRole = async (req, res) => {
     .project({
       data: 0,
     })
-
     .exec(function (err, result) {
       if (err) {
         return console.log(err);
@@ -527,8 +533,10 @@ exports.searchProof = async (req, res) => {
     arr.push(result);
   });
   if(req.body.key === ""){
-    const result = await proofFile.find({ proofFolder: req.body.currentFolder}).select("-data")
-    return res.send(result)
+    const result = await proofFile.find({proofFolder: req.body.currentFolder}).select('-data')
+    res.status(200).json({
+      result,
+    });
   }
 
   if (role.roleID === "MP") {

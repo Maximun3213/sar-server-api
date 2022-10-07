@@ -380,7 +380,7 @@ exports.getAllDocumentByRole = async (req, res) => {
           [
             {
               path: "userCreate",
-              select: { fullName: 1, _id: 0 },
+              select: { fullName: 1, _id: 1 },
               model: "user",
             },
             {

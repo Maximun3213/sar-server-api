@@ -534,7 +534,7 @@ exports.searchProof = async (req, res) => {
   });
   if(req.body.key === ""){
     const result = await proofFile.find({proofFolder: req.body.currentFolder}).select('-data')
-    res.status(200).json({
+    return res.status(200).json({
       result,
     });
   }

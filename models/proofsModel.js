@@ -21,7 +21,6 @@ const proofFolderSchema = new Schema({
     default: null,
     ref: "proof_folder",
   },
-
 });
 
 const proofFileSchema = new Schema({
@@ -40,13 +39,24 @@ const proofFileSchema = new Schema({
   },
   proofFolder: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: 'proof_folder'
+    ref: "proof_folder",
   },
   enactNum: String,
   enactAddress: String,
   releaseDate: Date,
   description: String,
-
+  userCreate: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "user",
+  },
+  status: {
+    type: Number,
+    default: 1,
+  },
+  creatAt: {
+    type: Date,
+    default: Date.now(),
+  },
 });
 
 const proofFolder = mongoose.model("proof_folder", proofFolderSchema);
@@ -55,5 +65,5 @@ const proofFile = mongoose.model("proof_file", proofFileSchema);
 
 module.exports = {
   proofFolder,
-  proofFile
-}
+  proofFile,
+};

@@ -1,4 +1,6 @@
 const { proofFile, proofFolder } = require("../models/proofsModel");
+const User = require("../models/usersModel");
+const Role = require("../models/rolesModel");
 const mongoose = require("mongoose");
 const json = require("body-parser");
 const fs = require("fs");
@@ -6,7 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
-// const { title } = require("process");
+const { populate, find } = require("../models/rolesModel");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -23,8 +25,6 @@ const upload = multer({
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
 }).any("uploadedFiles", 4);
 
-//----hàm upload file
-
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {
     if (err) {
@@ -37,40 +37,100 @@ exports.uploadFile = (req, res, next) => {
 
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
-    const {enactNum, enactAddress, releaseDate, description} = req.body
+    const {
+      enactNum,
+      enactAddress,
+      releaseDate,
+      description,
+      userCreate,
+      status,
+    } = req.body;
 
-    fileList[0] &&
-      fileList.map((file, index) => {
+    if (fileList.length === 1) {
+      fileList.map(async (file, index) => {
         const ids = new ObjectId();
         const newImage = new proofFile({
           _id: ids,
-          name: file.originalname,
+          name: Buffer.from(file.originalname, "latin1").toString("utf8"),
           data: fs.readFileSync(file.path),
           mimeType: file.mimetype,
           size: file.size,
           proofFolder: folderID,
-          enactNum: enactNum && enactNum[0],
-          enactAddress: enactAddress && enactAddress[0],
-          releaseDate: moment(releaseDate && releaseDate[0], "DD-MM-YYYY"),
-          description: description && description[0]
+          enactNum: enactNum,
+          enactAddress: enactAddress,
+          releaseDate: moment(releaseDate, "DD-MM-YYYY"),
+          description: description,
+          status: status,
+          userCreate: userCreate,
         });
-        // push to proofFolder
-        proofFolder.findByIdAndUpdate(folderID, {
-            $push: { proofFiles: ids },
-          }).exec();
+        try {
+          //listing messages in users mailbox
+          await proofFolder
+            .findByIdAndUpdate(folderID, {
+              $push: { proofFiles: ids },
+            })
+            .exec();
 
-        newImage.save();
+          newImage.save();
+          return res.status(200).json({
+            success: true,
+            message: "Tải tệp lên thành công",
+            fileList,
+          });
+        } catch (err) {
+          next(err);
+          return res.status(400).json({
+            success: true,
+            message: "Tải tệp lên thất bại",
+            fileList,
+          });
+        }
       });
+    } else {
+      try {
+        fileList.map(async (file, index) => {
+          const ids = new ObjectId();
+          const newImage = new proofFile({
+            _id: ids,
+            name: Buffer.from(file.originalname, "latin1").toString("utf8"),
+            data: fs.readFileSync(file.path),
+            mimeType: file.mimetype,
+            size: file.size,
+            proofFolder: folderID,
+            enactNum: enactNum && enactNum[0],
+            enactAddress: enactAddress[0],
+            releaseDate: moment(releaseDate[0], "DD-MM-YYYY"),
+            description: description[0],
+            status: status[0],
+            userCreate: userCreate[0],
+          });
+          // push to proofFolder
+          // try {
+          //listing messages in users mailbox
+          await proofFolder
+            .findByIdAndUpdate(folderID, {
+              $push: { proofFiles: ids },
+            })
+            .exec();
 
-    res.status(200).json({
-      success: true,
-      message: "Tải file lên thành công",
-      fileList,
-    });
+          newImage.save();
+        });
+        return res.status(200).json({
+          success: true,
+          message: "Tải tệp lên thành công",
+          fileList,
+        });
+      } catch (error) {
+        next(err);
+        return res.status(400).json({
+          success: false,
+          message: "Tải tệp lên thất bại",
+          fileList,
+        });
+      }
+    }
   });
 };
-
-//----Tạo folder
 
 exports.createFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
@@ -78,16 +138,14 @@ exports.createFolder = async (req, res, next) => {
   if (title === "") {
     res.send("Name must be provided");
   } else {
-    await proofFolder.create({ title, parentID });
+    const dir = await proofFolder.create({ title, parentID });
 
-    res.status(200).json({
+    res.status(201).json({
       success: true,
-      message: `Thư mục ${title} đã được tạo`,
+      message: "New folder was created",
     });
   }
 };
-
-//----Xuất all files
 
 exports.getFileList = async (req, res) => {
   await proofFolder
@@ -103,23 +161,41 @@ exports.getFileList = async (req, res) => {
     .catch(function (err) {
       console.log(err);
     });
-};
 
-//----Lấy file trong folder
+  //------
+};
 
 exports.getFileFromFolder = async (req, res, next) => {
   const storage = await proofFolder
     .find({ _id: req.params.id })
     .select("proofFiles")
-    .populate("proofFiles", "name mimeType size");
+    .populate({
+      path: "proofFiles",
+      model: "proof_file",
+      select: {
+        data: 0,
+      },
+      populate: {
+        path: "proofFolder",
+        model: "proof_folder",
+        select: {
+          title: 1,
+        },
+      },
+      populate: {
+        path: "userCreate",
+        model: "user",
+        select: {
+          fullName: 1,
+        },
+      }
+    });
 
   if (!storage) {
     return next(new Error("404 not found"));
   }
   res.send(storage);
 };
-
-//----Xóa thư mục
 
 exports.removeDirectory = async (req, res, next) => {
   //----
@@ -131,40 +207,39 @@ exports.removeDirectory = async (req, res, next) => {
 
     //---Delete all file and folders inside root
     await proofFolder
-    .aggregate([
-      { $match: { _id: fileList._id } },
-      {
-        $graphLookup: {
-          from: "proof_folders",
-          startWith: "$_id",
-          connectFromField: "_id",
-          connectToField: "parentID",
-          as: "children",
-          maxDepth: 4,
-          depthField: "level",
-          restrictSearchWithMatch: {},
+      .aggregate([
+        { $match: { _id: fileList._id } },
+        {
+          $graphLookup: {
+            from: "proof_folders",
+            startWith: "$_id",
+            connectFromField: "_id",
+            connectToField: "parentID",
+            as: "children",
+            maxDepth: 4,
+            depthField: "level",
+            restrictSearchWithMatch: {},
+          },
         },
-      },
-      {
-        $project: {
-          _id: 1,
-          title: 1,
-          proofFiles: 1,
-          "children._id": 1,
-          "children.title": 1,
-          "children.proofFiles": 1,
+        {
+          $project: {
+            _id: 1,
+            title: 1,
+            proofFiles: 1,
+            "children._id": 1,
+            "children.title": 1,
+            "children.proofFiles": 1,
+          },
         },
-      },
-
-    ])
-    .then((data) => {
-      data.forEach((child) => {
-        child.children.forEach((childList) => {
-          proofFolder.deleteOne({ _id: childList._id }).exec();
-          proofFile.deleteMany({ _id: childList.proofFiles }).exec();
+      ])
+      .then((data) => {
+        data.forEach((child) => {
+          child.children.forEach((childList) => {
+            proofFolder.deleteOne({ _id: childList._id }).exec();
+            proofFile.deleteMany({ _id: childList.proofFiles }).exec();
+          });
         });
       });
-    });
     //---Delete root
     await proofFolder.deleteOne({ _id: req.params.id });
 
@@ -177,8 +252,6 @@ exports.removeDirectory = async (req, res, next) => {
     res.status(500).send(error);
   }
 };
-
-//----Xóa file
 
 exports.postDeleteFile = async (req, res, next) => {
   try {
@@ -206,10 +279,8 @@ exports.postDeleteFile = async (req, res, next) => {
   }
 };
 
-//----Lấy data từ file
-
 exports.getDataFromFile = async (req, res, next) => {
-  const file = await proofFile.findById(req.params.id).select("data");
+  const file = await proofFile.findById(req.params.id).select("data name");
   const data = file.data;
   if (!file) {
     next(new Error("Data not found!!!"));
@@ -217,10 +288,9 @@ exports.getDataFromFile = async (req, res, next) => {
   res.status(200).json({
     success: true,
     data,
+    file,
   });
 };
-
-//----Cập nhật folder
 
 exports.updateFolder = async (req, res, next) => {
   const { title, parentID } = req.body;
@@ -238,31 +308,271 @@ exports.updateFolder = async (req, res, next) => {
   }
 };
 
-//----
-// exports.getProofFolderById = async (req, res, next) => {
-//   const file = await Proof.findOne({ _id: req.params.id });
-//   if (!file) {
-//     next(new Error("Folder not found!!!"));
-//   }
-//   res.status(200).json({
-//     success: true,
-//     file,
-//   });
-// };
+exports.getAllDocumentByRole = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  const role = await Role.findById(user.roleID);
+  const arr = [];
+  const child = await proofFolder
+    .aggregate([
+      { $match: { _id: { $in: user.proofStore } } },
+      {
+        $graphLookup: {
+          from: "proof_folders",
+          startWith: "$_id",
+          connectFromField: "_id",
+          connectToField: "parentID",
+          as: "children",
+          maxDepth: 4,
+          depthField: "level",
+          restrictSearchWithMatch: {},
+        },
+      },
+      {
+        $unwind: "$children",
+      },
+    ])
+    .exec();
 
-//Search module
-// exports.searchProof = async (req, res) => {
-//   const file = await Image.find({
-//     $or: [{ name: { $regex: req.params.key } }],
-//   });
-//   if (file) {
-//     res.status(200).json({
-//       success: true,
-//       file,
-//     });
-//   } else {
-//     res.status(404).json({
-//       message: "Not found everything else",
-//     });
-//   }
-// };
+  child.map((result) => {
+    arr.push(result.children._id);
+  });
+  user.proofStore.map((result) => {
+    arr.push(result);
+  });
+
+  if (role.roleID === "ADMIN") {
+    return proofFile
+      .find({}, (err, result) => {
+        if (err) {
+          console.log(err);
+        }
+        return res.send(result);
+      })
+      .populate("proofFolder", "title")
+      .populate([
+        {
+          path: "userCreate",
+          model: "user",
+          select: {
+            fullName: 1,
+            _id: 1,
+          },
+        },
+      ])
+      .select("-data")
+      .clone();
+  }
+
+  proofFile
+    .aggregate()
+    .match({
+      $and: [{ proofFolder: { $in: arr } }],
+    })
+    .project({
+      data: 0,
+    })
+    .exec(function (err, result) {
+      if (err) {
+        return console.log(err);
+      } else {
+        proofFile.populate(
+          result,
+          [
+            {
+              path: "userCreate",
+              select: { fullName: 1, _id: 1 },
+              model: "user",
+            },
+            {
+              path: "proofFolder",
+              select: { title: 1, _id: 0 },
+              model: "proof_folder",
+            },
+          ],
+
+          (err, list) => {
+            res.send(list);
+          }
+        );
+      }
+    });
+};
+
+exports.changeFileLocation = async (req, res) => {
+  const { fileID, location } = req.body;
+
+  const folderID = await proofFolder.find({ proofFiles: fileID });
+  if (folderID) {
+    //Remove
+    folderID.map((result) => {
+      proofFolder
+        .updateOne(
+          { _id: { $in: result._id } },
+          {
+            $pull: {
+              proofFiles: fileID,
+            },
+          }
+        )
+        .exec();
+    });
+    //Replace
+    proofFolder
+      .updateOne(
+        {
+          _id: location,
+        },
+        {
+          $push: {
+            proofFiles: fileID,
+          },
+        }
+      )
+      .exec();
+    //update proofFolder
+    proofFile
+      .updateOne(
+        {
+          _id: fileID,
+        },
+        {
+          $set: {
+            proofFolder: location,
+          },
+        }
+      )
+      .exec();
+    return res.send("File moved successfully");
+  }
+  res.status(400).json({
+    success: false,
+    message: "Something went wrong",
+  });
+};
+
+exports.modifyProofData = async (req, res) => {
+  const { fileName, enactNum, address, date, desc, folderID } = req.body;
+
+  await proofFolder
+    .updateOne(
+      { proofFiles: req.params.id },
+      {
+        $pull: {
+          proofFiles: req.params.id,
+        },
+      }
+    )
+    .exec();
+
+  await proofFolder
+    .updateOne(
+      {
+        _id: ObjectId(folderID),
+      },
+      {
+        $push: {
+          proofFiles: req.params.id,
+        },
+      }
+    )
+    .exec();
+
+  await proofFile
+    .updateOne(
+      {
+        _id: req.params.id,
+      },
+      {
+        $set: {
+          name: fileName,
+          enactNum: enactNum,
+          enactAddress: address,
+          releaseDate: moment(date, "DD-MM-YYYY"),
+          description: desc,
+          proofFolder: folderID,
+        },
+      }
+    )
+    .exec((err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send("Update folder successfully");
+    });
+};
+
+exports.searchProof = async (req, res) => {
+  const user = await User.findById(req.params.id);
+  const role = await Role.findById(user.roleID);
+  const arr = [];
+  const child = await proofFolder
+    .aggregate([
+      { $match: { _id: { $in: user.proofStore } } },
+      {
+        $graphLookup: {
+          from: "proof_folders",
+          startWith: "$_id",
+          connectFromField: "_id",
+          connectToField: "parentID",
+          as: "children",
+          maxDepth: 4,
+          depthField: "level",
+          restrictSearchWithMatch: {},
+        },
+      },
+      {
+        $unwind: "$children",
+      },
+    ])
+    .exec();
+
+  child.map((result) => {
+    arr.push(result.children._id);
+  });
+  user.proofStore.map((result) => {
+    arr.push(result);
+  });
+  if(req.body.key === ""){
+    const result = await proofFile.find({proofFolder: req.body.currentFolder}).select('-data')
+    return res.status(200).json({
+      result,
+    });
+  }
+
+  if (role.roleID === "MP") {
+    const result = await proofFile
+      .find({
+        $and: [
+          {
+            $or: [
+              { name: { $regex: req.body.key, $options: "i" } },
+              { description: { $regex: req.body.key, $options: "i" } },
+            ],
+          },
+          { proofFolder: { $in: arr } },
+        ],
+      })
+      .select("-data");
+
+    if (result) {
+      return res.status(200).json({
+        result,
+      });
+    }
+    res.send("Not found");
+  } else {
+    const result = await proofFile
+      .find({
+        $or: [
+          { name: { $regex: req.body.key, $options: "i" } },
+          { description: { $regex: req.body.key, $options: "i" } },
+        ],
+      })
+      .select("-data");
+
+    if (result) {
+      return res.status(200).json({ result });
+    }
+    res.send("Not found");
+  }
+};

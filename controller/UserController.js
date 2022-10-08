@@ -94,6 +94,7 @@ exports.getAllProofManager = async (req, res, next) => {
 exports.grantProofKey = async (req, res, next) => {
   const filter = { _id: req.body.id };
   const checkProofStoreExist = await User.findById(req.body.id);
+  const roleMP = await Role.find({ roleID: "MP" });
 
   if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
     return proofFolder
@@ -123,9 +124,14 @@ exports.grantProofKey = async (req, res, next) => {
         },
       ])
       .then((data) => {
-        User.findByIdAndUpdate(filter, {
-          $push: { proofStore: req.body.proofStore },
-        }).exec();
+        roleMP.map((result) => {
+          User.findByIdAndUpdate(filter, {
+            $push: { proofStore: req.body.proofStore },
+            $set: {
+              roleID: ObjectId(result._id),
+            },
+          }).exec();
+        });
         proofFolder
           .findByIdAndUpdate(req.body.proofStore, {
             $push: {
@@ -133,17 +139,6 @@ exports.grantProofKey = async (req, res, next) => {
             },
           })
           .exec();
-        // data.forEach((child) => {
-        //   child.children.forEach((childList) => {
-        //     proofFolder
-        //       .findByIdAndUpdate(childList._id, {
-        //         $push: {
-        //           user_access: req.body.id,
-        //         },
-        //       })
-        //       .exec();
-        //   });
-        // });
 
         return res.send("Grant key successfully");
       });
@@ -282,6 +277,9 @@ exports.removeProofKey = async (req, res, next) => {
             $pull: {
               proofStore: fid,
             },
+            $set: {
+              roleID: null
+            }
           }
         ).exec((err, result) => {
           if (err) {
@@ -339,20 +337,21 @@ exports.removeRoleMS = async (req, res) => {
       $set: {
         roleID: null,
       },
-    }, (err, result) => {
-      if(err) {
-        console.log(err)
+    },
+    (err, result) => {
+      if (err) {
+        console.log(err);
       }
-      res.send('Remove role successfully')
+      res.send("Remove role successfully");
     }
-  ).clone()
+  ).clone();
 };
 
 exports.getAllUserRoleNull = async (req, res) => {
   const roleNull = await User.find({ roleID: null }).exec();
-  if(roleNull) {
+  if (roleNull) {
     res.send(roleNull);
-  }else {
-    res.send('No data user');
+  } else {
+    res.send("No data user");
   }
 };

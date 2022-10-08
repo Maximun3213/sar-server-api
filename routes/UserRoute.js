@@ -34,7 +34,7 @@ router.route("/getListUserAccess/:id").get(getListUserAccessFromFolder)
 
 router.route("/removeProofKey/:fid/:uid").delete(removeProofKey)
 
-router.route("/getListUserMS").put(getListUserMS)
+router.route("/grantRoleMS").put(grantRoleMS)
 
 
 

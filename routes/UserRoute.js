@@ -9,6 +9,7 @@ const {
   getAllDataForEachMP,
   getListUserAccessFromFolder,
   removeProofKey,
+  getListUserMS
 } = require("../controller/UserController");
 const { authenToken } = require("../middleware/verifyToken");
 
@@ -32,6 +33,8 @@ router.route("/getMPList").get(getAllDataForEachMP)
 router.route("/getListUserAccess/:id").get(getListUserAccessFromFolder)
 
 router.route("/removeProofKey/:fid/:uid").delete(removeProofKey)
+
+router.route("/getListUserMS").put(getListUserMS)
 
 
 

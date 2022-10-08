@@ -295,3 +295,24 @@ exports.removeProofKey = async (req, res, next) => {
     res.status(500).send(error);
   }
 };
+
+exports.getListUserMS = async (req, res) => {
+  const user = await User.findOne({ _id: req.body.id });
+  const roleMS = await Role.find({ roleID: "MS" });
+  await User.updateOne(
+    { _id: req.body.userID },
+    {
+      $set: {
+        roleID: {
+          $in: [roleMS._id],
+        },
+      },
+    }
+  ).exec((err, result) => {
+    if (err) {
+      console.log("Cannot update this field");
+    }
+    console.log(result)
+    res.send("Update successfully");
+  });
+};

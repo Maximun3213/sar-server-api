@@ -297,7 +297,6 @@ exports.removeProofKey = async (req, res, next) => {
 };
 
 exports.grantRoleMS = async (req, res) => {
-  const user = await User.findOne({ _id: req.body.id });
   const roleMS = await Role.find({ roleID: "MS" });
   roleMS.map((result) => {
     User.updateOne(

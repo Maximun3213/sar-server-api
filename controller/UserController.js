@@ -311,7 +311,6 @@ exports.grantRoleMS = async (req, res) => {
       if (err) {
         console.log("Cannot update this field");
       }
-      console.log(result);
       res.send("Update successfully");
     });
   });

@@ -9,7 +9,7 @@ const {
   getAllDataForEachMP,
   getListUserAccessFromFolder,
   removeProofKey,
-  getListUserMS
+  grantRoleMS
 } = require("../controller/UserController");
 const { authenToken } = require("../middleware/verifyToken");
 

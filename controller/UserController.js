@@ -299,20 +299,20 @@ exports.removeProofKey = async (req, res, next) => {
 exports.grantRoleMS = async (req, res) => {
   const user = await User.findOne({ _id: req.body.id });
   const roleMS = await Role.find({ roleID: "MS" });
-  await User.updateOne(
-    { _id: req.body.userID },
-    {
-      $set: {
-        roleID: {
-          $in: [roleMS._id],
+  roleMS.map((result) => {
+    User.updateOne(
+      { _id: req.body.userID, roleID: null },
+      {
+        $set: {
+          roleID: ObjectId(result._id),
         },
-      },
-    }
-  ).exec((err, result) => {
-    if (err) {
-      console.log("Cannot update this field");
-    }
-    console.log(result)
-    res.send("Update successfully");
+      }
+    ).exec((err, result) => {
+      if (err) {
+        console.log("Cannot update this field");
+      }
+      console.log(result);
+      res.send("Update successfully");
+    });
   });
 };

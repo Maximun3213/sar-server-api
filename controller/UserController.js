@@ -297,7 +297,7 @@ exports.removeProofKey = async (req, res, next) => {
 };
 
 exports.grantRoleMS = async (req, res) => {
-  const user = await User.findOne({ _id: req.body.id });
+  const user = await User.findOne({ _id: req.body.userID });
   const roleMS = await Role.find({ roleID: "MS" });
   roleMS.map((result) => {
     User.updateOne(
@@ -311,7 +311,19 @@ exports.grantRoleMS = async (req, res) => {
       if (err) {
         console.log("Cannot update this field");
       }
-      res.send("Update successfully");
+      res.send(`Grant key to "${user.fullName}" successfully`);
+    });
+  });
+};
+
+exports.getAllUserMS = async (req, res) => {
+  const roleMS = await Role.find({ roleID: "MS" });
+  roleMS.map((result) => {
+    User.find({ roleID: result._id }).populate("roleID").exec((err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send(result);
     });
   });
 };

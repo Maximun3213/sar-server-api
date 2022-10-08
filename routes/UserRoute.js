@@ -9,7 +9,8 @@ const {
   getAllDataForEachMP,
   getListUserAccessFromFolder,
   removeProofKey,
-  grantRoleMS
+  grantRoleMS,
+  getAllUserMS
 } = require("../controller/UserController");
 const { authenToken } = require("../middleware/verifyToken");
 
@@ -35,6 +36,8 @@ router.route("/getListUserAccess/:id").get(getListUserAccessFromFolder)
 router.route("/removeProofKey/:fid/:uid").delete(removeProofKey)
 
 router.route("/grantRoleMS").put(grantRoleMS)
+
+router.route("/getAllUserMS").get(getAllUserMS)
 
 
 

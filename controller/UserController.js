@@ -296,6 +296,8 @@ exports.removeProofKey = async (req, res, next) => {
   }
 };
 
+//API for MS user
+
 exports.grantRoleMS = async (req, res) => {
   const user = await User.findOne({ _id: req.body.userID });
   const roleMS = await Role.find({ roleID: "MS" });
@@ -319,11 +321,29 @@ exports.grantRoleMS = async (req, res) => {
 exports.getAllUserMS = async (req, res) => {
   const roleMS = await Role.find({ roleID: "MS" });
   roleMS.map((result) => {
-    User.find({ roleID: result._id }).populate("roleID").exec((err, result) => {
-      if (err) {
-        console.log(err);
-      }
-      res.send(result);
-    });
+    User.find({ roleID: result._id })
+      .populate("roleID")
+      .exec((err, result) => {
+        if (err) {
+          console.log(err);
+        }
+        res.send(result);
+      });
   });
+};
+
+exports.removeRoleMS = async (req, res) => {
+  await User.updateOne(
+    { _id: req.params.id },
+    {
+      $set: {
+        roleID: null,
+      },
+    }, (err, result) => {
+      if(err) {
+        console.log(err)
+      }
+      res.send('Remove role successfully')
+    }
+  ).clone()
 };

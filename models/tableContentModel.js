@@ -1,0 +1,85 @@
+const mongoose = require("mongoose");
+
+const Schema = mongoose.Schema;
+
+const tableContentSchema = new Schema({
+    sarID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'sar_file'
+    },
+    partID: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'part'
+        }
+    ]
+});
+
+const partSchema = new Schema({
+    title: String,
+    chapterID: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'chapter'
+        }
+    ],
+    order: Number,
+})
+
+const chapterSchema = new Schema({
+    title: String,
+    content: String,
+    criteriaID: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'criteria'
+        }
+    ],
+    order: Number,
+
+})
+
+const criteriaSchema = new Schema({
+    title: String,
+    content: String,
+    parentID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'criteria'
+    },
+    childrenID: [
+        {
+            type: mongoose.Schema.Types.ObjectId,
+            ref: 'criteria'
+        }
+    ],
+    user_access: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user'
+    },
+
+    order: Number,
+
+})
+
+// function createMarkup(theExactHtmlWithTag) {
+//     return { __html: theExactHtmlWithTag };
+// }
+
+// criteriaSchema.pre('save', function(next) {
+//     this.content: {type: String, this.set: createMarkup()}
+
+//     next()
+// })
+
+
+const TableOfContent = mongoose.model("table_of_content", tableContentSchema);
+const Part = mongoose.model("part", partSchema);
+const Chapter = mongoose.model("chapter", chapterSchema);
+const Criteria = mongoose.model("criteria", criteriaSchema);
+
+module.exports = {
+    TableOfContent,
+    Part,
+    Chapter,
+    Criteria
+};

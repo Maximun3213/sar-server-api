@@ -98,3 +98,44 @@ exports.removeSarFile = async (req, res, next) => {
     return next(error);
   }
 };
+
+exports.modifySarData = async (req, res) => {
+  const {
+    title,
+    desc,
+    lang,
+    structure,
+    proofStore,
+    category,
+    root,
+    license,
+    curriculum,
+    status,
+  } = req.body;
+  await SarFile
+    .updateOne(
+      {
+        _id: req.params.id,
+      },
+      {
+        $set: {
+          title: title,
+          desc: desc,
+          lang: lang,
+          structure: structure,
+          category: category,
+          root: root,
+          license: license,
+          curriculum: curriculum,
+          status: status,
+          updateAt: Date.now()
+        },
+      }
+    )
+    .exec((err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      res.send("Update sar successfully");
+    });
+}

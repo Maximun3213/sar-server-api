@@ -25,7 +25,8 @@ const sarFilesSchema = new Schema({
     },
     indexID: {
         type: mongoose.Schema.ObjectId,
-        ref: 'table_of_content'
+        ref: 'table_of_content',
+        default: null
     },
     user_access: [
         {
@@ -37,7 +38,10 @@ const sarFilesSchema = new Schema({
         type: Date,
         default: Date.now()
     },
-    updateAt: Date,
+    updateAt: {
+        type: Date,
+        default: Date.now()
+    },
     
 });
 

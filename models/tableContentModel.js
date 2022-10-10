@@ -44,33 +44,28 @@ const criteriaSchema = new Schema({
     content: String,
     parentID: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'criteria'
+        ref: 'criteria',
+        default: null,
     },
     childrenID: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'criteria'
+            ref: 'criteria',
         }
     ],
     user_access: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'user'
+        ref: 'user',
+        default: null
     },
-
+    proof_FolderID: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'sar_proof_folder',
+        default: null
+    },
     order: Number,
 
 })
-
-// function createMarkup(theExactHtmlWithTag) {
-//     return { __html: theExactHtmlWithTag };
-// }
-
-// criteriaSchema.pre('save', function(next) {
-//     this.content: {type: String, this.set: createMarkup()}
-
-//     next()
-// })
-
 
 const TableOfContent = mongoose.model("table_of_content", tableContentSchema);
 const Part = mongoose.model("part", partSchema);

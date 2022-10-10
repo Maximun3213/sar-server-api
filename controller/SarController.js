@@ -139,3 +139,12 @@ exports.modifySarData = async (req, res) => {
       res.send("Update sar successfully");
     });
 }
+
+
+exports.getDataFromSarFile = async (req, res, next) => {
+  const file = await SarFile.findById(req.params.id);
+  if (!file) {
+    next(new Error("Data not found!!!"));
+  }
+  res.send(file)
+};

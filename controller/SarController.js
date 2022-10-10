@@ -8,8 +8,8 @@ exports.createSar = async (req, res, next) => {
   const ids = new ObjectId();
   const treeId = new ObjectId();
 
-  const getRootStructure = await TableOfContent.findOne()
-  
+  const getRootStructure = await TableOfContent.findOne();
+
   const {
     title,
     desc,
@@ -22,7 +22,7 @@ exports.createSar = async (req, res, next) => {
     curriculum,
     status,
   } = req.body;
-  
+
   const newSarFile = new SarFile({
     _id: ids,
     title: title,
@@ -34,32 +34,30 @@ exports.createSar = async (req, res, next) => {
     root: root,
     license: license,
     curriculum: curriculum,
-    status: status
-  })
+    status: status,
+  });
   newSarFile.save((err) => {
-    if(err){
-      return next(err)
+    if (err) {
+      return next(err);
     }
-    
+
     const newTreeStructure = new TableOfContent({
       _id: treeId,
       sarID: ids,
-      partID: getRootStructure.partID
-    })
+      partID: getRootStructure.partID,
+    });
     newTreeStructure.save((err) => {
-      if(err){
-        return next(err)
+      if (err) {
+        return next(err);
       }
-      SarFile.updateOne({_id: ids}, {$set : {indexID: treeId }}).exec()
-    })
+      SarFile.updateOne({ _id: ids }, { $set: { indexID: treeId } }).exec();
+    });
 
     res.status(200).json({
       success: true,
       message: "Tạo quyển Sar thành công",
     });
-  })
-  
-  
+  });
 };
 
 exports.createSarFolder = async (req, res) => {
@@ -70,4 +68,33 @@ exports.createSarFolder = async (req, res) => {
     success: true,
     message: "New folder is created",
   });
+};
+
+exports.getAllSarFiles = async (req, res, next) => {
+  await SarFile.find({}, (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.send(result);
+  }).clone();
+};
+
+exports.removeSarFile = async (req, res, next) => {
+  try {
+    await TableOfContent.deleteOne({ sarID: req.params.id })
+      .clone()
+      .exec((err) => {
+        if (err) {
+          console.log(err);
+        }
+        SarFile.deleteOne({ _id: req.params.id }).exec((err) => {
+          if (err) {
+            console.log(err);
+          }
+          res.send("Delete Sar successfully");
+        });
+      });
+  } catch (error) {
+    return next(error);
+  }
 };

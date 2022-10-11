@@ -86,18 +86,19 @@ exports.getTreeStructure = async (req, res, next) => {
       },
     },
     { $unwind: "$chapters" },
-    {
-      $graphLookup: {
-        from: "criterias",
-        startWith: "$chapters.criteriaID",
-        connectFromField: "chapters.criteriaID",
-        connectToField: "_id",
-        as: "criterias",
-      },
-    },
-    {
-      $unwind: "$criterias",
-    },
+
+    // {
+    //   $graphLookup: {
+    //     from: "criterias",
+    //     startWith: "$chapters.criteriaID",
+    //     connectFromField: "chapters.criteriaID",
+    //     connectToField: "_id",
+    //     as: "criterias",
+    //   },
+    // },
+    // {
+    //   $unwind: "$criterias",
+    // },
     {
       $project: {
         partID: 0,
@@ -110,8 +111,10 @@ exports.getTreeStructure = async (req, res, next) => {
         _id: "$_id",
         sarID: { $first: "$sarID" },
         parts: { $push: "$parts" },
+        parts: {$addToSet: "$parts"},
         chapters: { $push: "$chapters" },
-        criterias: { $push: "$criterias" },
+        count: { $sum: 1 },
+        // criterias: { $push: "$criterias" },
       },
     },
   ]).exec((err, result) => {

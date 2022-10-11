@@ -85,23 +85,33 @@ exports.getTreeStructure = async (req, res, next) => {
         as: "chapters",
       },
     },
-    { $unwind: "$chapters" },
 
-    // {
-    //   $graphLookup: {
-    //     from: "criterias",
-    //     startWith: "$chapters.criteriaID",
-    //     connectFromField: "chapters.criteriaID",
-    //     connectToField: "_id",
-    //     as: "criterias",
-    //   },
-    // },
-    // {
-    //   $unwind: "$criterias",
-    // },
+    {
+      $unwind: {
+        path: "$chapters",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    {
+      $graphLookup: {
+        from: "criterias",
+        startWith: "$chapters.criteriaID",
+        connectFromField: "chapters.criteriaID",
+        connectToField: "_id",
+        as: "criterias",
+      },
+    },
+    {
+      $unwind: {
+        path: "$criterias",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
     {
       $project: {
         partID: 0,
+        // 'parts.chapterID': 1,
         // 'parts.chapterID': 0,
         // 'chapters.criteriaID': 0,
       },
@@ -110,11 +120,9 @@ exports.getTreeStructure = async (req, res, next) => {
       $group: {
         _id: "$_id",
         sarID: { $first: "$sarID" },
-        parts: { $push: "$parts" },
-        parts: {$addToSet: "$parts"},
+        parts: { $addToSet: "$parts" },
         chapters: { $push: "$chapters" },
-        count: { $sum: 1 },
-        // criterias: { $push: "$criterias" },
+        criterias: { $push: "$criterias" },
       },
     },
   ]).exec((err, result) => {

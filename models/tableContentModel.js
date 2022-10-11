@@ -20,7 +20,8 @@ const partSchema = new Schema({
     chapterID: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'chapter'
+            ref: 'chapter',
+            default: null
         }
     ],
     order: Number,
@@ -32,7 +33,8 @@ const chapterSchema = new Schema({
     criteriaID: [
         {
             type: mongoose.Schema.Types.ObjectId,
-            ref: 'criteria'
+            ref: 'criteria',
+            default: null
         }
     ],
     order: Number,

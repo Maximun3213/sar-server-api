@@ -6,6 +6,7 @@ const {
 } = require("../models/tableContentModel");
 
 const json = require("body-parser");
+const { ObjectId } = require("mongodb");
 
 exports.createTreeStructure = async (req, res) => {
   const { sarID, partID } = req.body;
@@ -49,4 +50,131 @@ exports.creatPart = async (req, res) => {
     success: true,
     message: "Create a new part successfully",
   });
+};
+
+exports.getTreeStructure = async (req, res, next) => {
+  const tree = await TableOfContent.findOne({ sarID: req.params.id }).select(
+    "sarID partID"
+  );
+  const parts = await Part.find({ _id: { $in: tree.partID } });
+
+  await TableOfContent.aggregate([
+    {
+      $match: {
+        sarID: ObjectId(req.params.id),
+      },
+    },
+    {
+      $graphLookup: {
+        from: "parts",
+        startWith: "$partID",
+        connectFromField: "partID",
+        connectToField: "_id",
+        as: "parts",
+      },
+    },
+
+    { $unwind: "$parts" },
+
+    {
+      $graphLookup: {
+        from: "chapters",
+        startWith: "$parts.chapterID",
+        connectFromField: "parts.chapterID",
+        connectToField: "_id",
+        as: "chapters",
+      },
+    },
+    { $unwind: "$chapters" },
+    {
+      $graphLookup: {
+        from: "criterias",
+        startWith: "$chapters.criteriaID",
+        connectFromField: "chapters.criteriaID",
+        connectToField: "_id",
+        as: "criterias",
+      },
+    },
+    {
+      $unwind: "$criterias",
+    },
+    {
+      $project: {
+        partID: 0,
+        // 'parts.chapterID': 0,
+        // 'chapters.criteriaID': 0,
+      },
+    },
+    {
+      $group: {
+        _id: "$_id",
+        sarID: { $first: "$sarID" },
+        parts: { $push: "$parts" },
+        chapters: { $push: "$chapters" },
+        criterias: { $push: "$criterias" },
+      },
+    },
+  ]).exec((err, result) => {
+    if (err) {
+      return next(err);
+    }
+    res.send(result);
+  });
+  // await TableOfContent.aggregate([
+  //   {
+  //     $match: {
+  //       sarID: ObjectId(req.params.id),
+  //     },
+  //   },
+
+  //   {
+  //     $graphLookup: {
+  //       from: "parts",
+  //       startWith: "$partID",
+  //       connectFromField: "partID",
+  //       connectToField: "_id",
+  //       as: "parts",
+  //     },
+  //   },
+
+  //   { $unwind: "$parts" },
+
+  //   {
+  //     $graphLookup: {
+  //       from: "chapters",
+  //       startWith:  "$parts.chapterID",
+  //       connectFromField: "parts.chapterID",
+  //       connectToField: "_id",
+  //       as: "chapters",
+  //     },
+  //   },
+  //   {
+  //     $project: {
+  //       partID: 0,
+  //       "parts.chapterID": 0,
+  //     },
+  //   },
+
+  // { $unwind: "$chapters" },
+  // {
+  //   $graphLookup: {
+  //     from: "criterias",
+  //     startWith: "$chapters.criteriaID",
+  //     connectFromField: "chapters.criteriaID",
+  //     connectToField: "_id",
+  //     as: "criterias",
+  //   },
+  // },
+  // {
+  //   $project: {
+  //     partID: 0,
+  //     "chapters.criteriaID": 0,
+  //   },
+  // },
+  // ]).exec((err, result) => {
+  //   if (err) {
+  //     return next(err);
+  //   }
+  //   res.send(result);
+  // });
 };

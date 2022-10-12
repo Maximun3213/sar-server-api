@@ -58,16 +58,20 @@ exports.getTreeStructure = async (req, res, next) => {
   );
   const chapterList = []
   const chapterTitle = []
+  const chapterLength = []
+
   const parts = await Part.find({ _id: { $in: tree.partID } });
-  
   parts.map(part => {
-    chapterList.push(part.chapterID)
+    console.log(part.chapterID.length)
+    // Chapter.find({ _id: part.chapterID }).exec((err, result) => {
+    //   console.log(result.length)
+    // });
+    
   })
-  console.log(chapterList)
-  const chapter = await Chapter.find({ _id: { $in: chapterList} });
-  chapter.forEach((element) => {
-    chapterTitle.push(element.title);
-  });
+  // const chapter = await Chapter.find({ _id: chapterList });
+  // chapter.forEach((element) => {
+  //   chapterTitle.push(element.title);
+  // });
 
 
 
@@ -145,3 +149,7 @@ exports.getTreeStructure = async (req, res, next) => {
     res.send(result);
   });
 };
+
+exports.removePartID = (req, res) => {
+  
+}

@@ -14,15 +14,18 @@ exports.createSar = async (req, res, next) => {
   const titleArr = [];
   const partID = [];
   const chapterID = [];
+  const chapterLength = [];
   const tree = await TableOfContent.findOne();
   const parts = await Part.find({ _id: { $in: tree.partID } });
 
+  parts.map((part) => {
+    chapterLength.push(part.chapterID.length);
+  });
   //save chapter
 
   const chapterList = [];
   const chapterTitle = [];
   parts.map((part) => {
-    
     part.chapterID.map((chapter) => {
       chapterList.push(chapter);
     });
@@ -43,25 +46,27 @@ exports.createSar = async (req, res, next) => {
     chapterID.push(ids);
     newPart.save();
   });
-
   //save part
 
   parts.forEach((element) => {
     titleArr.push(element.title);
   });
   titleArr.map((result, key) => {
-    const ids = new ObjectId();
-    const newPart = new Part({
-      _id: ids,
-      title: result,
-      chapterID: chapterID,
-      order: key,
-    });
-    partID.push(ids);
-    newPart.save();
-  });
+    for (let index = 0; index < chapterLength.length - 1; index++) {
+      console.log(chapterID.slice(0, chapterLength[index]))
 
-  //chapter save
+      // const ids = new ObjectId();
+      // const newPart = new Part({ 
+      //   _id: ids,
+      //   title: result,
+      //   chapterID: chapterID.slice(0, chapterLength[index]),
+      //   order: key,
+      // });
+
+      // partID.push(ids);
+      // newPart.save();
+    }
+  });
 
   const {
     title,

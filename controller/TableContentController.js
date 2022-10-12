@@ -56,7 +56,23 @@ exports.getTreeStructure = async (req, res, next) => {
   const tree = await TableOfContent.findOne({ sarID: req.params.id }).select(
     "sarID partID"
   );
+  const chapterList = []
+  const chapterTitle = []
   const parts = await Part.find({ _id: { $in: tree.partID } });
+  
+  parts.map(part => {
+    chapterList.push(part.chapterID)
+  })
+  console.log(chapterList)
+  const chapter = await Chapter.find({ _id: { $in: chapterList} });
+  chapter.forEach((element) => {
+    chapterTitle.push(element.title);
+  });
+
+
+
+
+
 
   await TableOfContent.aggregate([
     {
@@ -111,9 +127,6 @@ exports.getTreeStructure = async (req, res, next) => {
     {
       $project: {
         partID: 0,
-        // 'parts.chapterID': 1,
-        // 'parts.chapterID': 0,
-        // 'chapters.criteriaID': 0,
       },
     },
     {
@@ -131,61 +144,4 @@ exports.getTreeStructure = async (req, res, next) => {
     }
     res.send(result);
   });
-  // await TableOfContent.aggregate([
-  //   {
-  //     $match: {
-  //       sarID: ObjectId(req.params.id),
-  //     },
-  //   },
-
-  //   {
-  //     $graphLookup: {
-  //       from: "parts",
-  //       startWith: "$partID",
-  //       connectFromField: "partID",
-  //       connectToField: "_id",
-  //       as: "parts",
-  //     },
-  //   },
-
-  //   { $unwind: "$parts" },
-
-  //   {
-  //     $graphLookup: {
-  //       from: "chapters",
-  //       startWith:  "$parts.chapterID",
-  //       connectFromField: "parts.chapterID",
-  //       connectToField: "_id",
-  //       as: "chapters",
-  //     },
-  //   },
-  //   {
-  //     $project: {
-  //       partID: 0,
-  //       "parts.chapterID": 0,
-  //     },
-  //   },
-
-  // { $unwind: "$chapters" },
-  // {
-  //   $graphLookup: {
-  //     from: "criterias",
-  //     startWith: "$chapters.criteriaID",
-  //     connectFromField: "chapters.criteriaID",
-  //     connectToField: "_id",
-  //     as: "criterias",
-  //   },
-  // },
-  // {
-  //   $project: {
-  //     partID: 0,
-  //     "chapters.criteriaID": 0,
-  //   },
-  // },
-  // ]).exec((err, result) => {
-  //   if (err) {
-  //     return next(err);
-  //   }
-  //   res.send(result);
-  // });
 };

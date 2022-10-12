@@ -1,5 +1,9 @@
 const { SarFile, SarProofFolder } = require("../models/sarModel");
-const { TableOfContent } = require("../models/tableContentModel");
+const {
+  TableOfContent,
+  Part,
+  Chapter,
+} = require("../models/tableContentModel");
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
 const { aggregate } = require("../models/rolesModel");
@@ -7,8 +11,57 @@ const { aggregate } = require("../models/rolesModel");
 exports.createSar = async (req, res, next) => {
   const ids = new ObjectId();
   const treeId = new ObjectId();
+  const titleArr = [];
+  const partID = [];
+  const chapterID = [];
+  const tree = await TableOfContent.findOne();
+  const parts = await Part.find({ _id: { $in: tree.partID } });
 
-  const getRootStructure = await TableOfContent.findOne();
+  //save chapter
+
+  const chapterList = [];
+  const chapterTitle = [];
+  parts.map((part) => {
+    
+    part.chapterID.map((chapter) => {
+      chapterList.push(chapter);
+    });
+  });
+
+  const chapter = await Chapter.find({ _id: { $in: chapterList } });
+  chapter.forEach((element) => {
+    chapterTitle.push(element.title);
+  });
+
+  chapterTitle.map((result, key) => {
+    const ids = new ObjectId();
+    const newPart = new Chapter({
+      _id: ids,
+      title: result,
+      order: key,
+    });
+    chapterID.push(ids);
+    newPart.save();
+  });
+
+  //save part
+
+  parts.forEach((element) => {
+    titleArr.push(element.title);
+  });
+  titleArr.map((result, key) => {
+    const ids = new ObjectId();
+    const newPart = new Part({
+      _id: ids,
+      title: result,
+      chapterID: chapterID,
+      order: key,
+    });
+    partID.push(ids);
+    newPart.save();
+  });
+
+  //chapter save
 
   const {
     title,
@@ -44,8 +97,9 @@ exports.createSar = async (req, res, next) => {
     const newTreeStructure = new TableOfContent({
       _id: treeId,
       sarID: ids,
-      partID: getRootStructure.partID,
+      partID: partID,
     });
+
     newTreeStructure.save((err) => {
       if (err) {
         return next(err);
@@ -112,40 +166,36 @@ exports.modifySarData = async (req, res) => {
     curriculum,
     status,
   } = req.body;
-  await SarFile
-    .updateOne(
-      {
-        _id: req.params.id,
+  await SarFile.updateOne(
+    {
+      _id: req.params.id,
+    },
+    {
+      $set: {
+        title: title,
+        desc: desc,
+        lang: lang,
+        structure: structure,
+        category: category,
+        root: root,
+        license: license,
+        curriculum: curriculum,
+        status: status,
+        updateAt: Date.now(),
       },
-      {
-        $set: {
-          title: title,
-          desc: desc,
-          lang: lang,
-          structure: structure,
-          category: category,
-          root: root,
-          license: license,
-          curriculum: curriculum,
-          status: status,
-          updateAt: Date.now()
-        },
-      }
-    )
-    .exec((err, result) => {
-      if (err) {
-        console.log(err);
-      }
-      res.send("Update sar successfully");
-    });
-}
-
+    }
+  ).exec((err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send("Update sar successfully");
+  });
+};
 
 exports.getDataFromSarFile = async (req, res, next) => {
   const file = await SarFile.findById(req.params.id);
   if (!file) {
     next(new Error("Data not found!!!"));
   }
-  res.send(file)
+  res.send(file);
 };
-

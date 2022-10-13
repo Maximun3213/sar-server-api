@@ -16,62 +16,64 @@ exports.createSar = async (req, res, next) => {
   const chapterID = [];
   const chapterLength = [];
   const tree = await TableOfContent.findOne();
-  const parts = await Part.find({ _id: { $in: tree.partID } });
+  if (tree) {
+    const parts = await Part.find({ _id: { $in: tree.partID } });
 
-  parts.map((part) => {
-    chapterLength.push(part.chapterID.length);
-  });
-  //save chapter
-
-  const chapterList = [];
-  const chapterTitle = [];
-  parts.map((part) => {
-    part.chapterID.map((chapter) => {
-      chapterList.push(chapter);
+    parts.map((part) => {
+      chapterLength.push(part.chapterID.length);
     });
-  });
+    //save chapter
 
-  const chapter = await Chapter.find({ _id: { $in: chapterList } });
-  chapter.forEach((element) => {
-    chapterTitle.push(element.title);
-  });
-
-  chapterTitle.map((result, key) => {
-    const ids = new ObjectId();
-    const newPart = new Chapter({
-      _id: ids,
-      title: result,
-      order: key,
+    const chapterList = [];
+    const chapterTitle = [];
+    parts.map((part) => {
+      part.chapterID.map((chapter) => {
+        chapterList.push(chapter);
+      });
     });
-    chapterID.push(ids);
-    newPart.save();
-  });
-  //save part
 
-  parts.forEach((element) => {
-    titleArr.push(element.title);
-  });
+    const chapter = await Chapter.find({ _id: { $in: chapterList } });
+    chapter.forEach((element) => {
+      chapterTitle.push(element.title);
+    });
 
-  let start = 0;
-
-  titleArr.map((result, key) => {
-    const ids = new ObjectId();
-
-    if (start <= chapterID.length) {
-      console.log("start", start);
-
-      const newPart = new Part({
+    chapterTitle.map((result, key) => {
+      const ids = new ObjectId();
+      const newPart = new Chapter({
         _id: ids,
         title: result,
-        chapterID: chapterID.slice(start, chapterLength[key] + start),
         order: key,
       });
-      partID.push(ids);
+      chapterID.push(ids);
       newPart.save();
+    });
+    //save part
 
-      start = start + chapterLength[key];
-    }
-  });
+    parts.forEach((element) => {
+      titleArr.push(element.title);
+    });
+
+    let start = 0;
+
+    titleArr.map((result, key) => {
+      const ids = new ObjectId();
+
+      if (start <= chapterID.length) {
+        console.log("start", start);
+
+        const newPart = new Part({
+          _id: ids,
+          title: result,
+          chapterID: chapterID.slice(start, chapterLength[key] + start),
+          order: key,
+        });
+        partID.push(ids);
+        newPart.save();
+
+        start = start + chapterLength[key];
+      }
+    });
+  }
 
   const {
     title,

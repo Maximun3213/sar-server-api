@@ -21,12 +21,12 @@ exports.createTreeStructure = async (req, res) => {
 };
 
 exports.createCriteria = async (req, res) => {
-  const { title, chapterID } = req.body;
+  const { title, chapterID, index } = req.body;
   const ids = new ObjectId();
 
   const newCriteria = new Criteria({
     _id: ids,
-    title: title,
+    title: index+' '+title,
   });
 
   newCriteria.save((err) => {
@@ -66,7 +66,7 @@ exports.removeCriteria = async (req, res) => {
         message: "Xóa tiêu chí thành công",
       });
     })
-    
+
   } catch (error) {
     res.send(error)
   }

@@ -59,7 +59,7 @@ exports.createSar = async (req, res, next) => {
       const ids = new ObjectId();
 
       if (start <= chapterID.length) {
-        console.log("start", start);
+        // console.log("start", start);
 
         const newPart = new Part({
           _id: ids,
@@ -154,7 +154,7 @@ exports.removeSarFile = async (req, res, next) => {
         }
         Part.find({ _id: result.partID }, (err, result) => {
           result.map((chapter) => {
-            console.log(chapter.chapterID);
+            // console.log(chapter.chapterID);
             Chapter.deleteMany({ _id: chapter.chapterID }).exec();
           });
         });

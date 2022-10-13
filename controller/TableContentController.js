@@ -72,6 +72,30 @@ exports.removeCriteria = async (req, res) => {
   }
 };
 
+exports.modifyCriteria = async (req, res) => {
+  const {
+    title,
+    order
+  } = req.body;
+  await Criteria.updateOne(
+    {
+      _id: req.params.id,
+    },
+    {
+      $set: {
+        title: title,
+        order: order
+      },
+    }
+  ).exec((err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send("Update criteria successfully");
+  });
+};
+
+
 
 exports.creatChapter = async (req, res) => {
   const { title, content, criteriaID, order } = req.body;

@@ -7,6 +7,7 @@ const {
 
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
+const { SarFile } = require("../models/sarModel");
 
 exports.createTreeStructure = async (req, res) => {
   const { sarID, partID } = req.body;
@@ -150,6 +151,4 @@ exports.getTreeStructure = async (req, res, next) => {
   });
 };
 
-exports.removePartID = (req, res) => {
-  
-}
+

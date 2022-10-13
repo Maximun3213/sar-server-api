@@ -29,12 +29,6 @@ const partSchema = new Schema({
 const chapterSchema = new Schema({
     title: String,
     content: String,
-    partID: 
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'part',
-            default: null
-        },
     criteriaID: [
         {
             type: mongoose.Schema.Types.ObjectId,

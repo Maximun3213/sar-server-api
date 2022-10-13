@@ -51,20 +51,25 @@ exports.createSar = async (req, res, next) => {
   parts.forEach((element) => {
     titleArr.push(element.title);
   });
+
+  let start = 0;
+
   titleArr.map((result, key) => {
-    for (let index = 0; index < chapterLength.length - 1; index++) {
-      console.log(chapterID.slice(0, chapterLength[index]))
+    const ids = new ObjectId();
 
-      // const ids = new ObjectId();
-      // const newPart = new Part({ 
-      //   _id: ids,
-      //   title: result,
-      //   chapterID: chapterID.slice(0, chapterLength[index]),
-      //   order: key,
-      // });
+    if (start <= chapterID.length) {
+      console.log("start", start);
 
-      // partID.push(ids);
-      // newPart.save();
+      const newPart = new Part({
+        _id: ids,
+        title: result,
+        chapterID: chapterID.slice(start, chapterLength[key] + start),
+        order: key,
+      });
+      partID.push(ids);
+      newPart.save();
+
+      start = start + chapterLength[key];
     }
   });
 
@@ -140,12 +145,29 @@ exports.getAllSarFiles = async (req, res, next) => {
 
 exports.removeSarFile = async (req, res, next) => {
   try {
+    await TableOfContent.findOne({ sarID: ObjectId(req.params.id) }).exec(
+      (err, result) => {
+        if (err) {
+          return next(err);
+        }
+        Part.find({ _id: result.partID }, (err, result) => {
+          result.map((chapter) => {
+            console.log(chapter.chapterID);
+            Chapter.deleteMany({ _id: chapter.chapterID }).exec();
+          });
+        });
+
+        Part.deleteMany({ _id: result.partID }).exec();
+      }
+    );
+
     await TableOfContent.deleteOne({ sarID: req.params.id })
       .clone()
       .exec((err) => {
         if (err) {
           console.log(err);
         }
+
         SarFile.deleteOne({ _id: req.params.id }).exec((err) => {
           if (err) {
             console.log(err);

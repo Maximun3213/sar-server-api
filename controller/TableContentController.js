@@ -21,15 +21,57 @@ exports.createTreeStructure = async (req, res) => {
 };
 
 exports.createCriteria = async (req, res) => {
-  const { title, content, order } = req.body;
+  const { title, chapterID } = req.body;
+  const ids = new ObjectId();
 
-  await Criteria.create(req.body);
+  const newCriteria = new Criteria({
+    _id: ids,
+    title: title,
+  });
 
-  res.status(200).json({
-    success: true,
-    message: "Create a new criteria successfully",
+  newCriteria.save((err) => {
+    if (err) {
+      console.log(err);
+    }
+    Chapter.updateOne(
+      { _id: ObjectId(chapterID) },
+      { $push: { criteriaID: ids } }
+    ).exec();
+
+    res.status(200).json({
+      success: true,
+      message: "Create a new criteria successfully",
+    });
   });
 };
+
+exports.removeCriteria = async (req, res) => {
+  try {
+
+    await Chapter.updateOne(
+      { criteriaID: req.params.id },
+      {
+        $pull: {
+          criteriaID: req.params.id,
+        },
+      }
+    ).exec((err) => {
+      if(err){
+        console.log(err)
+      }
+      Criteria.deleteOne({ _id: req.params.id}).exec()
+
+      res.status(200).json({
+        success: true,
+        message: "Xóa tiêu chí thành công",
+      });
+    })
+    
+  } catch (error) {
+    res.send(error)
+  }
+};
+
 
 exports.creatChapter = async (req, res) => {
   const { title, content, criteriaID, order } = req.body;
@@ -125,5 +167,3 @@ exports.getTreeStructure = async (req, res, next) => {
     res.send(result);
   });
 };
-
-

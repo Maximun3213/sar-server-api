@@ -4,7 +4,8 @@ const {
   creatChapter,
   creatPart,
   createTreeStructure,
-  getTreeStructure
+  getTreeStructure,
+  removeCriteria
 } = require("../controller/TableContentController");
 
 const router = express.Router();
@@ -18,5 +19,7 @@ router.route("/createPart").post(creatPart);
 router.route("/createTreeStructure").post(createTreeStructure);
 
 router.route("/getTreeStructure/:id").get(getTreeStructure);
+
+router.route("/removeCriteria/:id").delete(removeCriteria);
 
 module.exports = router;

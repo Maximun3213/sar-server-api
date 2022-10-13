@@ -63,11 +63,11 @@ exports.getTreeStructure = async (req, res, next) => {
 
   const parts = await Part.find({ _id: { $in: tree.partID } });
   parts.map(part => {
-    console.log(part.chapterID.length)
+    // console.log(part.chapterID.length)
     // Chapter.find({ _id: part.chapterID }).exec((err, result) => {
     //   console.log(result.length)
     // });
-    
+
   })
   // const chapter = await Chapter.find({ _id: chapterList });
   // chapter.forEach((element) => {

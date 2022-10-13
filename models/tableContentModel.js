@@ -24,6 +24,10 @@ const partSchema = new Schema({
         }
     ],
     order: Number,
+    type: {
+        type: String,
+        default: 'part'
+    }
 })
 
 const chapterSchema = new Schema({
@@ -36,7 +40,10 @@ const chapterSchema = new Schema({
         }
     ],
     order: Number,
-
+    type: {
+        type: String,
+        default: 'chapter'
+    }
 })
 
 const criteriaSchema = new Schema({
@@ -64,7 +71,10 @@ const criteriaSchema = new Schema({
         default: null
     },
     order: Number,
-
+    type: {
+        type: String,
+        default: 'criteria'
+    }
 })
 
 const TableOfContent = mongoose.model("table_of_content", tableContentSchema);

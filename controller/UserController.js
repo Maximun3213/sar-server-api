@@ -326,16 +326,35 @@ exports.grantRoleMS = async (req, res) => {
 };
 
 exports.getAllUserMS = async (req, res) => {
-  const roleMS = await Role.find({ roleID: "MS" });
-  roleMS.map((result) => {
-    User.find({ roleID: result._id })
-      .populate("roleID")
-      .exec((err, result) => {
-        if (err) {
-          console.log(err);
-        }
-        res.send(result);
-      });
+  const roleMS = await Role.findOne({ roleID: "MS" });
+
+  await User.aggregate([
+    {
+      $match: {
+        roleID: roleMS._id,
+      },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "roleID",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+    {
+      $lookup: {
+        from: "sar_files",
+        localField: "_id",
+        foreignField: "user_manage",
+        as: "mySar",
+      },
+    },
+    {
+      $unwind: "$mySar",
+    },
+  ]).exec((err, result) => {
+    res.send(result);
   });
 };
 
@@ -358,7 +377,7 @@ exports.removeRoleMS = async (req, res) => {
             user_manage: null,
           },
         }
-      ).exec()
+      ).exec();
       res.send("Remove role successfully");
     }
   ).clone();

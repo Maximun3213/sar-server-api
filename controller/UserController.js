@@ -343,7 +343,7 @@ exports.getAllUserMS = async (req, res) => {
       },
     },
     {
-      $unwind: '$role'
+      $unwind: "$role",
     },
     {
       $lookup: {
@@ -394,3 +394,4 @@ exports.getAllUserRoleNull = async (req, res) => {
     res.send("No data user");
   }
 };
+

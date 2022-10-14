@@ -6,6 +6,7 @@ const {
   removeSarFile,
   modifySarData,
   getDataFromSarFile,
+  addMemberToSar
 } = require("../controller/SarController");
 
 const router = express.Router();
@@ -21,6 +22,8 @@ router.route("/removeSarFile/:id").delete(removeSarFile);
 router.route("/modifySarData/:id").put(modifySarData);
 
 router.route("/getDataFromSarFile/:id").get(getDataFromSarFile);
+
+router.route("/addMemberToSar").post(addMemberToSar);
 
 
 module.exports = router;

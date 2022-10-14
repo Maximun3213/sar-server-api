@@ -1,4 +1,5 @@
 const { SarFile, SarProofFolder } = require("../models/sarModel");
+const Role = require("../models/rolesModel");
 const {
   TableOfContent,
   Part,
@@ -7,6 +8,7 @@ const {
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
 const { aggregate } = require("../models/rolesModel");
+const User = require("../models/usersModel");
 
 exports.createSar = async (req, res, next) => {
   const ids = new ObjectId();
@@ -227,4 +229,30 @@ exports.getDataFromSarFile = async (req, res, next) => {
     next(new Error("Data not found!!!"));
   }
   res.send(file);
+};
+
+exports.addMemberToSar = async (req, res, next) => {
+  const listOfUserID = req.body.userList;
+  const roleUser = await Role.findOne({ roleID: "USER" });
+  await SarFile.updateMany(
+    { _id: req.body.sarID },
+    {
+      $push: {
+        user_access: listOfUserID,
+      },
+    }
+  ).exec((err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    User.updateMany(
+      { _id: listOfUserID },
+      {
+        $set: {
+          roleID: roleUser._id,
+        },
+      }
+    ).exec();
+    res.send("Add new members successfully");
+  });
 };

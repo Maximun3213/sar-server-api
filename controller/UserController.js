@@ -1,6 +1,7 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
 const { proofFolder, proofFile } = require("../models/proofsModel");
+const { SarFile } = require("../models/sarModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
@@ -278,8 +279,8 @@ exports.removeProofKey = async (req, res, next) => {
               proofStore: fid,
             },
             $set: {
-              roleID: null
-            }
+              roleID: null,
+            },
           }
         ).exec((err, result) => {
           if (err) {
@@ -311,6 +312,14 @@ exports.grantRoleMS = async (req, res) => {
       if (err) {
         console.log("Cannot update this field");
       }
+      SarFile.updateOne(
+        { _id: req.body.sarID },
+        {
+          $set: {
+            user_manage: req.body.userID,
+          },
+        }
+      ).exec();
       res.send(`Grant key to "${user.fullName}" successfully`);
     });
   });

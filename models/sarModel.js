@@ -42,7 +42,11 @@ const sarFilesSchema = new Schema({
         type: Date,
         default: Date.now()
     },
-    
+    user_manage: {
+        type: mongoose.Schema.ObjectId,
+        ref: 'user',
+        default: null
+    }
 });
 
 const sarFoldersSchema = new Schema({

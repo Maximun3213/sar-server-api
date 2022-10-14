@@ -11,15 +11,15 @@ const {
 
 const router = express.Router();
 
-router.route("/createCriteria").post(createCriteria);
+router.route("/createPart").post(creatPart);
 
 router.route("/createChapter").post(creatChapter);
-
-router.route("/createPart").post(creatPart);
 
 router.route("/createTreeStructure").post(createTreeStructure);
 
 router.route("/getTreeStructure/:id").get(getTreeStructure);
+
+router.route("/createCriteria").post(createCriteria);
 
 router.route("/removeCriteria/:id").delete(removeCriteria);
 

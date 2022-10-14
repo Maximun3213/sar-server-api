@@ -95,8 +95,6 @@ exports.modifyCriteria = async (req, res) => {
   });
 };
 
-
-
 exports.creatChapter = async (req, res) => {
   const { title, content, criteriaID, order } = req.body;
 

@@ -256,3 +256,30 @@ exports.addMemberToSar = async (req, res, next) => {
     res.send("Add new members successfully");
   });
 };
+
+
+exports.deleteMemberOfSar = async (req, res, next) => {
+  const userID = req.body.userID;
+  
+  await SarFile.updateMany(
+    { _id: req.params.id },
+    {
+      $pull: {
+        user_access: { $in: userID},
+      },
+    }
+  ).exec((err) => {
+    if (err) {
+      return next(err);
+    }
+    User.updateMany(
+      { _id: userID },
+      {
+        $set: {
+          roleID: null,
+        },
+      }
+    ).exec();
+    res.send("Remove successfully");
+  });
+};

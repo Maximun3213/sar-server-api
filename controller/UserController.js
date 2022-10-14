@@ -351,6 +351,14 @@ exports.removeRoleMS = async (req, res) => {
       if (err) {
         console.log(err);
       }
+      SarFile.updateOne(
+        { user_manage: req.params.id },
+        {
+          $set: {
+            user_manage: null,
+          },
+        }
+      ).exec()
       res.send("Remove role successfully");
     }
   ).clone();

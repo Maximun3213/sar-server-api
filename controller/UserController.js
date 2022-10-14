@@ -343,6 +343,9 @@ exports.getAllUserMS = async (req, res) => {
       },
     },
     {
+      $unwind: '$role'
+    },
+    {
       $lookup: {
         from: "sar_files",
         localField: "_id",

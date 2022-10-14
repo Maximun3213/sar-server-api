@@ -75,7 +75,7 @@ exports.removeCriteria = async (req, res) => {
 exports.modifyCriteria = async (req, res) => {
   const {
     title,
-    order
+    index
   } = req.body;
   await Criteria.updateOne(
     {
@@ -83,8 +83,7 @@ exports.modifyCriteria = async (req, res) => {
     },
     {
       $set: {
-        title: title,
-        order: order
+        title: index+' '+title,
       },
     }
   ).exec((err, result) => {

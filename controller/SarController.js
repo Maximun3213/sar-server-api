@@ -4,6 +4,7 @@ const {
   TableOfContent,
   Part,
   Chapter,
+  Criteria,
 } = require("../models/tableContentModel");
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
@@ -300,4 +301,42 @@ exports.getAllUserFromSar = async (req, res, next) => {
       });
     }
   }).clone();
+};
+
+exports.grantWritingRole = (req, res, next) => {
+  const { criteriaID, chapterID, userID } = req.body;
+  try {
+    if (criteriaID && criteriaID !== "") {
+      return Criteria.updateOne(
+        { _id: criteriaID },
+        {
+          $set: {
+            user_access: userID,
+          },
+        }
+      ).exec((err) => {
+        if (err) {
+          return res.send("Something went wrong!!");
+        }
+        res.send("Grant key successfully");
+      });
+    } else if (chapterID && chapterID !== "") {
+      return Chapter.updateOne(
+        { _id: chapterID },
+        {
+          $set: {
+            user_access: userID,
+          },
+        }
+      ).exec((err) => {
+        if (err) {
+          return res.send("Something went wrong!!");
+        }
+        res.send("Grant key successfully");
+      });
+    }
+    res.send("Cannot grant key to user");
+  } catch (error) {
+    res.send(error);
+  }
 };

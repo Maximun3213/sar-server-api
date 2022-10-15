@@ -8,7 +8,8 @@ const {
   getDataFromSarFile,
   addMemberToSar,
   deleteMemberOfSar,
-  getAllUserFromSar
+  getAllUserFromSar,
+  grantWritingRole
 } = require("../controller/SarController");
 
 const router = express.Router();
@@ -30,6 +31,8 @@ router.route("/addMemberToSar").post(addMemberToSar);
 router.route("/deleteMemberOfSar/:id/:userID").delete(deleteMemberOfSar);
 
 router.route("/getAllUserFromSar/:id").get(getAllUserFromSar);
+
+router.route("/grantWritingRole").put(grantWritingRole);
 
 
 module.exports = router;

@@ -1,6 +1,7 @@
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
 const { proofFolder, proofFile } = require("../models/proofsModel");
+const { SarFile } = require("../models/sarModel");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
@@ -94,6 +95,7 @@ exports.getAllProofManager = async (req, res, next) => {
 exports.grantProofKey = async (req, res, next) => {
   const filter = { _id: req.body.id };
   const checkProofStoreExist = await User.findById(req.body.id);
+  const roleMP = await Role.find({ roleID: "MP" });
 
   if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
     return proofFolder
@@ -123,9 +125,14 @@ exports.grantProofKey = async (req, res, next) => {
         },
       ])
       .then((data) => {
-        User.findByIdAndUpdate(filter, {
-          $push: { proofStore: req.body.proofStore },
-        }).exec();
+        roleMP.map((result) => {
+          User.findByIdAndUpdate(filter, {
+            $push: { proofStore: req.body.proofStore },
+            $set: {
+              roleID: ObjectId(result._id),
+            },
+          }).exec();
+        });
         proofFolder
           .findByIdAndUpdate(req.body.proofStore, {
             $push: {
@@ -133,17 +140,6 @@ exports.grantProofKey = async (req, res, next) => {
             },
           })
           .exec();
-        // data.forEach((child) => {
-        //   child.children.forEach((childList) => {
-        //     proofFolder
-        //       .findByIdAndUpdate(childList._id, {
-        //         $push: {
-        //           user_access: req.body.id,
-        //         },
-        //       })
-        //       .exec();
-        //   });
-        // });
 
         return res.send("Grant key successfully");
       });
@@ -282,6 +278,9 @@ exports.removeProofKey = async (req, res, next) => {
             $pull: {
               proofStore: fid,
             },
+            $set: {
+              roleID: null,
+            },
           }
         ).exec((err, result) => {
           if (err) {
@@ -295,3 +294,104 @@ exports.removeProofKey = async (req, res, next) => {
     res.status(500).send(error);
   }
 };
+
+//API for MS user
+
+exports.grantRoleMS = async (req, res) => {
+  const user = await User.findOne({ _id: req.body.userID });
+  const roleMS = await Role.find({ roleID: "MS" });
+  roleMS.map((result) => {
+    User.updateOne(
+      { _id: req.body.userID, roleID: null },
+      {
+        $set: {
+          roleID: ObjectId(result._id),
+        },
+      }
+    ).exec((err, result) => {
+      if (err) {
+        console.log("Cannot update this field");
+      }
+      SarFile.updateOne(
+        { _id: req.body.sarID },
+        {
+          $set: {
+            user_manage: req.body.userID,
+          },
+        }
+      ).exec();
+      res.send(`Grant key to "${user.fullName}" successfully`);
+    });
+  });
+};
+
+exports.getAllUserMS = async (req, res) => {
+  const roleMS = await Role.findOne({ roleID: "MS" });
+
+  await User.aggregate([
+    {
+      $match: {
+        roleID: roleMS._id,
+      },
+    },
+    {
+      $lookup: {
+        from: "roles",
+        localField: "roleID",
+        foreignField: "_id",
+        as: "role",
+      },
+    },
+    {
+      $unwind: "$role",
+    },
+    {
+      $lookup: {
+        from: "sar_files",
+        localField: "_id",
+        foreignField: "user_manage",
+        as: "mySar",
+      },
+    },
+    {
+      $unwind: "$mySar",
+    },
+  ]).exec((err, result) => {
+    res.send(result);
+  });
+};
+
+exports.removeRoleMS = async (req, res) => {
+  await User.updateOne(
+    { _id: req.params.id },
+    {
+      $set: {
+        roleID: null,
+      },
+    },
+    (err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      SarFile.updateOne(
+        { user_manage: req.params.id },
+        {
+          $set: {
+            user_manage: null,
+          },
+        }
+      ).exec();
+      res.send("Remove role successfully");
+    }
+  ).clone();
+};
+
+exports.getAllUserRoleNull = async (req, res) => {
+  const roleNull = await User.find({ roleID: null }).exec();
+  if (roleNull) {
+    res.send(roleNull);
+  } else {
+    res.send("No data user");
+  }
+};
+

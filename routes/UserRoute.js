@@ -9,6 +9,10 @@ const {
   getAllDataForEachMP,
   getListUserAccessFromFolder,
   removeProofKey,
+  grantRoleMS,
+  getAllUserMS,
+  removeRoleMS,
+  getAllUserRoleNull
 } = require("../controller/UserController");
 const { authenToken } = require("../middleware/verifyToken");
 
@@ -32,6 +36,17 @@ router.route("/getMPList").get(getAllDataForEachMP)
 router.route("/getListUserAccess/:id").get(getListUserAccessFromFolder)
 
 router.route("/removeProofKey/:fid/:uid").delete(removeProofKey)
+
+router.route("/getAllUserRoleNull").get(getAllUserRoleNull)
+
+
+
+//API for MS USER
+router.route("/grantRoleMS").put(grantRoleMS)
+
+router.route("/getAllUserMS").get(getAllUserMS)
+
+router.route("/removeRoleMS/:id").delete(removeRoleMS)
 
 
 

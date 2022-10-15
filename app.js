@@ -27,12 +27,16 @@ const user = require("./routes/UserRoute");
 const role = require("./routes/RoleRoute");
 const permission = require("./routes/PermissionRoute");
 const proof = require("./routes/ProofRoute");
+const sar = require("./routes/sarRoute");
+const tableOfContent = require("./routes/TableOfContentRoute");
 
 
 app.use("/api/user", user);
 app.use("/api/role", role);
 app.use("/api/permission", permission);
 app.use("/api/proofStore", proof);
+app.use("/api/sar", sar);
+app.use("/api/tableOfContent", tableOfContent);
 
 
 module.exports = app;

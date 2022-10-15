@@ -258,10 +258,9 @@ exports.addMemberToSar = async (req, res, next) => {
 };
 
 exports.deleteMemberOfSar = async (req, res, next) => {
-  const userID = req.body.userID;
-
+  const userID = req.params.userID;
   await SarFile.updateMany(
-    { _id: req.body.sarID },
+    { _id: req.params.id },
     {
       $pull: {
         user_access: { $in: userID },

@@ -253,16 +253,16 @@ exports.addMemberToSar = async (req, res, next) => {
         },
       }
     ).exec();
-    res.send("Add new members successfully");
+    res.send("Thêm thành viên thành công");
   });
 };
 
 
 exports.deleteMemberOfSar = async (req, res, next) => {
   const userID = req.body.userID;
-  
+
   await SarFile.updateMany(
-    { _id: req.params.id },
+    { _id: req.body.sarID },
     {
       $pull: {
         user_access: { $in: userID},

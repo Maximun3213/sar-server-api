@@ -278,7 +278,7 @@ exports.deleteMemberOfSar = async (req, res, next) => {
         },
       }
     ).exec();
-    res.send("Remove successfully");
+    res.send("Xoá thành công");
   });
 };
 

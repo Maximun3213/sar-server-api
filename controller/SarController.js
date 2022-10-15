@@ -257,7 +257,6 @@ exports.addMemberToSar = async (req, res, next) => {
   });
 };
 
-
 exports.deleteMemberOfSar = async (req, res, next) => {
   const userID = req.body.userID;
 
@@ -265,7 +264,7 @@ exports.deleteMemberOfSar = async (req, res, next) => {
     { _id: req.body.sarID },
     {
       $pull: {
-        user_access: { $in: userID},
+        user_access: { $in: userID },
       },
     }
   ).exec((err) => {
@@ -282,4 +281,20 @@ exports.deleteMemberOfSar = async (req, res, next) => {
     ).exec();
     res.send("Remove successfully");
   });
+};
+
+exports.getAllUserFromSar = async (req, res, next) => {
+  await SarFile.findOne({ _id: req.params.id }, (err, result) => {
+    if (err) {
+      return next(err);
+    }
+    if (result.user_access.length > 0) {
+      User.find({ _id: result.user_access }).exec((err, result) => {
+        if (err) {
+          console.log(err);
+        }
+        res.send(result);
+      });
+    }
+  }).clone();
 };

@@ -243,7 +243,7 @@ exports.addMemberToSar = async (req, res, next) => {
     }
   ).exec((err, result) => {
     if (err) {
-      console.log(err);
+      return res.send("Thêm thành viên thất bại");
     }
     User.updateMany(
       { _id: listOfUserID },
@@ -252,8 +252,12 @@ exports.addMemberToSar = async (req, res, next) => {
           roleID: roleUser._id,
         },
       }
-    ).exec();
-    res.send("Thêm thành viên thành công");
+    ).exec((err) => {
+      if (err) {
+        return res.send("Thêm thành viên thất bại");
+      }
+      res.send("Thêm thành viên thành công");
+    });
   });
 };
 

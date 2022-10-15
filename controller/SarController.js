@@ -253,13 +253,12 @@ exports.addMemberToSar = async (req, res, next) => {
         },
       }
     ).exec();
-    res.send("Add new members successfully");
+    res.send("Thêm thành viên thành công");
   });
 };
 
 exports.deleteMemberOfSar = async (req, res, next) => {
-  const userID = req.body.userID;
-  console.log(req.body.userID + '' + req.params.id)
+  const userID = req.params.userID;
   await SarFile.updateMany(
     { _id: req.params.id },
     {

@@ -27,7 +27,7 @@ router.route("/getDataFromSarFile/:id").get(getDataFromSarFile);
 
 router.route("/addMemberToSar").post(addMemberToSar);
 
-router.route("/deleteMemberOfSar/:id").delete(deleteMemberOfSar);
+router.route("/deleteMemberOfSar/:id/:userID").delete(deleteMemberOfSar);
 
 router.route("/getAllUserFromSar/:id").get(getAllUserFromSar);
 

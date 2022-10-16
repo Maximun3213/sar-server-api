@@ -4,6 +4,7 @@ const {
   TableOfContent,
   Part,
   Chapter,
+  Criteria,
 } = require("../models/tableContentModel");
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
@@ -242,9 +243,8 @@ exports.addMemberToSar = async (req, res, next) => {
       },
     }
   ).exec((err, result) => {
-    if (err) {
-      return res.send("Thêm thành viên thất bại");
-    }
+    if (err) return res.send("Thêm thành viên thất bại");
+
     User.updateMany(
       { _id: listOfUserID },
       {
@@ -253,9 +253,8 @@ exports.addMemberToSar = async (req, res, next) => {
         },
       }
     ).exec((err) => {
-      if (err) {
-        return res.send("Thêm thành viên thất bại");
-      }
+      if (err) return res.send("Thêm thành viên thất bại");
+
       res.send("Thêm thành viên thành công");
     });
   });
@@ -300,4 +299,94 @@ exports.getAllUserFromSar = async (req, res, next) => {
       });
     }
   }).clone();
+};
+
+exports.grantWritingRole = async (req, res, next) => {
+  const roleCS = await Role.findOne({ roleID: "CS" });
+  const { criteriaID, chapterID, userID } = req.body;
+  const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
+
+  try {
+    if (checkUserAccess.user_access === null && criteriaID !== "") {
+      return Criteria.updateOne(
+        { _id: criteriaID },
+        {
+          $set: {
+            user_access: userID,
+          },
+        }
+      ).exec((err) => {
+        if (err) {
+          return res.send("Something went wrong!!");
+        }
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleCS._id,
+            },
+          }
+        ).exec();
+        res.send("Grant key successfully");
+      });
+    } else if (chapterID && chapterID !== "") {
+      return Chapter.updateOne(
+        { _id: chapterID },
+        {
+          $set: {
+            user_access: userID,
+          },
+        }
+      ).exec((err) => {
+        if (err) {
+          return res.send("Something went wrong!!");
+        }
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleCS._id,
+            },
+          }
+        ).exec();
+        res.send("Grant key successfully");
+      });
+    }
+    res.send("Cannot grant key to user");
+  } catch (error) {
+    res.send(error);
+  }
+};
+
+exports.removeWritingRole = async (req, res, next) => {
+  const { criteriaID, userID } = req.body;
+  const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
+  const roleUser = await Role.findOne({ roleID: "USER" });
+  try {
+    if (checkUserAccess.user_access == userID) {
+      await Criteria.updateMany(
+        { _id: criteriaID },
+        {
+          $set: {
+            user_access: null,
+          },
+        }
+      ).exec((err) => {
+        if (err) return res.send("Remove failed");
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleUser._id,
+            },
+          }
+        ).exec((err) => {
+          if (err) return res.send("Remove failed");
+          res.send("Remove successfully");
+        });
+      });
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };

@@ -9,7 +9,8 @@ const {
   addMemberToSar,
   deleteMemberOfSar,
   getAllUserFromSar,
-  grantWritingRole
+  grantWritingRole,
+  removeWritingRole
 } = require("../controller/SarController");
 
 const router = express.Router();
@@ -33,6 +34,8 @@ router.route("/deleteMemberOfSar/:id/:userID").delete(deleteMemberOfSar);
 router.route("/getAllUserFromSar/:id").get(getAllUserFromSar);
 
 router.route("/grantWritingRole").put(grantWritingRole);
+
+router.route("/removeWritingRole").post(removeWritingRole);
 
 
 module.exports = router;

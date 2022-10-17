@@ -1,7 +1,6 @@
 const { SarFile, SarProofFolder } = require("../models/sarModel");
 const Role = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
-const socketIO = require("socket.io")
 const {
   TableOfContent,
   Part,

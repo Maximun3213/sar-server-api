@@ -1,39 +1,34 @@
 const express = require("express");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const multer = require("multer")
+const multer = require("multer");
 const app = express();
 
-const cors = require('cors')
+const cors = require("cors");
 
-app.use(express.static('uploads'))
+app.use(express.static("uploads"));
 app.use(express.json());
 app.use(cors());
 
+//socket library
+const  http  =  require('http').Server(app);
+const  io  =  require('socket.io')(http, {
+  cors: {
+    origin: '*',
+  }
+});
 
-const http = require("http")
-const {Server} = require("socket.io")
-
-const server = http.createServer(app);
-
-const io = new Server(server, {
-    cors: {
-      origin: "*",
-      methods: ["GET", "POST"]
-    }
-  });
-
-io.on("connection", (socket)=> {
-  console.log(`User Connected: ${socket.id}`)
-  socket.on("send_id", (data=> {
-    console.log(data)
-  }))
-})
+const  SocketServices  =  require('./services/notify')
+global._io  =  io;
+global._io.on('connection',  SocketServices.connection)
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
   res.header("Access-Control-Allow-Methods", "GET,PUT,POST,DELETE");
-  res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept");
+  res.header(
+    "Access-Control-Allow-Headers",
+    "Origin, X-Requested-With, Content-Type, Accept"
+  );
 
   next();
 });
@@ -45,7 +40,7 @@ const permission = require("./routes/PermissionRoute");
 const proof = require("./routes/ProofRoute");
 const sar = require("./routes/sarRoute");
 const tableOfContent = require("./routes/TableOfContentRoute");
-
+const { ObjectId } = require("mongodb");
 
 app.use("/api/user", user);
 app.use("/api/role", role);
@@ -54,5 +49,4 @@ app.use("/api/proofStore", proof);
 app.use("/api/sar", sar);
 app.use("/api/tableOfContent", tableOfContent);
 
-
-module.exports = server;
+module.exports = http;

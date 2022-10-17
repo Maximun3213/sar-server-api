@@ -1,7 +1,7 @@
 const { SarFile, SarProofFolder } = require("../models/sarModel");
 const Role = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
-
+const socketIO = require("socket.io")
 const {
   TableOfContent,
   Part,
@@ -334,7 +334,7 @@ exports.grantWritingRole = async (req, res, next) => {
           content: `Người quản trị Sar đã thêm bạn vào "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
         });
         notification.save();
-        
+
         res.send("Grant key successfully");
       });
     } else if (chapterID && chapterID !== "") {

@@ -3,21 +3,31 @@ const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const multer = require("multer")
 const app = express();
-const http = require("http")
-const {Server} = require("socket.io")
+
 const cors = require('cors')
 
 app.use(express.static('uploads'))
 app.use(express.json());
 app.use(cors());
 
-const server = http.createServer(app)
+
+const http = require("http")
+const {Server} = require("socket.io")
+
+const server = http.createServer(app);
 
 const io = new Server(server, {
-  cors: {
-    origin: "http://localhost:3000",
-    methods: ["GET", "POST"]
-  }
+    cors: {
+      origin: "*",
+      methods: ["GET", "POST"]
+    }
+  });
+
+io.on("connection", (socket)=> {
+  console.log(`User Connected: ${socket.id}`)
+  socket.on("send_id", (data=> {
+    console.log(data)
+  }))
 })
 
 app.use(function (req, res, next) {
@@ -45,4 +55,4 @@ app.use("/api/sar", sar);
 app.use("/api/tableOfContent", tableOfContent);
 
 
-module.exports = app;
+module.exports = server;

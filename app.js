@@ -10,18 +10,17 @@ app.use(express.static("uploads"));
 app.use(express.json());
 app.use(cors());
 
-const http = require("http");
-const { Server } = require("socket.io");
-
-const server = http.createServer(app);
-
-const io = new Server(server, {
+//socket library
+const  http  =  require('http').Server(app);
+const  io  =  require('socket.io')(http, {
   cors: {
-    origin: "*",
-    methods: ["GET", "POST"],
-  },
+    origin: '*',
+  }
 });
 
+const  SocketServices  =  require('./services/notify')
+global._io  =  io;
+global._io.on('connection',  SocketServices.connection)
 
 app.use(function (req, res, next) {
   res.header("Access-Control-Allow-Origin", "*");
@@ -41,6 +40,7 @@ const permission = require("./routes/PermissionRoute");
 const proof = require("./routes/ProofRoute");
 const sar = require("./routes/sarRoute");
 const tableOfContent = require("./routes/TableOfContentRoute");
+const { ObjectId } = require("mongodb");
 
 app.use("/api/user", user);
 app.use("/api/role", role);
@@ -49,4 +49,4 @@ app.use("/api/proofStore", proof);
 app.use("/api/sar", sar);
 app.use("/api/tableOfContent", tableOfContent);
 
-module.exports = server;
+module.exports = http;

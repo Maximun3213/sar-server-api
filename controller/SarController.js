@@ -308,7 +308,7 @@ exports.grantWritingRole = async (req, res, next) => {
   const { criteriaID, chapterID, userID, idSender, idSar } = req.body;
   const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
   const sar = await SarFile.findOne({ _id: idSar });
-  const mess ='xin chao'
+  const mess = 'xin chao'
   _io.emit('receive_notify', mess)
   try {
     if (checkUserAccess.user_access === null && criteriaID !== "") {

@@ -26,7 +26,7 @@ exports.createCriteria = async (req, res) => {
 
   const newCriteria = new Criteria({
     _id: ids,
-    title: index+' '+title,
+    title: index + " " + title,
   });
 
   newCriteria.save((err) => {
@@ -47,7 +47,6 @@ exports.createCriteria = async (req, res) => {
 
 exports.removeCriteria = async (req, res) => {
   try {
-
     await Chapter.updateOne(
       { criteriaID: req.params.id },
       {
@@ -56,34 +55,30 @@ exports.removeCriteria = async (req, res) => {
         },
       }
     ).exec((err) => {
-      if(err){
-        console.log(err)
+      if (err) {
+        console.log(err);
       }
-      Criteria.deleteOne({ _id: req.params.id}).exec()
+      Criteria.deleteOne({ _id: req.params.id }).exec();
 
       res.status(200).json({
         success: true,
         message: "Xóa tiêu chí thành công",
       });
-    })
-
+    });
   } catch (error) {
-    res.send(error)
+    res.send(error);
   }
 };
 
 exports.modifyCriteria = async (req, res) => {
-  const {
-    title,
-    index
-  } = req.body;
+  const { title, index } = req.body;
   await Criteria.updateOne(
     {
       _id: req.params.id,
     },
     {
       $set: {
-        title: index+' '+title,
+        title: index + " " + title,
       },
     }
   ).exec((err, result) => {
@@ -187,4 +182,20 @@ exports.getTreeStructure = async (req, res, next) => {
     }
     res.send(result);
   });
+};
+
+exports.checkUserExist = async (req, res, next) => {
+  const { idCriteria, idUserLogin } = req.body;
+  if (idCriteria.length > 0) {
+    return Criteria.findOne({ _id: idCriteria }, (err, result) => {
+      if (err) {
+        return res.send({ isExist: false });
+      }
+      if (result !== null && result.user_access == idUserLogin) {
+        return res.send({ isExist: true });
+      }
+      res.send({ isExist: false });
+    }).clone();
+  }
+  res.send("Criteria field cannot be empty");
 };

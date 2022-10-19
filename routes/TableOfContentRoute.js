@@ -6,7 +6,8 @@ const {
   createTreeStructure,
   getTreeStructure,
   removeCriteria,
-  modifyCriteria
+  modifyCriteria,
+  checkUserExist
 } = require("../controller/TableContentController");
 
 const router = express.Router();
@@ -24,5 +25,7 @@ router.route("/createCriteria").post(createCriteria);
 router.route("/removeCriteria/:id").delete(removeCriteria);
 
 router.route("/modifyCriteria/:id").put(modifyCriteria);
+
+router.route("/checkUserExist").post(checkUserExist);
 
 module.exports = router;

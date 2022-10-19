@@ -401,7 +401,6 @@ exports.getNotificationByID = async (req, res, next) => {
   try {
     await Notification.find({ receiver: req.params.id }).exec((err, notification) => {
       if (err) return res.send(err);
-      _io.emit('notify', notification)
       res.status(200).json({
         success: true,
         notification,

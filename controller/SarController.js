@@ -308,8 +308,7 @@ exports.grantWritingRole = async (req, res, next) => {
   const { criteriaID, chapterID, userID, idSender, idSar } = req.body;
   const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
   const sar = await SarFile.findOne({ _id: idSar });
-  const mess ='xin chao'
-  _io.emit('receive_notify', mess)
+
   try {
     if (checkUserAccess.user_access === null && criteriaID !== "") {
       return Criteria.updateOne(
@@ -335,7 +334,6 @@ exports.grantWritingRole = async (req, res, next) => {
           content: `Người quản trị Sar đã thêm bạn vào "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
         });
         notification.save();
-
         res.send("Grant key successfully");
       });
     } else if (chapterID && chapterID !== "") {
@@ -365,6 +363,7 @@ exports.grantWritingRole = async (req, res, next) => {
   } catch (error) {
     res.send(error);
   }
+
 };
 
 exports.removeWritingRole = async (req, res, next) => {

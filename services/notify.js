@@ -1,3 +1,4 @@
+const Notification = require("../models/notificationModel");
 let onlineUsers = [];
 
 const addNewUser = (idUser, socketId) => {
@@ -14,23 +15,25 @@ const getUser = (idUser) => {
 };
 
 class SocketServices {
-
   connection(socket) {
-    socket.on("disconnect", () => {
-      console.log(`User disconnect id is ${socket.id}`);
-      removeUser(socket.id);
-    });
 
-    //on
     socket.on("newUser", (idUser) => {
       addNewUser(idUser, socket.id);
-      console.log(idUser)
+      console.log(onlineUsers);
     });
 
-    socket.on("send_notify", ({ receiverID }) => {
+    socket.on("sendNotification", async ({receiverID}) => {
       const receiver = getUser(receiverID);
-      console.log(receiver.socketId)
-      _io.to(receiver.socketId).emit("receive_notify", receiverID);
+      await Notification.find({ receiver: receiver.idUser }).exec((err, notification) => {
+        if (err) return res.send(err);
+        // _io.to(receiver.socketId).emit('notify', notification)
+        _io.to(receiver.socketId).emit("getNotification", notification);
+      });
+      console.log(receiver.socketId);
+    });
+
+    socket.on("disconnect", () => {
+      removeUser(socket.id);
     });
   }
 }

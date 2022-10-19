@@ -26,10 +26,8 @@ class SocketServices {
       const receiver = getUser(receiverID);
       await Notification.find({ receiver: receiver.idUser }).exec((err, notification) => {
         if (err) return res.send(err);
-        // _io.to(receiver.socketId).emit('notify', notification)
         _io.to(receiver.socketId).emit("getNotification", notification);
       });
-      console.log(receiver.socketId);
     });
 
     socket.on("disconnect", () => {

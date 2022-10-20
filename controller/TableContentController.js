@@ -194,7 +194,7 @@ exports.checkUserExist =  async (req, res, next) => {
       if (result !== null && result.user_access == idUserLogin) {
         return res.send({ isExist: true, content: result.content });
       }
-      res.send({ isExist: false, content: result.content });
+      res.send({ isExist: false });
     }).clone();
   }
   res.send("Criteria field cannot be empty");

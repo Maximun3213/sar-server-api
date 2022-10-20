@@ -215,6 +215,6 @@ exports.addNewContent = async (req, res) => {
     if (err) {
       console.log(err);
     }
-    res.send("Add content for this criteria successfully");
+    res.send("Lưu tiêu chí thành công");
   });
 };

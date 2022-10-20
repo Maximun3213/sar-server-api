@@ -189,10 +189,10 @@ exports.checkUserExist =  async (req, res, next) => {
   if (idCriteria.length > 0) {
     return Criteria.findOne({ _id: idCriteria }, (err, result) => {
       if (err) {
-        return res.send({ isExist: false, content: result.content });
+        return res.send({ isExist: false, content: result.content ? result.content : '' });
       }
       if (result !== null && result.user_access == idUserLogin) {
-        return res.send({ isExist: true, content: result.content });
+        return res.send({ isExist: true, content: result.content ? result.content : '' });
       }
       res.send({ isExist: false });
     }).clone();

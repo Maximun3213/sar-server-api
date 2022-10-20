@@ -48,7 +48,10 @@ const chapterSchema = new Schema({
 
 const criteriaSchema = new Schema({
     title: String,
-    content: String,
+    content: {
+        type: String,
+        default: null
+    },
     parentID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'criteria',

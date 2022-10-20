@@ -184,7 +184,7 @@ exports.getTreeStructure = async (req, res, next) => {
   });
 };
 
-exports.checkUserExist = async (req, res, next) => {
+exports.checkUserExist =  async (req, res, next) => {
   const { idCriteria, idUserLogin } = req.body;
   if (idCriteria.length > 0) {
     return Criteria.findOne({ _id: idCriteria }, (err, result) => {
@@ -198,4 +198,23 @@ exports.checkUserExist = async (req, res, next) => {
     }).clone();
   }
   res.send("Criteria field cannot be empty");
+};
+
+exports.addNewContent = async (req, res) => {
+  const { idCriteria, content } = req.body;
+  await Criteria.updateOne(
+    {
+      _id: idCriteria,
+    },
+    {
+      $set: {
+        content: content,
+      },
+    }
+  ).exec((err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    res.send("Add content for this criteria successfully");
+  });
 };

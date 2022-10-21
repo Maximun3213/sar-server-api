@@ -12,7 +12,8 @@ const {
   grantRoleMS,
   getAllUserMS,
   removeRoleMS,
-  getAllUserRoleNull
+  getAllUserRoleNull,
+  getNotificationByID
 } = require("../controller/UserController");
 const { authenToken } = require("../middleware/verifyToken");
 
@@ -48,6 +49,9 @@ router.route("/getAllUserMS").get(getAllUserMS)
 
 router.route("/removeRoleMS/:id").delete(removeRoleMS)
 
+//API for handle notification
+
+router.route("/getNotificationByID/:id").get(getNotificationByID)
 
 
 

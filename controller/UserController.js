@@ -7,6 +7,7 @@ const jwt = require("jsonwebtoken");
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
 const { populate } = require("../models/rolesModel");
+const Notification = require("../models/notificationModel");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -395,3 +396,17 @@ exports.getAllUserRoleNull = async (req, res) => {
   }
 };
 
+//API handle notification for each user
+exports.getNotificationByID = async (req, res, next) => {
+  try {
+    await Notification.find({ receiver: req.params.id }).exec((err, notification) => {
+      if (err) return res.send(err);
+      res.status(200).json({
+        success: true,
+        notification,
+      });
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

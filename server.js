@@ -1,4 +1,4 @@
-const app = require("./app")
+const http = require("./app")
 const dotenv = require("dotenv")
 const connectDatabase = require('./database/db.js')
 
@@ -6,12 +6,12 @@ const connectDatabase = require('./database/db.js')
 dotenv.config({
     path: "./config/.env"
 })
-//connect database 
+//connect database
 connectDatabase()
 
-//create server 
+//create server
 
-app.listen(process.env.PORT, () => {
+http.listen(process.env.PORT, () => {
     console.log(`Listening...`)
 })
 

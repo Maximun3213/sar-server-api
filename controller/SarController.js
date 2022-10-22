@@ -366,9 +366,11 @@ exports.grantWritingRole = async (req, res, next) => {
 };
 
 exports.removeWritingRole = async (req, res, next) => {
-  const { criteriaID, userID } = req.body;
+  const { criteriaID, userID, idSender, idSar } = req.body;
   const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
   const roleUser = await Role.findOne({ roleID: "USER" });
+  const sar = await SarFile.findOne({ _id: idSar });
+
   try {
     if (checkUserAccess.user_access == userID) {
       await Criteria.updateMany(
@@ -379,7 +381,7 @@ exports.removeWritingRole = async (req, res, next) => {
           },
         }
       ).exec((err) => {
-        if (err) return res.send("Remove failed");
+        if (err) return res.send("Xóa thất bại");
         User.updateMany(
           { _id: userID },
           {
@@ -388,8 +390,14 @@ exports.removeWritingRole = async (req, res, next) => {
             },
           }
         ).exec((err) => {
-          if (err) return res.send("Remove failed");
-          res.send("Remove successfully");
+          if (err) return res.send("Xóa thất bại");
+          const notification = new Notification({
+            sender: idSender,
+            receiver: userID,
+            content: `Người quản trị Sar đã xóa bạn khỏi "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
+          });
+          notification.save();
+          res.send("Xoá thành công");
         });
       });
     }

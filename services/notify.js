@@ -19,7 +19,6 @@ class SocketServices {
 
     socket.on("newUser", (idUser) => {
       addNewUser(idUser, socket.id);
-      console.log(onlineUsers);
     });
 
     socket.on("sendNotification", async ({receiverID}) => {

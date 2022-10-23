@@ -305,7 +305,7 @@ exports.getAllUserFromSar = async (req, res, next) => {
 
 exports.grantWritingRole = async (req, res, next) => {
   const roleCS = await Role.findOne({ roleID: "CS" });
-  const { criteriaID, chapterID, userID, idSender, idSar } = req.body;
+  const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
   const sar = await SarFile.findOne({ _id: idSar });
   try {
@@ -330,7 +330,8 @@ exports.grantWritingRole = async (req, res, next) => {
         const notification = new Notification({
           sender: idSender,
           receiver: userID,
-          content: `Người quản trị Sar đã thêm bạn vào "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
+          createAt: createAt,
+          content: `Người quản trị Sar đã cấp quyền viết cho bạn tiêu chí "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
         });
         notification.save();
         res.send("Grant key successfully");
@@ -366,7 +367,7 @@ exports.grantWritingRole = async (req, res, next) => {
 };
 
 exports.removeWritingRole = async (req, res, next) => {
-  const { criteriaID, userID, idSender, idSar } = req.body;
+  const { criteriaID, userID, idSender, idSar, createAt } = req.body;
   const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
   const roleUser = await Role.findOne({ roleID: "USER" });
   const sar = await SarFile.findOne({ _id: idSar });
@@ -394,7 +395,8 @@ exports.removeWritingRole = async (req, res, next) => {
           const notification = new Notification({
             sender: idSender,
             receiver: userID,
-            content: `Người quản trị Sar đã xóa bạn khỏi "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
+            createAt: createAt,
+            content: `Người quản trị Sar đã xóa quyền viết của bạn tiêu chí "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
           });
           notification.save();
           res.send("Xoá thành công");

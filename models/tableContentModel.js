@@ -43,7 +43,12 @@ const chapterSchema = new Schema({
     type: {
         type: String,
         default: 'chapter'
-    }
+    },
+    user_access: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'user',
+        default: null
+    },
 })
 
 const criteriaSchema = new Schema({

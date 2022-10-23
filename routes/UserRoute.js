@@ -15,7 +15,6 @@ const {
   getAllUserRoleNull,
   getNotificationByID
 } = require("../controller/UserController");
-const { authenToken } = require("../middleware/verifyToken");
 
 const router = express.Router();
 

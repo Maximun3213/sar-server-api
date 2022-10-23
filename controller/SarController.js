@@ -1,7 +1,7 @@
 const { SarFile, SarProofFolder } = require("../models/sarModel");
 const Role = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
-
+const { setNotification } = require("../middleware/notification");
 const {
   TableOfContent,
   Part,
@@ -306,83 +306,72 @@ exports.getAllUserFromSar = async (req, res, next) => {
 exports.grantWritingRole = async (req, res, next) => {
   const roleCS = await Role.findOne({ roleID: "CS" });
   const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
-  const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
   const sar = await SarFile.findOne({ _id: idSar });
-  try {
-    if (checkUserAccess.user_access === null && criteriaID !== "") {
-      return Criteria.updateOne(
-        { _id: criteriaID },
-        {
-          $set: {
-            user_access: userID,
-          },
-        }
-      ).exec((err) => {
-        if (err) return res.send("Something went wrong!!");
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleCS._id,
-            },
-          }
-        ).exec();
-        const notification = new Notification({
-          sender: idSender,
-          receiver: userID,
-          createAt: createAt,
-          content: `Người quản trị Sar đã cấp quyền viết cho bạn tiêu chí "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
-        });
-        notification.save();
-        res.send("Grant key successfully");
-      });
-    } else if (chapterID && chapterID !== "") {
-      return Chapter.updateOne(
-        { _id: chapterID },
-        {
-          $set: {
-            user_access: userID,
-          },
-        }
-      ).exec((err) => {
-        if (err) {
-          return res.send("Something went wrong!!");
-        }
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleCS._id,
-            },
-          }
-        ).exec();
-        res.send("Cấp quyền truy cập thành công");
-      });
-    }
-    res.send("Không thể cấp quyền cho người dùng này");
-  } catch (error) {
-    res.send(error);
-  }
 
+  if (criteriaID) {
+    return Criteria.findOneAndUpdate(
+      { _id: criteriaID },
+      { $set: { user_access: userID } },
+      (err, result) => {
+        const content = `Người quản trị Sar đã thêm bạn vào tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
+        if (err) return res.send(err);
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleCS._id,
+            },
+          }
+        ).exec();
+        setNotification(idSender, userID, createAt, content);
+
+        res.send("Cấp quyền thành công");
+      }
+    ).clone();
+  } else if (chapterID) {
+    return Chapter.findOneAndUpdate(
+      { _id: chapterID },
+      {
+        $set: {
+          user_access: userID,
+        },
+      },
+      (err, result) => {
+        const content = `Người quản trị Sar đã thêm bạn vào chương "${result.title}" của quyển Sar "${sar.title}"`;
+
+        if (err) return res.send(err);
+
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleCS._id,
+            },
+          }
+        ).exec();
+        setNotification(idSender, userID, createAt, content);
+
+        res.send("Cấp quyền truy cập thành công");
+      }
+    ).clone();
+  }
+  res.send("Không thể cấp quyền");
 };
 
 exports.removeWritingRole = async (req, res, next) => {
-  const { criteriaID, userID, idSender, idSar, createAt } = req.body;
-  const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
+  const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const roleUser = await Role.findOne({ roleID: "USER" });
   const sar = await SarFile.findOne({ _id: idSar });
 
-  try {
-    if (checkUserAccess.user_access == userID) {
-      await Criteria.updateMany(
-        { _id: criteriaID },
-        {
-          $set: {
-            user_access: null,
-          },
-        }
-      ).exec((err) => {
-        if (err) return res.send("Xóa thất bại");
+  if (criteriaID) {
+    return Criteria.findOneAndUpdate(
+      { _id: criteriaID },
+      { $set: { user_access: null } },
+      (err, result) => {
+        if (err) return res.send(err);
+
+        const content = `Người quản trị Sar đã xóa bạn khỏi tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
+
         User.updateMany(
           { _id: userID },
           {
@@ -392,18 +381,39 @@ exports.removeWritingRole = async (req, res, next) => {
           }
         ).exec((err) => {
           if (err) return res.send("Xóa thất bại");
-          const notification = new Notification({
-            sender: idSender,
-            receiver: userID,
-            createAt: createAt,
-            content: `Người quản trị Sar đã xóa quyền viết của bạn tiêu chí "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
-          });
-          notification.save();
-          res.send("Xoá thành công");
+
+          setNotification(idSender, userID, createAt, content);
         });
-      });
-    }
-  } catch (error) {
-    console.log(error);
+
+        res.send("Xóa thành công");
+      }
+    ).clone();
+  } else if (chapterID) {
+    return Chapter.findOneAndUpdate(
+      { _id: chapterID },
+      {
+        $set: {
+          user_access: null,
+        },
+      },
+      (err, result) => {
+        if (err) return res.send(err);
+
+        const content = `Người quản trị Sar đã xóa bạn khỏi chương "${result.title}" của quyển Sar "${sar.title}"`;
+
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleUser._id,
+            },
+          }
+        ).exec();
+        setNotification(idSender, userID, createAt, content);
+
+        res.send("Xóa thành công");
+      }
+    ).clone();
   }
+  res.send("Xóa thất bại");
 };

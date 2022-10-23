@@ -355,10 +355,10 @@ exports.grantWritingRole = async (req, res, next) => {
             },
           }
         ).exec();
-        res.send("Grant key successfully");
+        res.send("Cấp quyền truy cập thành công");
       });
     }
-    res.send("Cannot grant key to user");
+    res.send("Không thể cấp quyền cho người dùng này");
   } catch (error) {
     res.send(error);
   }

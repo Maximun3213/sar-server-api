@@ -178,7 +178,7 @@ exports.removeSarFile = async (req, res, next) => {
         SarFile.findOneAndDelete({ _id: req.params.id }).exec((err, result) => {
           if (err) console.log(err);
           User.updateMany(
-            { _id: result.user_access, _id: result.user_manage },
+            { _id: result.user_access && result.user_manage },
             {
               $set: {
                 roleID: null,

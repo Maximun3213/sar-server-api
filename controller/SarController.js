@@ -21,8 +21,8 @@ exports.createSar = async (req, res, next) => {
   const chapterID = [];
   const chapterLength = [];
   const tree = await TableOfContent.findOne();
-  if (tree) {
-    const parts = await Part.find({ _id: { $in: tree.partID } });
+  if (treeRoot) {
+    const parts = await Part.find({ _id: { $in: treeRoot.partID } });
 
     parts.map((part) => {
       chapterLength.push(part.chapterID.length);
@@ -159,8 +159,8 @@ exports.removeSarFile = async (req, res, next) => {
         }
         Part.find({ _id: result.partID }, (err, result) => {
           result.map((chapter) => {
-            // console.log(chapter.chapterID);
             Chapter.deleteMany({ _id: chapter.chapterID }).exec();
+            Criteria.deleteMany({ _id: chapter.criteriaID}).exec()
           });
         });
 
@@ -175,11 +175,17 @@ exports.removeSarFile = async (req, res, next) => {
           console.log(err);
         }
 
-        SarFile.deleteOne({ _id: req.params.id }).exec((err) => {
-          if (err) {
-            console.log(err);
-          }
-          res.send("Delete Sar successfully");
+        SarFile.findOneAndDelete({ _id: req.params.id }).exec((err, result) => {
+          if (err) console.log(err);
+          User.updateMany(
+            { _id: result.user_access, _id: result.user_manage },
+            {
+              $set: {
+                roleID: null,
+              },
+            }
+          );
+          res.send("Xóa quyển Sar thành công");
         });
       });
   } catch (error) {

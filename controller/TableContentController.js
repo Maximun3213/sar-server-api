@@ -185,9 +185,9 @@ exports.getTreeStructure = async (req, res, next) => {
 };
 
 exports.checkUserExist = async (req, res, next) => {
-  const { idCriteria, idUserLogin } = req.body;
+  const { idCriteria, idChapter, idUserLogin } = req.body;
   let content;
-  if (idCriteria.length > 0) {
+  if (idCriteria) {
     return Criteria.findOne({ _id: idCriteria }, (err, result) => {
       content = result.content;
       if (err) {
@@ -199,7 +199,19 @@ exports.checkUserExist = async (req, res, next) => {
       res.send({ isExist: false, content: content });
     }).clone();
   }
-  res.send("Criteria field cannot be empty");
+  if (idChapter) {
+    return Chapter.findOne({ _id: idChapter }, (err, result) => {
+      content = result.content;
+      if (err) {
+        return res.send({ isExist: false, content: content });
+      }
+      if (result !== null && result.user_access == idUserLogin) {
+        return res.send({ isExist: true, content: content });
+      }
+      res.send({ isExist: false, content: content });
+    }).clone();
+  }
+  res.send({ isExist: false });
 };
 
 exports.addNewContent = async (req, res) => {

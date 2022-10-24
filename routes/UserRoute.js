@@ -14,7 +14,8 @@ const {
   removeRoleMS,
   getAllUserRoleNull,
   getNotificationByID,
-  removeNotification
+  removeNotification,
+  checkIsRead
 } = require("../controller/UserController");
 
 const router = express.Router();
@@ -54,6 +55,8 @@ router.route("/removeRoleMS/:id").delete(removeRoleMS)
 router.route("/getNotificationByID/:id").get(getNotificationByID)
 
 router.route("/removeNotification/:id").delete(removeNotification)
+
+router.route("/checkIsRead/:id").put(checkIsRead)
 
 
 

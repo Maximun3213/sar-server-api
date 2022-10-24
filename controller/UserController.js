@@ -399,25 +399,40 @@ exports.getAllUserRoleNull = async (req, res) => {
 //API handle notification for each user
 exports.getNotificationByID = async (req, res, next) => {
   try {
-    await Notification.find({ receiver: req.params.id }).exec((err, notification) => {
+    await Notification.find({ receiver: req.params.id }).exec(
+      (err, notification) => {
+        if (err) return res.send(err);
+        res.status(200).json({
+          success: true,
+          notification,
+        });
+      }
+    );
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.removeNotification = async (req, res, next) => {
+  try {
+    await Notification.deleteOne({ _id: req.params.id }).exec((err) => {
       if (err) return res.send(err);
-      res.status(200).json({
-        success: true,
-        notification,
-      });
+      res.send("Đã xóa 1 thông báo");
     });
   } catch (error) {
     console.log(error);
   }
 };
 
-
-exports.removeNotification = async (req, res, next) => {
+exports.checkIsRead = async (req, res, next) => {
   try {
-    await Notification.deleteOne({ _id: req.params.id }).exec((err) => {
-      if (err) return res.send(err);
-      res.send('Đã xóa 1 thông báo')
-    });
+    await Notification.updateMany(
+      { _id: req.params.id },
+      { $set: { is_read: true } }
+    ).exec((err) => {
+      if(err) console.log(err)
+      res.send('Đã xem')
+    })
   } catch (error) {
     console.log(error);
   }

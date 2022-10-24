@@ -410,3 +410,15 @@ exports.getNotificationByID = async (req, res, next) => {
     console.log(error);
   }
 };
+
+
+exports.removeNotification = async (req, res, next) => {
+  try {
+    await Notification.deleteOne({ _id: req.params.id }).exec((err) => {
+      if (err) return res.send(err);
+      res.send('Đã xóa 1 thông báo')
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};

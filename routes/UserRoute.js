@@ -13,7 +13,8 @@ const {
   getAllUserMS,
   removeRoleMS,
   getAllUserRoleNull,
-  getNotificationByID
+  getNotificationByID,
+  removeNotification
 } = require("../controller/UserController");
 
 const router = express.Router();
@@ -51,6 +52,8 @@ router.route("/removeRoleMS/:id").delete(removeRoleMS)
 //API for handle notification
 
 router.route("/getNotificationByID/:id").get(getNotificationByID)
+
+router.route("/removeNotification/:id").delete(removeNotification)
 
 
 

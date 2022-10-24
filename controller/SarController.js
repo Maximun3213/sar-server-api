@@ -21,8 +21,8 @@ exports.createSar = async (req, res, next) => {
   const chapterID = [];
   const chapterLength = [];
   const tree = await TableOfContent.findOne();
-  if (treeRoot) {
-    const parts = await Part.find({ _id: { $in: treeRoot.partID } });
+  if (tree) {
+    const parts = await Part.find({ _id: { $in: tree.partID } });
 
     parts.map((part) => {
       chapterLength.push(part.chapterID.length);

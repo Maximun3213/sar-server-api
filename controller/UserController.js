@@ -430,9 +430,9 @@ exports.checkIsRead = async (req, res, next) => {
       { _id: req.params.id },
       { $set: { is_read: true } }
     ).exec((err) => {
-      if(err) console.log(err)
-      res.send('Đã xem')
-    })
+      if (err) console.log(err);
+      res.send("Đã xem");
+    });
   } catch (error) {
     console.log(error);
   }

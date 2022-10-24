@@ -23,7 +23,7 @@ exports.userLogin = async (req, res) => {
   if (!user)
     return res
       .status(400)
-      .json({ success: false, message: "Email not matched" });
+      .json({ success: false, message: "Email không đúng" });
 
   //KIểm tra password có đúng hay không bằng cách hash password
   const isPasswordMatched = await user.comparedPassword(password);
@@ -31,7 +31,7 @@ exports.userLogin = async (req, res) => {
   if (!isPasswordMatched)
     return res.status(400).json({
       success: false,
-      message: "Invalid password",
+      message: "Sai mật khẩu",
     });
 
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);

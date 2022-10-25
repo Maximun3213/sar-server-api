@@ -159,8 +159,12 @@ exports.removeSarFile = async (req, res, next) => {
         }
         Part.find({ _id: result.partID }, (err, result) => {
           result.map((chapter) => {
+            Chapter.find({ _id: chapter.chapterID }, (err, result) => {
+              result.map((criteria) => {
+                Criteria.deleteMany({ _id: criteria.criteriaID }).exec();
+              });
+            });
             Chapter.deleteMany({ _id: chapter.chapterID }).exec();
-            Criteria.deleteMany({ _id: chapter.criteriaID}).exec()
           });
         });
 
@@ -174,18 +178,45 @@ exports.removeSarFile = async (req, res, next) => {
         if (err) {
           console.log(err);
         }
+        SarFile.aggregate([
+          {
+            $match: {
+              _id: ObjectId(req.params.id),
+            },
+          },
+          {
+            $unwind: {
+              path: "$user_access",
+              preserveNullAndEmptyArrays: true,
+            },
+          },
+        ]).exec((err, doc) => {
+          doc.map((result) => {
+            if (result.user_manage !== null) {
+              User.updateMany(
+                { _id: result.user_access },
+                {
+                  $set: {
+                    roleID: null,
+                  },
+                }
+              ).exec();
 
-        SarFile.findOneAndDelete({ _id: req.params.id }).exec((err, result) => {
-          if (err) console.log(err);
-          User.updateMany(
-            { _id: result.user_access && result.user_manage },
-            {
-              $set: {
-                roleID: null,
-              },
+              User.updateMany(
+                { _id: result.user_manage },
+                {
+                  $set: {
+                    roleID: null,
+                  },
+                }
+              ).exec();
             }
-          );
-          res.send("Xóa quyển Sar thành công");
+
+            SarFile.deleteOne({ _id: result._id }).exec((err) => {
+              if (err) console.log(err);
+              res.send("Xóa quyển Sar thành công");
+            });
+          });
         });
       });
   } catch (error) {

@@ -152,6 +152,8 @@ exports.getAllSarFiles = async (req, res, next) => {
 
 exports.removeSarFile = async (req, res, next) => {
   try {
+    const chapterList = []
+    const criteriaList = []
     await TableOfContent.findOne({ sarID: ObjectId(req.params.id) }).exec(
       (err, result) => {
         if (err) {
@@ -159,12 +161,12 @@ exports.removeSarFile = async (req, res, next) => {
         }
         Part.find({ _id: result.partID }, (err, result) => {
           result.map((chapter) => {
-            Chapter.find({ _id: chapter.chapterID }, (err, result) => {
-              result.map((criteria) => {
-                Criteria.deleteMany({ _id: criteria.criteriaID }).exec();
-              });
-            });
             Chapter.deleteMany({ _id: chapter.chapterID }).exec();
+            // Chapter.find({ _id: chapter.chapterID }, (err, result) => {
+            //   result.map((criteria) => {
+            //     Criteria.deleteMany({ _id: criteria.criteriaID }).exec();
+            //   });
+            // });
           });
         });
 

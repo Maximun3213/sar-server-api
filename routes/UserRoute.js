@@ -18,7 +18,9 @@ const {
   checkIsRead,
   getUserById,
   updateUserById,
-  deleteUserById
+  deleteUserById,
+  changePassword,
+  forgotPassword
 } = require("../controller/UserController");
 
 const router = express.Router();
@@ -49,6 +51,10 @@ router.route("/getUserById/:id").get(getUserById)
 router.route("/updateUserById/:id").put(updateUserById)
 
 router.route("/deleteUserById/:id").delete(deleteUserById)
+
+router.route("/changePassword/:id").put(changePassword)
+
+router.route("/forgotPassword").post(forgotPassword)
 
 
 //API for MS USER

@@ -8,6 +8,7 @@ const json = require("body-parser");
 const { ObjectId } = require("mongodb");
 const { populate } = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
+const sendMail = require("../utils/sendMail.js");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -139,6 +140,98 @@ exports.userRegister = async (req, res) => {
     message: "Tạo tài khoản thành công",
   });
 };
+
+exports.changePassword = async (req, res, next) => {
+
+  const user = await User.findById(req.params.id).select("password")
+  const isPasswordMatched = await user.comparedPassword(req.body.oldPassword)
+
+  if(!isPasswordMatched){
+      return res.status(400).send("Mật khẩu cũ không chính xác");
+  }
+  if(req.body.newPassword !== req.body.confirmPassword){
+      // return next(new ErrorHandler("Password not matched each other", 400));
+      return res.status(400).send("Mật khẩu mới không khớp");
+
+  }
+  user.password = req.body.newPassword
+  await user.save()
+  return res.status(200).send("Đổi mật khẩu thành công");
+};
+
+exports.forgotPassword = async (req, res, next) => {
+  const user = await User.findOne({ email: req.body.email });
+
+  if (!user)
+    return res.status(400).send("Email không tồn tại");
+
+  //Get refreshToken
+  const refreshToken = user.getRefreshToken();
+  await user.save({
+    validateBeforeSave: false,
+  });
+  //http://4000
+  const resetPasswordUrl = `${req.protocol}://${req.get(
+    "host"
+  )}/password/forgot/${refreshToken}`;
+  const message = `Your password refresh token is: \n\n ${resetPasswordUrl}`;
+
+  try {
+    await sendMail({
+      email: user.email,
+      subject: "Confirm password recovery",
+      message,
+    });
+    res.status(200).json({
+      success: true,
+      message: `Email send to ${user.email} successfully`,
+    });
+  } catch (error) {
+    console.log("Catch block");
+
+    user.resetPasswordToken = undefined;
+    user.resetPasswordTime = undefined;
+
+    await user.save({
+      validateBeforeSave: false,
+    });
+    return next(error);
+  }
+};
+
+//getNewPassword
+exports.resetPassword = async (req, res, next) => {
+  //create hash token
+  //req.params.token tương đương với refreshToken trong UserModel.js
+  //chuỗi resetPasswordToken tương đương với this.resetPasswordToken trong UserModel.js
+  const resetPasswordToken = crypto
+    .createHmac("sha256", "key")
+    .update(req.params.token)
+    .digest("hex");
+  const user = await User.findOne({
+    resetPasswordToken,
+    resetPasswordTime: { $gt: Date.now() },
+  });
+  //so sánh 2 token nếu giống nhau sẽ tiến hành update và save mật khẩu đồng thời set resetPasswordToken về undefined
+
+  console.log(user);
+  // console.log("resetPasswordToken:", resetPasswordToken)
+  // console.log("User.resetPasswordToken", user.resetPasswordToken)
+  if (!user) {
+    return res.status(400).send("Reset Password URL is invalid or has been expired");
+  }
+  if (req.body.password !== req.body.confirmPassword) {
+    return res.status(400).send("Password not matched");
+
+  }
+  user.password = req.body.password;
+  // set resetPasswordToken and time undefined để khi người dùng tái sử dụng lại token đó thì sẽ báo lỗi
+  user.resetPasswordToken = undefined;
+  user.resetPasswordTime = undefined;
+
+  await user.save();
+};
+
 // List MP user
 exports.getAllProofManager = async (req, res, next) => {
   const user = await User.find({ roleID: "630a2454b6a1b1e909a16431" })

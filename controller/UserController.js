@@ -9,6 +9,7 @@ const { ObjectId } = require("mongodb");
 const { populate } = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
 const sendMail = require("../utils/sendMail.js");
+const crypto = require("crypto");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -171,9 +172,10 @@ exports.forgotPassword = async (req, res, next) => {
     validateBeforeSave: false,
   });
   //http://4000
-  const resetPasswordUrl = `${req.protocol}://${req.get(
-    "host"
-  )}/password/forgot/${refreshToken}`;
+
+  const URl = 'localhost:3000'
+
+  const resetPasswordUrl = `${req.protocol}://${URl}/resetPassword/${refreshToken}`;
   const message = `Your password refresh token is: \n\n ${resetPasswordUrl}`;
 
   try {
@@ -213,10 +215,6 @@ exports.resetPassword = async (req, res, next) => {
     resetPasswordTime: { $gt: Date.now() },
   });
   //so sánh 2 token nếu giống nhau sẽ tiến hành update và save mật khẩu đồng thời set resetPasswordToken về undefined
-
-  console.log(user);
-  // console.log("resetPasswordToken:", resetPasswordToken)
-  // console.log("User.resetPasswordToken", user.resetPasswordToken)
   if (!user) {
     return res.status(400).send("Reset Password URL is invalid or has been expired");
   }

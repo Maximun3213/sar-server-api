@@ -18,10 +18,6 @@ exports.userLogin = async (req, res) => {
   const user = await User.findOne({ email });
   const role = await Role.findById(user.roleID);
 
-  const permission = await Role.findById(role._id)
-    .populate("permissionID")
-    .exec();
-
   if (!user)
     return res
       .status(400)
@@ -38,23 +34,35 @@ exports.userLogin = async (req, res) => {
 
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
-  const IdFolderRoot = await proofFolder
-    .findOne({ parentID: null })
-    .select("_id");
+  if (role != null) {
+    const permission = await Role.findById(role._id).populate("permissionID").exec();
 
-  if (role.roleID === "ADMIN") {
-    return res.send({
+    if (role.roleID === "ADMIN") {
+      const IdFolderRoot = await proofFolder
+        .findOne({ parentID: null })
+        .select("_id");
+
+      return res.send({
+        user,
+        role,
+        permission,
+        token,
+        IdFolderRoot,
+      });
+    }
+
+    res.send({
       user,
       role,
       permission,
       token,
-      IdFolderRoot,
     });
   }
+
   res.send({
     user,
-    role,
-    permission,
+    // role,
+    // permission,
     token,
   });
 
@@ -94,7 +102,7 @@ exports.getUserById = (req, res) => {
 };
 
 exports.updateUserById = (req, res) => {
-  const {cbID, fullName, email, department} =req.body
+  const { cbID, fullName, email, department } = req.body;
   User.findByIdAndUpdate(
     { _id: req.params.id },
     {
@@ -114,9 +122,7 @@ exports.updateUserById = (req, res) => {
 };
 
 exports.deleteUserById = (req, res) => {
-  User.findByIdAndDelete(
-    { _id: req.params.id },
-  ).exec((err, result) => {
+  User.findByIdAndDelete({ _id: req.params.id }).exec((err, result) => {
     if (err) {
       console.log(err);
     }
@@ -143,28 +149,25 @@ exports.userRegister = async (req, res) => {
 };
 
 exports.changePassword = async (req, res, next) => {
+  const user = await User.findById(req.params.id).select("password");
+  const isPasswordMatched = await user.comparedPassword(req.body.oldPassword);
 
-  const user = await User.findById(req.params.id).select("password")
-  const isPasswordMatched = await user.comparedPassword(req.body.oldPassword)
-
-  if(!isPasswordMatched){
-      return res.status(400).send("Mật khẩu cũ không chính xác");
+  if (!isPasswordMatched) {
+    return res.status(400).send("Mật khẩu cũ không chính xác");
   }
-  if(req.body.newPassword !== req.body.confirmPassword){
-      // return next(new ErrorHandler("Password not matched each other", 400));
-      return res.status(400).send("Mật khẩu mới không khớp");
-
+  if (req.body.newPassword !== req.body.confirmPassword) {
+    // return next(new ErrorHandler("Password not matched each other", 400));
+    return res.status(400).send("Mật khẩu mới không khớp");
   }
-  user.password = req.body.newPassword
-  await user.save()
+  user.password = req.body.newPassword;
+  await user.save();
   return res.status(200).send("Đổi mật khẩu thành công");
 };
 
 exports.forgotPassword = async (req, res, next) => {
   const user = await User.findOne({ email: req.body.email });
 
-  if (!user)
-    return res.status(400).send("Email không tồn tại");
+  if (!user) return res.status(400).send("Email không tồn tại");
 
   //Get refreshToken
   const refreshToken = user.getRefreshToken();
@@ -173,7 +176,7 @@ exports.forgotPassword = async (req, res, next) => {
   });
   //http://4000
 
-  const URl = 'localhost:3000'
+  const URl = "localhost:3000";
 
   const resetPasswordUrl = `${req.protocol}://${URl}/resetPassword/${refreshToken}`;
   const message = `Your password refresh token is: \n\n ${resetPasswordUrl}`;
@@ -216,11 +219,12 @@ exports.resetPassword = async (req, res, next) => {
   });
   //so sánh 2 token nếu giống nhau sẽ tiến hành update và save mật khẩu đồng thời set resetPasswordToken về undefined
   if (!user) {
-    return res.status(400).send("Reset Password URL is invalid or has been expired");
+    return res
+      .status(400)
+      .send("Reset Password URL is invalid or has been expired");
   }
   if (req.body.password !== req.body.confirmPassword) {
     return res.status(400).send("Password not matched");
-
   }
   user.password = req.body.password;
   // set resetPasswordToken and time undefined để khi người dùng tái sử dụng lại token đó thì sẽ báo lỗi
@@ -228,6 +232,7 @@ exports.resetPassword = async (req, res, next) => {
   user.resetPasswordTime = undefined;
 
   await user.save();
+  return res.status(200).send("Cập nhập mật khẩu thành công");
 };
 
 // List MP user

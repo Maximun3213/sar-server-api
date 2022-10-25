@@ -526,6 +526,8 @@ exports.getAllUserMS = async (req, res) => {
 };
 
 exports.removeRoleMS = async (req, res) => {
+  const { userID, senderID, receiveID, sarID, createAt } = req.body;
+  const sar = await SarFile.findOne({ _id: sarID });
   await User.updateOne(
     { _id: req.params.id },
     {
@@ -544,8 +546,13 @@ exports.removeRoleMS = async (req, res) => {
             user_manage: null,
           },
         }
-      ).exec();
-      res.send("Remove role successfully");
+      ).exec((err) => {
+        const content = `Bạn đã bị xóa quyền quản trị của quyển SAR "${sar.title}"`;
+
+        if (err) console.log(err);
+        setNotification(senderID, userID, createAt, content);
+        res.send("Xóa thành công");
+      });
     }
   ).clone();
 };

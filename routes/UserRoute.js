@@ -65,7 +65,7 @@ router.route("/grantRoleMS").put(grantRoleMS)
 
 router.route("/getAllUserMS").get(getAllUserMS)
 
-router.route("/removeRoleMS/:id").delete(removeRoleMS)
+router.route("/removeRoleMS/:id").put(removeRoleMS)
 
 //API for handle notification
 

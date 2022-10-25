@@ -152,75 +152,134 @@ exports.getAllSarFiles = async (req, res, next) => {
 
 exports.removeSarFile = async (req, res, next) => {
   try {
-    const chapterList = []
-    const criteriaList = []
-    await TableOfContent.findOne({ sarID: ObjectId(req.params.id) }).exec(
-      (err, result) => {
-        if (err) {
-          return next(err);
-        }
-        Part.find({ _id: result.partID }, (err, result) => {
-          result.map((chapter) => {
-            Chapter.deleteMany({ _id: chapter.chapterID }).exec();
-            // Chapter.find({ _id: chapter.chapterID }, (err, result) => {
-            //   result.map((criteria) => {
-            //     Criteria.deleteMany({ _id: criteria.criteriaID }).exec();
-            //   });
-            // });
-          });
-        });
+    await TableOfContent.aggregate([
+      {
+        $match: {
+          sarID: ObjectId(req.params.id),
+        },
+      },
+      {
+        $graphLookup: {
+          from: "parts",
+          startWith: "$partID",
+          connectFromField: "partID",
+          connectToField: "_id",
+          as: "parts",
+        },
+      },
 
-        Part.deleteMany({ _id: result.partID }).exec();
+      { $unwind: "$parts" },
+
+      {
+        $graphLookup: {
+          from: "chapters",
+          startWith: "$parts.chapterID",
+          connectFromField: "parts.chapterID",
+          connectToField: "_id",
+          as: "chapters",
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$chapters",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
+        $graphLookup: {
+          from: "criterias",
+          startWith: "$chapters.criteriaID",
+          connectFromField: "chapters.criteriaID",
+          connectToField: "_id",
+          as: "criterias",
+        },
+      },
+      {
+        $unwind: {
+          path: "$criterias",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          partID: 0,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          sarID: { $first: "$sarID" },
+          parts: { $addToSet: "$parts" },
+          chapters: { $push: "$chapters" },
+          criterias: { $push: "$criterias" },
+        },
+      },
+    ]).exec((err, result) => {
+      if (err) {
+        return next(err);
       }
-    );
-
-    await TableOfContent.deleteOne({ sarID: req.params.id })
-      .clone()
-      .exec((err) => {
-        if (err) {
-          console.log(err);
-        }
-        SarFile.aggregate([
-          {
-            $match: {
-              _id: ObjectId(req.params.id),
+      result.forEach((child) => {
+        child.parts.forEach((part) => {
+          Part.deleteMany({ _id: part._id }).exec();
+        });
+        child.chapters.forEach((chapter) => {
+          Chapter.deleteMany({ _id: chapter._id }).exec();
+        });
+        child.criterias.forEach((criteria) => {
+          Criteria.deleteMany({ _id: criteria._id }).exec();
+        });
+      });
+      //Xóa mục lục và quyển Sar
+      TableOfContent.deleteOne({ sarID: req.params.id })
+        .clone()
+        .exec((err) => {
+          if (err) {
+            console.log(err);
+          }
+          SarFile.aggregate([
+            {
+              $match: {
+                _id: ObjectId(req.params.id),
+              },
             },
-          },
-          {
-            $unwind: {
-              path: "$user_access",
-              preserveNullAndEmptyArrays: true,
+            {
+              $unwind: {
+                path: "$user_access",
+                preserveNullAndEmptyArrays: true,
+              },
             },
-          },
-        ]).exec((err, doc) => {
-          doc.map((result) => {
-            if (result.user_manage !== null) {
-              User.updateMany(
-                { _id: result.user_access },
-                {
-                  $set: {
-                    roleID: null,
-                  },
-                }
-              ).exec();
+          ]).exec((err, doc) => {
+            doc.map((result) => {
+              if (result.user_manage !== null) {
+                User.updateMany(
+                  { _id: result.user_access },
+                  {
+                    $set: {
+                      roleID: null,
+                    },
+                  }
+                ).exec();
 
-              User.updateMany(
-                { _id: result.user_manage },
-                {
-                  $set: {
-                    roleID: null,
-                  },
-                }
-              ).exec();
-            }
+                User.updateMany(
+                  { _id: result.user_manage },
+                  {
+                    $set: {
+                      roleID: null,
+                    },
+                  }
+                ).exec();
+              }
 
-            SarFile.deleteOne({ _id: result._id }).exec((err) => {
-              if (err) console.log(err);
-              res.send("Xóa quyển Sar thành công");
+              SarFile.deleteOne({ _id: result._id }).exec((err) => {
+                if (err) console.log(err);
+                res.send("Xóa quyển Sar thành công");
+              });
             });
           });
         });
-      });
+    });
   } catch (error) {
     return next(error);
   }

@@ -2,6 +2,7 @@ const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
 const { proofFolder, proofFile } = require("../models/proofsModel");
 const { SarFile } = require("../models/sarModel");
+const { setNotification } = require("../middleware/notification");
 
 const jwt = require("jsonwebtoken");
 const json = require("body-parser");
@@ -35,7 +36,9 @@ exports.userLogin = async (req, res) => {
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
   if (role != null) {
-    const permission = await Role.findById(role._id).populate("permissionID").exec();
+    const permission = await Role.findById(role._id)
+      .populate("permissionID")
+      .exec();
 
     if (role.roleID === "ADMIN") {
       const IdFolderRoot = await proofFolder
@@ -453,29 +456,35 @@ exports.removeProofKey = async (req, res, next) => {
 //API for MS user
 
 exports.grantRoleMS = async (req, res) => {
+  const { userID, senderID, receiveID, sarID, createAt } = req.body;
   const user = await User.findOne({ _id: req.body.userID });
   const roleMS = await Role.find({ roleID: "MS" });
+  const sar = await SarFile.findOne({ _id: sarID });
+
   roleMS.map((result) => {
     User.updateOne(
-      { _id: req.body.userID, roleID: null },
+      { _id: userID, roleID: null },
       {
         $set: {
           roleID: ObjectId(result._id),
         },
       }
     ).exec((err, result) => {
+      const content = `Bạn đã được cấp quyền quản trị quyển Sar "${sar.title}"`;
+
       if (err) {
         console.log("Cannot update this field");
       }
       SarFile.updateOne(
-        { _id: req.body.sarID },
+        { _id: sarID },
         {
           $set: {
-            user_manage: req.body.userID,
+            user_manage: userID,
           },
         }
       ).exec();
-      res.send(`Grant key to "${user.fullName}" successfully`);
+      setNotification(senderID, userID, createAt, content);
+      res.send(`Cấp quyền cho người dùng "${user.fullName}" thành công`);
     });
   });
 };

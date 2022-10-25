@@ -176,9 +176,10 @@ exports.forgotPassword = async (req, res, next) => {
   });
   //http://4000
 
-  const URl = "localhost:3000";
+  const URl = "http://localhost:3000";
+  // const URl = "https://sar-fe.vercel.app";
 
-  const resetPasswordUrl = `${req.protocol}://${URl}/resetPassword/${refreshToken}`;
+  const resetPasswordUrl = `${URl}/resetPassword/${refreshToken}`;
   const message = `Your password refresh token is: \n\n ${resetPasswordUrl}`;
 
   try {

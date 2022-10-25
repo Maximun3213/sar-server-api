@@ -60,14 +60,71 @@ exports.userLogin = async (req, res) => {
 };
 
 exports.userList = (req, res) => {
-  User.find({}, (err, result) => {
-    res.send(result);
+  User.find({})
+    .select("_id cbID fullName email creatAt department")
+    .populate({
+      path: "roleID",
+      select: "roleName roleID",
+    })
+    .exec((err, users) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(users);
+      }
+    });
+};
+
+exports.getUserById = (req, res) => {
+  User.find({ _id: req.params.id })
+    .select("_id cbID fullName email creatAt department")
+    .populate({
+      path: "roleID",
+      select: "roleName roleID",
+    })
+    .exec((err, users) => {
+      if (err) {
+        console.log(err);
+      } else {
+        res.send(users);
+      }
+    });
+};
+
+exports.updateUserById = (req, res) => {
+  const {cbID, fullName, email, department} =req.body
+  User.findByIdAndUpdate(
+    { _id: req.params.id },
+    {
+      $set: {
+        cbID: cbID,
+        fullName: fullName,
+        email: email,
+        department: department,
+      },
+    }
+  ).exec((err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    return res.send("Cập nhật thông tin thành công");
+  });
+};
+
+exports.deleteUserById = (req, res) => {
+  User.findByIdAndDelete(
+    { _id: req.params.id },
+  ).exec((err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    return res.send("Xoá thành công");
   });
 };
 
 //test đăng ký user
 exports.userRegister = async (req, res) => {
-  const { cbID, fullName, roleID, email, password } = req.body;
+  const { cbID, fullName, roleID, email, password, department } = req.body;
 
   const user = await User.create({
     cbID,
@@ -75,10 +132,11 @@ exports.userRegister = async (req, res) => {
     roleID,
     email,
     password,
+    department,
   });
   res.status(200).json({
     success: true,
-    message: "Create user successfully",
+    message: "Tạo tài khoản thành công",
   });
 };
 // List MP user

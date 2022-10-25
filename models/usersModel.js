@@ -34,6 +34,9 @@ const userSchema = new Schema({
     type: Date,
     default: Date.now()
   },
+  department: {
+    type: String,
+  },
   proofStore: [
     {
       type: mongoose.Schema.Types.ObjectId,

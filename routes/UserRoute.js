@@ -15,7 +15,10 @@ const {
   getAllUserRoleNull,
   getNotificationByID,
   removeNotification,
-  checkIsRead
+  checkIsRead,
+  getUserById,
+  updateUserById,
+  deleteUserById
 } = require("../controller/UserController");
 
 const router = express.Router();
@@ -41,6 +44,11 @@ router.route("/removeProofKey/:fid/:uid").delete(removeProofKey)
 
 router.route("/getAllUserRoleNull").get(getAllUserRoleNull)
 
+router.route("/getUserById/:id").get(getUserById)
+
+router.route("/updateUserById/:id").put(updateUserById)
+
+router.route("/deleteUserById/:id").delete(deleteUserById)
 
 
 //API for MS USER

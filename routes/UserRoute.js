@@ -20,7 +20,8 @@ const {
   updateUserById,
   deleteUserById,
   changePassword,
-  forgotPassword
+  forgotPassword,
+  resetPassword
 } = require("../controller/UserController");
 
 const router = express.Router();
@@ -55,6 +56,8 @@ router.route("/deleteUserById/:id").delete(deleteUserById)
 router.route("/changePassword/:id").put(changePassword)
 
 router.route("/forgotPassword").post(forgotPassword)
+
+router.route("/resetPassword/:token").put(resetPassword);
 
 
 //API for MS USER

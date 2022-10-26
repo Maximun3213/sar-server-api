@@ -211,8 +211,6 @@ exports.forgotPassword = async (req, res, next) => {
 //getNewPassword
 exports.resetPassword = async (req, res, next) => {
   //create hash token
-  //req.params.token tương đương với refreshToken trong UserModel.js
-  //chuỗi resetPasswordToken tương đương với this.resetPasswordToken trong UserModel.js
   const resetPasswordToken = crypto
     .createHmac("sha256", "key")
     .update(req.params.token)
@@ -221,7 +219,7 @@ exports.resetPassword = async (req, res, next) => {
     resetPasswordToken,
     resetPasswordTime: { $gt: Date.now() },
   });
-  //so sánh 2 token nếu giống nhau sẽ tiến hành update và save mật khẩu đồng thời set resetPasswordToken về undefined
+
   if (!user) {
     return res
       .status(400)
@@ -231,7 +229,6 @@ exports.resetPassword = async (req, res, next) => {
     return res.status(400).send("Password not matched");
   }
   user.password = req.body.password;
-  // set resetPasswordToken and time undefined để khi người dùng tái sử dụng lại token đó thì sẽ báo lỗi
   user.resetPasswordToken = undefined;
   user.resetPasswordTime = undefined;
 
@@ -379,29 +376,6 @@ exports.getListUserAccessFromFolder = async (req, res) => {
           "storage.roleID": 1,
         },
       },
-      // {
-      //   $unwind: "$storage",
-      // },
-      // {
-      //   $lookup: {
-      //     from: "roles",
-      //     localField: "storage.roleID",
-      //     foreignField: "_id",
-      //     as: "storage.roleID",
-      //   },
-      // },
-      // {
-      //   $match: {
-      //     _id: ObjectId(folderID),
-      //   },
-      // },
-      // {
-      //   $group: {
-      //     _id: "$_id",
-      //     title: { $first: "$title" },
-      //     storage: { $push: "$storage" },
-      //   },
-      // },
     ])
     .exec((err, result) => {
       if (err) {

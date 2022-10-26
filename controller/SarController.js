@@ -390,14 +390,11 @@ exports.getAllUserFromSar = async (req, res, next) => {
     if (err) {
       return next(err);
     }
-    if (result.user_access.length > 0) {
-      return User.find({ _id: result.user_access }).exec((err, result) => {
-        if (err) {
-          console.log(err);
-        }
-        res.send(result);
+    User.find({ _id: result.user_access }).then((data) => {
+      User.find({ roleID: null }).exec((err, result) => {
+        return res.send({ userNull: result, userSar: data });
       });
-    }
+    });
   }).clone();
 };
 

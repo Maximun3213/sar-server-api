@@ -53,6 +53,8 @@ router.route("/updateUserById/:id").put(updateUserById)
 
 router.route("/deleteUserById/:id").delete(deleteUserById)
 
+//API for authenticate
+
 router.route("/changePassword/:id").put(changePassword)
 
 router.route("/forgotPassword").post(forgotPassword)
@@ -74,10 +76,5 @@ router.route("/getNotificationByID/:id").get(getNotificationByID)
 router.route("/removeNotification/:id").delete(removeNotification)
 
 router.route("/checkIsRead/:id").put(checkIsRead)
-
-
-
-
-// router.route("/getOwnStorage/:id").get(getOwnStorage)
 
 module.exports = router;

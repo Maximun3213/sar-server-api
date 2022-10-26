@@ -1,4 +1,5 @@
 const { proofFile, proofFolder } = require("../models/proofsModel");
+const { Chapter, Criteria } = require("../models/tableContentModel")
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
 const mongoose = require("mongoose");
@@ -37,6 +38,9 @@ exports.uploadFile = (req, res, next) => {
 
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
+    
+
+    //nếu tìm trong chapter criteria mà ko bằng với id folder thì sẽ thêm vào proofFolder
     const {
       enactNum,
       enactAddress,
@@ -65,6 +69,9 @@ exports.uploadFile = (req, res, next) => {
         });
         try {
           //listing messages in users mailbox
+          
+   
+          
           await proofFolder
             .findByIdAndUpdate(folderID, {
               $push: { proofFiles: ids },
@@ -107,6 +114,7 @@ exports.uploadFile = (req, res, next) => {
           // push to proofFolder
           // try {
           //listing messages in users mailbox
+
           await proofFolder
             .findByIdAndUpdate(folderID, {
               $push: { proofFiles: ids },

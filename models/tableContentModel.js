@@ -49,6 +49,12 @@ const chapterSchema = new Schema({
         ref: 'user',
         default: null
     },
+    proof_docs: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'proof_file',
+        }
+    ]
 })
 
 const criteriaSchema = new Schema({
@@ -70,16 +76,17 @@ const criteriaSchema = new Schema({
         ref: 'user',
         default: null
     },
-    proof_FolderID: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'sar_proof_folder',
-        default: null
-    },
     order: Number,
     type: {
         type: String,
         default: 'criteria'
-    }
+    },
+    proof_docs: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'proof_file',
+        }
+    ]
 })
 
 const TableOfContent = mongoose.model("table_of_content", tableContentSchema);

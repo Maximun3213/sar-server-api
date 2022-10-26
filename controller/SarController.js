@@ -355,7 +355,7 @@ exports.addMemberToSar = async (req, res, next) => {
     ).exec((err) => {
       if (err) return res.send("Thêm thành viên thất bại");
 
-      res.send("Thêm thành viên thành công");
+      return res.send("Thêm thành viên thành công");
     });
   });
 };
@@ -381,7 +381,7 @@ exports.deleteMemberOfSar = async (req, res, next) => {
         },
       }
     ).exec();
-    res.send("Xoá thành công");
+    return res.send("Xoá thành công");
   });
 };
 
@@ -391,7 +391,7 @@ exports.getAllUserFromSar = async (req, res, next) => {
       return next(err);
     }
     if (result.user_access.length > 0) {
-      User.find({ _id: result.user_access }).exec((err, result) => {
+      return User.find({ _id: result.user_access }).exec((err, result) => {
         if (err) {
           console.log(err);
         }

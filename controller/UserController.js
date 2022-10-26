@@ -561,9 +561,9 @@ exports.removeRoleMS = async (req, res) => {
 exports.getAllUserRoleNull = async (req, res) => {
   const roleNull = await User.find({ roleID: null }).exec();
   if (roleNull) {
-    res.send(roleNull);
+    return res.send(roleNull);
   } else {
-    res.send("No data user");
+    return res.send("No data user");
   }
 };
 

@@ -611,7 +611,7 @@ exports.searchProof = async (req, res) => {
   }
 };
 
-exports.getOneFile = async (req, res) => {
+exports.getInfoOneFileById = async (req, res) => {
   try {
     await proofFile
       .findOne({ _id: (req.params.id).trim() }).select('-data')

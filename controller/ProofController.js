@@ -614,7 +614,18 @@ exports.searchProof = async (req, res) => {
 exports.getInfoOneFileById = async (req, res) => {
   try {
     await proofFile
-      .findOne({ _id: (req.params.id).trim() }).select('-data')
+      .findOne({ _id: (req.params.id).trim() }).select('-data').populate([
+        {
+          path: "userCreate",
+          select: { fullName: 1, _id: 1 },
+          model: "user",
+        },
+        {
+          path: "proofFolder",
+          select: { title: 1, _id: 0 },
+          model: "proof_folder",
+        },
+      ])
       .exec((err, result) => {
         if (err) console.log(err);
         res.send(result);

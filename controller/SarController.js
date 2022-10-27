@@ -144,7 +144,7 @@ exports.createSarFolder = async (req, res) => {
 exports.getAllSarFiles = async (req, res, next) => {
   await SarFile.find({}, (err, result) => {
     if (err) {
-      return next(err);
+      console.log(err)
     }
     res.send(result);
   }).clone();

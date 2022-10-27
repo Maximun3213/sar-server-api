@@ -10,7 +10,8 @@ const {
   deleteMemberOfSar,
   getAllUserFromSar,
   grantWritingRole,
-  removeWritingRole
+  removeWritingRole,
+  getFileFromSarFolder
 } = require("../controller/SarController");
 
 const router = express.Router();
@@ -36,6 +37,8 @@ router.route("/getAllUserFromSar/:id").get(getAllUserFromSar);
 router.route("/grantWritingRole").put(grantWritingRole);
 
 router.route("/removeWritingRole").post(removeWritingRole);
+
+router.route("/getFileFromSarFolder").get(getFileFromSarFolder);
 
 
 module.exports = router;

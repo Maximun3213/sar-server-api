@@ -49,12 +49,12 @@ const chapterSchema = new Schema({
         ref: 'user',
         default: null
     },
-    // proof_docs: [
-    //     {
-    //         type: mongoose.Schema.ObjectId,
-    //         ref: 'proof_file',
-    //     }
-    // ]
+    proof_docs: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'proof_file',
+        }
+    ]
 })
 
 const criteriaSchema = new Schema({
@@ -81,12 +81,12 @@ const criteriaSchema = new Schema({
         type: String,
         default: 'criteria'
     },
-    // proof_docs: [
-    //     {
-    //         type: mongoose.Schema.ObjectId,
-    //         ref: 'proof_file',
-    //     }
-    // ]
+    proof_docs: [
+        {
+            type: mongoose.Schema.ObjectId,
+            ref: 'proof_file',
+        }
+    ]
 })
 
 const TableOfContent = mongoose.model("table_of_content", tableContentSchema);

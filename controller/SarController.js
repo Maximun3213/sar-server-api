@@ -144,7 +144,7 @@ exports.createSarFolder = async (req, res) => {
 exports.getAllSarFiles = async (req, res, next) => {
   await SarFile.find({}, (err, result) => {
     if (err) {
-      console.log(err)
+      console.log(err);
     }
     return res.send(result);
   }).clone();
@@ -511,4 +511,40 @@ exports.removeWritingRole = async (req, res, next) => {
     ).clone();
   }
   res.send("Xóa thất bại");
+};
+
+exports.getFileFromSarFolder = async (req, res, next) => {
+  const { idFolder, type } = req.body;
+  try {
+    if (type === "chapter") {
+      await Chapter.findOne({ _id: idFolder })
+        .select("proof_docs")
+        .populate({
+          path: "proof_docs",
+          model: "proof_file",
+          select: {
+            data: 0,
+          },
+        })
+        .exec((err, result) => {
+          res.send(result);
+          
+        });
+    } else {
+      await Criteria.findOne({ _id: idFolder })
+        .select("proof_docs")
+        .populate({
+          path: "proof_docs",
+          model: "proof_file",
+          select: {
+            data: 0,
+          },
+        })
+        .exec((err, result) => {
+          res.send(result);
+        });
+    }
+  } catch (error) {
+    console.log(error);
+  }
 };

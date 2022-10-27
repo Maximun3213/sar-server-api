@@ -184,14 +184,14 @@ exports.getTreeStructure = async (req, res, next) => {
   });
 };
 
-exports.checkUserExist =  async (req, res, next) => {
-  const { idCriteria, idUserLogin } = req.body;
-  let content
-  if (idCriteria.length > 0) {
+exports.checkUserExist = async (req, res, next) => {
+  const { idCriteria, idChapter, idUserLogin } = req.body;
+  let content;
+  if (idCriteria) {
     return Criteria.findOne({ _id: idCriteria }, (err, result) => {
-      content = result.content
+      content = result.content;
       if (err) {
-        return res.send({ isExist: false, content: content});
+        return res.send({ isExist: false, content: content });
       }
       if (result !== null && result.user_access == idUserLogin) {
         return res.send({ isExist: true, content: content });
@@ -199,14 +199,42 @@ exports.checkUserExist =  async (req, res, next) => {
       res.send({ isExist: false, content: content });
     }).clone();
   }
-  res.send("Criteria field cannot be empty");
+  if (idChapter) {
+    return Chapter.findOne({ _id: idChapter }, (err, result) => {
+      content = result.content;
+      if (err) {
+        return res.send({ isExist: false, content: content });
+      }
+      if (result !== null && result.user_access == idUserLogin) {
+        return res.send({ isExist: true, content: content });
+      }
+      res.send({ isExist: false, content: content });
+    }).clone();
+  }
+  res.send({ isExist: false });
 };
 
 exports.addNewContent = async (req, res) => {
-  const { idCriteria, content } = req.body;
-  await Criteria.updateOne(
+  const { idCriteria, idChapter, content } = req.body;
+  if (idCriteria) {
+    return Criteria.updateOne(
+      {
+        _id: idCriteria,
+      },
+      {
+        $set: {
+          content: content,
+        },
+      }
+    ).exec((err, result) => {
+      if (err) console.log(err);
+
+      res.send("Lưu tiêu chí thành công");
+    });
+  }
+  await Chapter.updateOne(
     {
-      _id: idCriteria,
+      _id: idChapter,
     },
     {
       $set: {
@@ -214,9 +242,8 @@ exports.addNewContent = async (req, res) => {
       },
     }
   ).exec((err, result) => {
-    if (err) {
-      console.log(err);
-    }
-    res.send("Lưu tiêu chí thành công");
+    if (err) console.log(err);
+
+    res.send("Lưu thành công");
   });
 };

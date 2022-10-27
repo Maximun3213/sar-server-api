@@ -1,4 +1,5 @@
 const { proofFile, proofFolder } = require("../models/proofsModel");
+const { Chapter, Criteria } = require("../models/tableContentModel");
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
 const mongoose = require("mongoose");
@@ -9,6 +10,7 @@ const path = require("path");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
 const { populate, find } = require("../models/rolesModel");
+const { type } = require("os");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -37,6 +39,8 @@ exports.uploadFile = (req, res, next) => {
 
     // const folderID = req.body.folderID;
     const folderID = req.params.id;
+
+    //nếu tìm trong chapter criteria mà ko bằng với id folder thì sẽ thêm vào proofFolder
     const {
       enactNum,
       enactAddress,
@@ -44,6 +48,7 @@ exports.uploadFile = (req, res, next) => {
       description,
       userCreate,
       status,
+      type,
     } = req.body;
 
     if (fileList.length === 1) {
@@ -65,11 +70,24 @@ exports.uploadFile = (req, res, next) => {
         });
         try {
           //listing messages in users mailbox
-          await proofFolder
-            .findByIdAndUpdate(folderID, {
-              $push: { proofFiles: ids },
-            })
-            .exec();
+
+          if (type !== 'undefined') {
+            if (type === "chapter") {
+              await Chapter.findByIdAndUpdate(folderID, {
+                $push: { proof_docs: ids },
+              }).exec();
+            } else {
+              await Criteria.findByIdAndUpdate(folderID, {
+                $push: { proof_docs: ids },
+              }).exec();
+            }
+          } else {
+            await proofFolder
+              .findByIdAndUpdate(folderID, {
+                $push: { proofFiles: ids },
+              })
+              .exec();
+          }
 
           newImage.save();
           return res.status(200).json({
@@ -107,11 +125,24 @@ exports.uploadFile = (req, res, next) => {
           // push to proofFolder
           // try {
           //listing messages in users mailbox
-          await proofFolder
-            .findByIdAndUpdate(folderID, {
-              $push: { proofFiles: ids },
-            })
-            .exec();
+
+          if (type !== 'undefined') {
+            if (type === "chapter") {
+              await Chapter.findByIdAndUpdate(folderID, {
+                $push: { proof_docs: ids },
+              }).exec();
+            } else {
+              await Criteria.findByIdAndUpdate(folderID, {
+                $push: { proof_docs: ids },
+              }).exec();
+            }
+          } else {
+            await proofFolder
+              .findByIdAndUpdate(folderID, {
+                $push: { proofFiles: ids },
+              })
+              .exec();
+          }
 
           newImage.save();
         });
@@ -578,5 +609,57 @@ exports.searchProof = async (req, res) => {
       return res.status(200).json({ result });
     }
     res.send("Not found");
+  }
+};
+
+exports.getInfoOneFileById = async (req, res) => {
+  try {
+    await proofFile
+      .findOne({ _id: req.params.id.trim() })
+      .select("-data")
+      .populate([
+        {
+          path: "userCreate",
+          select: { fullName: 1, _id: 1 },
+          model: "user",
+        },
+      ])
+      .exec((err, result) => {
+        if (err) console.log(err);
+        res.send(result);
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.deleteFileOfSar = async (req, res, next) => {
+  const { id, type } = req.body;
+  try {
+    if (type === "chapter") {
+      await Chapter.updateMany(
+        { proof_docs: id },
+        {
+          $pull: {
+            proof_docs: id,
+          },
+        }
+      );
+    } else {
+      await Criteria.updateMany(
+        { proof_docs: id },
+        {
+          $pull: {
+            proof_docs: id,
+          },
+        }
+      );
+    }
+    await proofFile.deleteOne({ _id: id }).exec((err) => {
+      if (err) console.log(err);
+      res.send("Xóa thành công");
+    });
+  } catch (error) {
+    console.log(error);
   }
 };

@@ -1,7 +1,7 @@
 const { SarFile, SarProofFolder } = require("../models/sarModel");
 const Role = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
-
+const { setNotification } = require("../middleware/notification");
 const {
   TableOfContent,
   Part,
@@ -144,44 +144,142 @@ exports.createSarFolder = async (req, res) => {
 exports.getAllSarFiles = async (req, res, next) => {
   await SarFile.find({}, (err, result) => {
     if (err) {
-      return next(err);
+      console.log(err);
     }
-    res.send(result);
+    return res.send(result);
   }).clone();
 };
 
 exports.removeSarFile = async (req, res, next) => {
   try {
-    await TableOfContent.findOne({ sarID: ObjectId(req.params.id) }).exec(
-      (err, result) => {
-        if (err) {
-          return next(err);
-        }
-        Part.find({ _id: result.partID }, (err, result) => {
-          result.map((chapter) => {
-            // console.log(chapter.chapterID);
-            Chapter.deleteMany({ _id: chapter.chapterID }).exec();
-          });
-        });
+    await TableOfContent.aggregate([
+      {
+        $match: {
+          sarID: ObjectId(req.params.id),
+        },
+      },
+      {
+        $graphLookup: {
+          from: "parts",
+          startWith: "$partID",
+          connectFromField: "partID",
+          connectToField: "_id",
+          as: "parts",
+        },
+      },
 
-        Part.deleteMany({ _id: result.partID }).exec();
+      { $unwind: "$parts" },
+
+      {
+        $graphLookup: {
+          from: "chapters",
+          startWith: "$parts.chapterID",
+          connectFromField: "parts.chapterID",
+          connectToField: "_id",
+          as: "chapters",
+        },
+      },
+
+      {
+        $unwind: {
+          path: "$chapters",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+
+      {
+        $graphLookup: {
+          from: "criterias",
+          startWith: "$chapters.criteriaID",
+          connectFromField: "chapters.criteriaID",
+          connectToField: "_id",
+          as: "criterias",
+        },
+      },
+      {
+        $unwind: {
+          path: "$criterias",
+          preserveNullAndEmptyArrays: true,
+        },
+      },
+      {
+        $project: {
+          partID: 0,
+        },
+      },
+      {
+        $group: {
+          _id: "$_id",
+          sarID: { $first: "$sarID" },
+          parts: { $addToSet: "$parts" },
+          chapters: { $push: "$chapters" },
+          criterias: { $push: "$criterias" },
+        },
+      },
+    ]).exec((err, result) => {
+      if (err) {
+        return next(err);
       }
-    );
-
-    await TableOfContent.deleteOne({ sarID: req.params.id })
-      .clone()
-      .exec((err) => {
-        if (err) {
-          console.log(err);
-        }
-
-        SarFile.deleteOne({ _id: req.params.id }).exec((err) => {
+      result.forEach((child) => {
+        child.parts.forEach((part) => {
+          Part.deleteMany({ _id: part._id }).exec();
+        });
+        child.chapters.forEach((chapter) => {
+          Chapter.deleteMany({ _id: chapter._id }).exec();
+        });
+        child.criterias.forEach((criteria) => {
+          Criteria.deleteMany({ _id: criteria._id }).exec();
+        });
+      });
+      //Xóa mục lục và quyển Sar
+      TableOfContent.deleteOne({ sarID: req.params.id })
+        .clone()
+        .exec((err) => {
           if (err) {
             console.log(err);
           }
-          res.send("Delete Sar successfully");
+          SarFile.aggregate([
+            {
+              $match: {
+                _id: ObjectId(req.params.id),
+              },
+            },
+            {
+              $unwind: {
+                path: "$user_access",
+                preserveNullAndEmptyArrays: true,
+              },
+            },
+          ]).exec((err, doc) => {
+            doc.map((result) => {
+              if (result.user_manage !== null) {
+                User.updateMany(
+                  { _id: result.user_access },
+                  {
+                    $set: {
+                      roleID: null,
+                    },
+                  }
+                ).exec();
+
+                User.updateMany(
+                  { _id: result.user_manage },
+                  {
+                    $set: {
+                      roleID: null,
+                    },
+                  }
+                ).exec();
+              }
+
+              SarFile.deleteOne({ _id: result._id }).exec((err) => {
+                if (err) console.log(err);
+                res.send("Xóa quyển Sar thành công");
+              });
+            });
+          });
         });
-      });
+    });
   } catch (error) {
     return next(error);
   }
@@ -257,7 +355,7 @@ exports.addMemberToSar = async (req, res, next) => {
     ).exec((err) => {
       if (err) return res.send("Thêm thành viên thất bại");
 
-      res.send("Thêm thành viên thành công");
+      return res.send("Thêm thành viên thành công");
     });
   });
 };
@@ -283,7 +381,7 @@ exports.deleteMemberOfSar = async (req, res, next) => {
         },
       }
     ).exec();
-    res.send("Xoá thành công");
+    return res.send("Xoá thành công");
   });
 };
 
@@ -292,94 +390,83 @@ exports.getAllUserFromSar = async (req, res, next) => {
     if (err) {
       return next(err);
     }
-    if (result.user_access.length > 0) {
-      User.find({ _id: result.user_access }).exec((err, result) => {
-        if (err) {
-          console.log(err);
-        }
-        res.send(result);
+    User.find({ _id: result.user_access }).then((data) => {
+      User.find({ roleID: null }).exec((err, result) => {
+        return res.send({ userNull: result, userSar: data });
       });
-    }
+    });
   }).clone();
 };
 
 exports.grantWritingRole = async (req, res, next) => {
   const roleCS = await Role.findOne({ roleID: "CS" });
-  const { criteriaID, chapterID, userID, idSender, idSar } = req.body;
-  const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
+  const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const sar = await SarFile.findOne({ _id: idSar });
-  try {
-    if (checkUserAccess.user_access === null && criteriaID !== "") {
-      return Criteria.updateOne(
-        { _id: criteriaID },
-        {
-          $set: {
-            user_access: userID,
-          },
-        }
-      ).exec((err) => {
-        if (err) return res.send("Something went wrong!!");
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleCS._id,
-            },
-          }
-        ).exec();
-        const notification = new Notification({
-          sender: idSender,
-          receiver: userID,
-          content: `Người quản trị Sar đã thêm bạn vào "${checkUserAccess.title}" của quyển Sar "${sar.title}"`,
-        });
-        notification.save();
-        res.send("Grant key successfully");
-      });
-    } else if (chapterID && chapterID !== "") {
-      return Chapter.updateOne(
-        { _id: chapterID },
-        {
-          $set: {
-            user_access: userID,
-          },
-        }
-      ).exec((err) => {
-        if (err) {
-          return res.send("Something went wrong!!");
-        }
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleCS._id,
-            },
-          }
-        ).exec();
-        res.send("Grant key successfully");
-      });
-    }
-    res.send("Cannot grant key to user");
-  } catch (error) {
-    res.send(error);
-  }
 
+  if (criteriaID) {
+    return Criteria.findOneAndUpdate(
+      { _id: criteriaID },
+      { $set: { user_access: userID } },
+      (err, result) => {
+        const content = `Người quản trị Sar đã thêm bạn vào tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
+        if (err) return res.send(err);
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleCS._id,
+            },
+          }
+        ).exec();
+        setNotification(idSender, userID, createAt, content);
+
+        res.send("Cấp quyền thành công");
+      }
+    ).clone();
+  } else if (chapterID) {
+    return Chapter.findOneAndUpdate(
+      { _id: chapterID },
+      {
+        $set: {
+          user_access: userID,
+        },
+      },
+      (err, result) => {
+        const content = `Người quản trị Sar đã thêm bạn vào chương "${result.title}" của quyển Sar "${sar.title}"`;
+
+        if (err) return res.send(err);
+
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleCS._id,
+            },
+          }
+        ).exec();
+        setNotification(idSender, userID, createAt, content);
+
+        res.send("Cấp quyền truy cập thành công");
+      }
+    ).clone();
+  }
+  res.send("Không thể cấp quyền");
 };
 
 exports.removeWritingRole = async (req, res, next) => {
-  const { criteriaID, userID } = req.body;
-  const checkUserAccess = await Criteria.findOne({ _id: criteriaID });
+  const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const roleUser = await Role.findOne({ roleID: "USER" });
-  try {
-    if (checkUserAccess.user_access == userID) {
-      await Criteria.updateMany(
-        { _id: criteriaID },
-        {
-          $set: {
-            user_access: null,
-          },
-        }
-      ).exec((err) => {
-        if (err) return res.send("Remove failed");
+  const sar = await SarFile.findOne({ _id: idSar });
+
+  if (criteriaID) {
+    return Criteria.findOneAndUpdate(
+      { _id: criteriaID },
+      { $set: { user_access: null } },
+      (err, result) => {
+        if (err) return res.send(err);
+
+        const content = `Người quản trị Sar đã xóa bạn khỏi tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
+
         User.updateMany(
           { _id: userID },
           {
@@ -388,10 +475,80 @@ exports.removeWritingRole = async (req, res, next) => {
             },
           }
         ).exec((err) => {
-          if (err) return res.send("Remove failed");
-          res.send("Remove successfully");
+          if (err) return res.send("Xóa thất bại");
+
+          setNotification(idSender, userID, createAt, content);
         });
-      });
+
+        res.send("Xóa thành công");
+      }
+    ).clone();
+  } else if (chapterID) {
+    return Chapter.findOneAndUpdate(
+      { _id: chapterID },
+      {
+        $set: {
+          user_access: null,
+        },
+      },
+      (err, result) => {
+        if (err) return res.send(err);
+
+        const content = `Người quản trị Sar đã xóa bạn khỏi chương "${result.title}" của quyển Sar "${sar.title}"`;
+
+        User.updateMany(
+          { _id: userID },
+          {
+            $set: {
+              roleID: roleUser._id,
+            },
+          }
+        ).exec();
+        setNotification(idSender, userID, createAt, content);
+
+        res.send("Xóa thành công");
+      }
+    ).clone();
+  }
+  res.send("Xóa thất bại");
+};
+
+exports.getFileFromSarFolder = async (req, res, next) => {
+  const type = req.params.id
+  const id = req.params.type
+  try {
+    if (type === "chapter") {
+      await Chapter.findOne({ _id: id })
+        .select("proof_docs")
+        .populate([
+          {
+            path: "proof_docs",
+            model: "proof_file",
+            select: {
+              data: 0,
+            },
+          },
+        ])
+        .exec((err, result) => {
+          return res.send(result);
+
+        });
+    } else {
+      await Criteria.findOne({ _id: id })
+        .select("proof_docs")
+        .populate([
+          {
+            path: "proof_docs",
+            model: "proof_file",
+            select: {
+              data: 0,
+            },
+          },
+        ])
+        .exec((err, result) => {
+          console.log(result)
+          return res.send(result);
+        });
     }
   } catch (error) {
     console.log(error);

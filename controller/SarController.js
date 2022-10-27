@@ -514,10 +514,10 @@ exports.removeWritingRole = async (req, res, next) => {
 };
 
 exports.getFileFromSarFolder = async (req, res, next) => {
-  const { idFolder, type } = req.body;
+  const type = req.params.type
   try {
     if (type === "chapter") {
-      await Chapter.findOne({ _id: idFolder })
+      await Chapter.findOne({ _id: req.params.id })
         .select("proof_docs")
         .populate({
           path: "proof_docs",
@@ -531,7 +531,7 @@ exports.getFileFromSarFolder = async (req, res, next) => {
           
         });
     } else {
-      await Criteria.findOne({ _id: idFolder })
+      await Criteria.findOne({ _id: req.params.id })
         .select("proof_docs")
         .populate({
           path: "proof_docs",

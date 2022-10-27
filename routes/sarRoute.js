@@ -38,7 +38,7 @@ router.route("/grantWritingRole").put(grantWritingRole);
 
 router.route("/removeWritingRole").post(removeWritingRole);
 
-router.route("/getFileFromSarFolder").get(getFileFromSarFolder);
+router.route("/getFileFromSarFolder/:type/:id").get(getFileFromSarFolder);
 
 
 module.exports = router;

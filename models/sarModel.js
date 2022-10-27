@@ -52,6 +52,6 @@ const sarFilesSchema = new Schema({
 
 const SarFile = mongoose.model("sar_file", sarFilesSchema);
 
-module.exports = SarFile
+module.exports = {SarFile}
 
 

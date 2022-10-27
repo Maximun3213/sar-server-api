@@ -514,8 +514,8 @@ exports.removeWritingRole = async (req, res, next) => {
 };
 
 exports.getFileFromSarFolder = async (req, res, next) => {
-  const id = req.params.id
-  const type = req.params.type
+  const type = req.params.id
+  const id = req.params.type
   try {
     if (type === "chapter") {
       await Chapter.findOne({ _id: id })
@@ -527,11 +527,6 @@ exports.getFileFromSarFolder = async (req, res, next) => {
             select: {
               data: 0,
             },
-          },
-          {
-            path: "userCreate",
-            select: { fullName: 1, _id: 1 },
-            model: "user",
           }
         ])
         .exec((err, result) => {

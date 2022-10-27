@@ -620,11 +620,6 @@ exports.getInfoOneFileById = async (req, res) => {
           select: { fullName: 1, _id: 1 },
           model: "user",
         },
-        {
-          path: "proofFolder",
-          select: { title: 1, _id: 0 },
-          model: "proof_folder",
-        },
       ])
       .exec((err, result) => {
         if (err) console.log(err);

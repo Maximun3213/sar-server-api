@@ -13,9 +13,16 @@ const {
   getAllUserMS,
   removeRoleMS,
   getAllUserRoleNull,
-  getNotificationByID
+  getNotificationByID,
+  removeNotification,
+  checkIsRead,
+  getUserById,
+  updateUserById,
+  deleteUserById,
+  changePassword,
+  forgotPassword,
+  resetPassword
 } = require("../controller/UserController");
-const { authenToken } = require("../middleware/verifyToken");
 
 const router = express.Router();
 
@@ -40,6 +47,19 @@ router.route("/removeProofKey/:fid/:uid").delete(removeProofKey)
 
 router.route("/getAllUserRoleNull").get(getAllUserRoleNull)
 
+router.route("/getUserById/:id").get(getUserById)
+
+router.route("/updateUserById/:id").put(updateUserById)
+
+router.route("/deleteUserById/:id").delete(deleteUserById)
+
+//API for authenticate
+
+router.route("/changePassword/:id").put(changePassword)
+
+router.route("/forgotPassword").post(forgotPassword)
+
+router.route("/resetPassword/:token").put(resetPassword);
 
 
 //API for MS USER
@@ -47,15 +67,14 @@ router.route("/grantRoleMS").put(grantRoleMS)
 
 router.route("/getAllUserMS").get(getAllUserMS)
 
-router.route("/removeRoleMS/:id").delete(removeRoleMS)
+router.route("/removeRoleMS/:id").put(removeRoleMS)
 
 //API for handle notification
 
 router.route("/getNotificationByID/:id").get(getNotificationByID)
 
+router.route("/removeNotification/:id").delete(removeNotification)
 
-
-
-// router.route("/getOwnStorage/:id").get(getOwnStorage)
+router.route("/checkIsRead/:id").put(checkIsRead)
 
 module.exports = router;

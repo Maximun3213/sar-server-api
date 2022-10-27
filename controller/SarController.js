@@ -527,7 +527,7 @@ exports.getFileFromSarFolder = async (req, res, next) => {
             select: {
               data: 0,
             },
-          }
+          },
         ])
         .exec((err, result) => {
           return res.send(result);

@@ -10,6 +10,7 @@ const path = require("path");
 const moment = require("moment");
 const { ObjectId } = require("mongodb");
 const { populate, find } = require("../models/rolesModel");
+const { type } = require("os");
 
 const Str = multer.diskStorage({
   destination: "uploads",
@@ -614,7 +615,9 @@ exports.searchProof = async (req, res) => {
 exports.getInfoOneFileById = async (req, res) => {
   try {
     await proofFile
-      .findOne({ _id: (req.params.id).trim() }).select('-data').populate([
+      .findOne({ _id: req.params.id.trim() })
+      .select("-data")
+      .populate([
         {
           path: "userCreate",
           select: { fullName: 1, _id: 1 },
@@ -624,7 +627,38 @@ exports.getInfoOneFileById = async (req, res) => {
       .exec((err, result) => {
         if (err) console.log(err);
         res.send(result);
-      })
+      });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+exports.deleteFileOfSar = async (req, res, next) => {
+  const { id, type } = req.body;
+  try {
+    if (type === "chapter") {
+      await Chapter.updateMany(
+        { proof_docs: id },
+        {
+          $pull: {
+            proof_docs: id,
+          },
+        }
+      );
+    } else {
+      await Criteria.updateMany(
+        { proof_docs: id },
+        {
+          $pull: {
+            proof_docs: id,
+          },
+        }
+      );
+    }
+    await proofFile.deleteOne({ _id: id }).exec((err) => {
+      if (err) console.log(err);
+      res.send("Xóa thành công");
+    });
   } catch (error) {
     console.log(error);
   }

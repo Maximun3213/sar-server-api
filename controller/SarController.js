@@ -516,8 +516,6 @@ exports.removeWritingRole = async (req, res, next) => {
 exports.getFileFromSarFolder = async (req, res, next) => {
   const id = req.params.type
   const type = req.params.id
-  // console.log(id)
-  // console.log(type)
   try {
     if (type === "chapter") {
       await Chapter.findOne({ _id: id })

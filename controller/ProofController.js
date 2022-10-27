@@ -610,3 +610,16 @@ exports.searchProof = async (req, res) => {
     res.send("Not found");
   }
 };
+
+exports.getOneFile = async (req, res) => {
+  try {
+    await proofFile
+      .findOne({ _id: (req.params.id).trim() }).select('-data')
+      .exec((err, result) => {
+        if (err) console.log(err);
+        res.send(result);
+      })
+  } catch (error) {
+    console.log(error);
+  }
+};

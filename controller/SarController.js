@@ -528,11 +528,6 @@ exports.getFileFromSarFolder = async (req, res, next) => {
               data: 0,
             },
           },
-          {
-            path: "userCreate",
-            select: { fullName: 1, _id: 1 },
-            model: "user",
-          }
         ])
         .exec((err, result) => {
           return res.send(result);

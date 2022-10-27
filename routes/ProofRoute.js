@@ -13,7 +13,8 @@ const {
   getAllDocumentByRole,
   changeFileLocation,
   modifyProofData,
-  getOneFile
+  getOneFile,
+  deleteFileOfSar
 } = require("../controller/ProofController");
 
 const router = express.Router();
@@ -43,5 +44,7 @@ router.route("/modifyProofData/:id").put(modifyProofData);
 router.route("/search/:id").post(searchProof);
 
 router.route("/getOneFile/:id").get(getOneFile);
+
+router.route("/deleteFileOfSar").post(deleteFileOfSar);
 
 module.exports = router;

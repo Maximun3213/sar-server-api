@@ -274,7 +274,7 @@ exports.removeSarFile = async (req, res, next) => {
 
               SarFile.deleteOne({ _id: result._id }).exec((err) => {
                 if (err) console.log(err);
-                res.send("Xóa quyển Sar thành công");
+                return res.send("Xóa quyển Sar thành công");
               });
             });
           });
@@ -320,7 +320,7 @@ exports.modifySarData = async (req, res) => {
     if (err) {
       console.log(err);
     }
-    res.send("Update sar successfully");
+    return res.send("Update sar successfully");
   });
 };
 
@@ -329,7 +329,7 @@ exports.getDataFromSarFile = async (req, res, next) => {
   if (!file) {
     next(new Error("Data not found!!!"));
   }
-  res.send(file);
+  return res.send(file);
 };
 
 exports.addMemberToSar = async (req, res, next) => {
@@ -420,7 +420,7 @@ exports.grantWritingRole = async (req, res, next) => {
         ).exec();
         setNotification(idSender, userID, createAt, content);
 
-        res.send("Cấp quyền thành công");
+        return res.send("Cấp quyền thành công");
       }
     ).clone();
   } else if (chapterID) {
@@ -446,11 +446,11 @@ exports.grantWritingRole = async (req, res, next) => {
         ).exec();
         setNotification(idSender, userID, createAt, content);
 
-        res.send("Cấp quyền truy cập thành công");
+        return res.send("Cấp quyền truy cập thành công");
       }
     ).clone();
   }
-  res.send("Không thể cấp quyền");
+  return res.send("Không thể cấp quyền");
 };
 
 exports.removeWritingRole = async (req, res, next) => {
@@ -480,7 +480,7 @@ exports.removeWritingRole = async (req, res, next) => {
           setNotification(idSender, userID, createAt, content);
         });
 
-        res.send("Xóa thành công");
+        return res.send("Xóa thành công");
       }
     ).clone();
   } else if (chapterID) {
@@ -518,7 +518,7 @@ exports.getFileFromSarFolder = async (req, res, next) => {
   const type = req.params.type
   try {
     if (type === "chapter") {
-      await Chapter.findOne({ _id: id })
+      return Chapter.findOne({ _id: id })
         .select("proof_docs")
         .populate([
           {
@@ -534,7 +534,7 @@ exports.getFileFromSarFolder = async (req, res, next) => {
 
         });
     } else {
-      await Criteria.findOne({ _id: id })
+      return Criteria.findOne({ _id: id })
         .select("proof_docs")
         .populate([
           {

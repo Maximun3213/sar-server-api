@@ -54,7 +54,7 @@ exports.userLogin = async (req, res) => {
       });
     }
 
-    res.send({
+    return res.send({
       user,
       role,
       permission,
@@ -62,7 +62,7 @@ exports.userLogin = async (req, res) => {
     });
   }
 
-  res.send({
+    return res.send({
     user,
     // role,
     // permission,

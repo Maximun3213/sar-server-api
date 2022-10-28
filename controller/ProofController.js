@@ -71,7 +71,7 @@ exports.uploadFile = (req, res, next) => {
         try {
           //listing messages in users mailbox
 
-          if (type) {
+          if (type !== 'undefined') {
             if (type === "chapter") {
               await Chapter.findByIdAndUpdate(folderID, {
                 $push: { proof_docs: ids },
@@ -126,7 +126,7 @@ exports.uploadFile = (req, res, next) => {
           // try {
           //listing messages in users mailbox
 
-          if (type) {
+          if (type !== 'undefined') {
             if (type === "chapter") {
               await Chapter.findByIdAndUpdate(folderID, {
                 $push: { proof_docs: ids },
@@ -612,7 +612,7 @@ exports.searchProof = async (req, res) => {
   }
 };
 
-exports.getOneFile = async (req, res) => {
+exports.getInfoOneFileById = async (req, res) => {
   try {
     await proofFile
       .findOne({ _id: req.params.id.trim() })

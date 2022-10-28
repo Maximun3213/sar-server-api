@@ -13,7 +13,7 @@ const {
   getAllDocumentByRole,
   changeFileLocation,
   modifyProofData,
-  getOneFile,
+  getInfoOneFileById,
   deleteFileOfSar
 } = require("../controller/ProofController");
 
@@ -43,7 +43,7 @@ router.route("/modifyProofData/:id").put(modifyProofData);
 
 router.route("/search/:id").post(searchProof);
 
-router.route("/getOneFile/:id").get(getOneFile);
+router.route("/getInfoOneFileById/:id").get(getInfoOneFileById);
 
 router.route("/deleteFileOfSar").post(deleteFileOfSar);
 

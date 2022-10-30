@@ -546,7 +546,6 @@ exports.getFileFromSarFolder = async (req, res, next) => {
           },
         ])
         .exec((err, result) => {
-          console.log(result)
           return res.send(result);
         });
     }
@@ -554,3 +553,4 @@ exports.getFileFromSarFolder = async (req, res, next) => {
     console.log(error);
   }
 };
+

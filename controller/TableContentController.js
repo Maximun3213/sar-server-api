@@ -114,20 +114,23 @@ exports.creatPart = async (req, res) => {
 };
 
 exports.getTreeStructure = async (req, res, next) => {
+  let checkExist
   await Chapter.findOne({ proof_docs: '635bcd01f56016d54ea00299'}).exec((err, result) => {
-    let global
     if(result == null){
       return Criteria.findOne({ proof_docs: '635bcd01f56016d54ea00299'}).exec((err, result) => {
         if(result == null){
+          checkExist = false
           return res.send('Minh chứng ko tồn tại cả chapter và tiêu chí')
         }
-        res.send(true)
+        checkExist = true
       })
     }
+    checkExist = true
     res.send('Minh chứng đã tồn tại trong chương')
   })
-  console.log(global)
-
+  setTimeout(()=>{
+    console.log(global)
+  },1300)
   // await TableOfContent.aggregate([
   //   {
   //     $match: {

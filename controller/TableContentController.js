@@ -114,14 +114,14 @@ exports.creatPart = async (req, res) => {
 };
 
 exports.getTreeStructure = async (req, res, next) => {
+  let global = ''
   await Chapter.findOne({ proof_docs: '635bcd01f56016d54ea00299'}).exec((err, result) => {
-    let global
     if(result == null){
       return Criteria.findOne({ proof_docs: '635bcd01f56016d54ea00299'}).exec((err, result) => {
         if(result == null){
           return res.send('Minh chứng ko tồn tại cả chapter và tiêu chí')
         }
-        res.send(true)
+        global = 'true'
       })
     }
     res.send('Minh chứng đã tồn tại trong chương')

@@ -8,6 +8,8 @@ const {
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
 const { SarFile } = require("../models/sarModel");
+const { proofFile } = require("../models/proofsModel");
+
 
 exports.createTreeStructure = async (req, res) => {
   const { sarID, partID } = req.body;
@@ -112,76 +114,90 @@ exports.creatPart = async (req, res) => {
 };
 
 exports.getTreeStructure = async (req, res, next) => {
-  await TableOfContent.aggregate([
-    {
-      $match: {
-        sarID: ObjectId(req.params.id),
-      },
-    },
-    {
-      $graphLookup: {
-        from: "parts",
-        startWith: "$partID",
-        connectFromField: "partID",
-        connectToField: "_id",
-        as: "parts",
-      },
-    },
-
-    { $unwind: "$parts" },
-
-    {
-      $graphLookup: {
-        from: "chapters",
-        startWith: "$parts.chapterID",
-        connectFromField: "parts.chapterID",
-        connectToField: "_id",
-        as: "chapters",
-      },
-    },
-
-    {
-      $unwind: {
-        path: "$chapters",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-
-    {
-      $graphLookup: {
-        from: "criterias",
-        startWith: "$chapters.criteriaID",
-        connectFromField: "chapters.criteriaID",
-        connectToField: "_id",
-        as: "criterias",
-      },
-    },
-    {
-      $unwind: {
-        path: "$criterias",
-        preserveNullAndEmptyArrays: true,
-      },
-    },
-    {
-      $project: {
-        partID: 0,
-      },
-    },
-    {
-      $group: {
-        _id: "$_id",
-        sarID: { $first: "$sarID" },
-        parts: { $addToSet: "$parts" },
-        chapters: { $push: "$chapters" },
-        criterias: { $push: "$criterias" },
-      },
-    },
-  ]).exec((err, result) => {
-    if (err) {
-      return next(err);
+  await Chapter.findOne({ proof_docs: '635bcd01f56016d54ea00299'}).exec((err, result) => {
+    let global
+    if(result == null){
+      return Criteria.findOne({ proof_docs: '635bcd01f56016d54ea00299'}).exec((err, result) => {
+        if(result == null){
+          return res.send('Minh chứng ko tồn tại cả chapter và tiêu chí')
+        }
+        res.send(true)
+      })
     }
-    res.send(result);
-  });
+    res.send('Minh chứng đã tồn tại trong chương')
+  })
+  console.log(global)
+
+  // await TableOfContent.aggregate([
+  //   {
+  //     $match: {
+  //       sarID: ObjectId(req.params.id),
+  //     },
+  //   },
+  //   {
+  //     $graphLookup: {
+  //       from: "parts",
+  //       startWith: "$partID",
+  //       connectFromField: "partID",
+  //       connectToField: "_id",
+  //       as: "parts",
+  //     },
+  //   },
+
+  //   { $unwind: "$parts" },
+
+  //   {
+  //     $graphLookup: {
+  //       from: "chapters",
+  //       startWith: "$parts.chapterID",
+  //       connectFromField: "parts.chapterID",
+  //       connectToField: "_id",
+  //       as: "chapters",
+  //     },
+  //   },
+
+  //   {
+  //     $unwind: {
+  //       path: "$chapters",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+
+  //   {
+  //     $graphLookup: {
+  //       from: "criterias",
+  //       startWith: "$chapters.criteriaID",
+  //       connectFromField: "chapters.criteriaID",
+  //       connectToField: "_id",
+  //       as: "criterias",
+  //     },
+  //   },
+  //   {
+  //     $unwind: {
+  //       path: "$criterias",
+  //       preserveNullAndEmptyArrays: true,
+  //     },
+  //   },
+  //   {
+  //     $project: {
+  //       partID: 0,
+  //     },
+  //   },
+  //   {
+  //     $group: {
+  //       _id: "$_id",
+  //       sarID: { $first: "$sarID" },
+  //       parts: { $addToSet: "$parts" },
+  //       chapters: { $push: "$chapters" },
+  //       criterias: { $push: "$criterias" },
+  //     },
+  //   },
+  // ]).exec((err, result) => {
+  //   if (err) {
+  //     return next(err);
+  //   }
+  //   res.send(result);
+  // });
 };
 
 exports.checkUserExist = async (req, res, next) => {

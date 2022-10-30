@@ -76,15 +76,15 @@ exports.uploadFile = (req, res, next) => {
             // if(){
             //   res.send('Đã up trong mục ....')
             // }else{
-            //   if (type === "chapter") {
-            //     await Chapter.findByIdAndUpdate(folderID, {
-            //       $push: { proof_docs: ids },
-            //     }).exec();
-            //   } else {
-            //     await Criteria.findByIdAndUpdate(folderID, {
-            //       $push: { proof_docs: ids },
-            //     }).exec();
-            //   }
+              if (type === "chapter") {
+                await Chapter.findByIdAndUpdate(folderID, {
+                  $push: { proof_docs: ids },
+                }).exec();
+              } else {
+                await Criteria.findByIdAndUpdate(folderID, {
+                  $push: { proof_docs: ids },
+                }).exec();
+              }
             // }
             if (type === "chapter") {
               await Chapter.findByIdAndUpdate(folderID, {

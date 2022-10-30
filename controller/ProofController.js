@@ -71,7 +71,21 @@ exports.uploadFile = (req, res, next) => {
         try {
           //listing messages in users mailbox
 
-          if (type !== 'undefined') {
+          if (type !== "undefined") {
+            // xử lý đã up hay chưa
+            // if(){
+            //   res.send('Đã up trong mục ....')
+            // }else{
+            //   if (type === "chapter") {
+            //     await Chapter.findByIdAndUpdate(folderID, {
+            //       $push: { proof_docs: ids },
+            //     }).exec();
+            //   } else {
+            //     await Criteria.findByIdAndUpdate(folderID, {
+            //       $push: { proof_docs: ids },
+            //     }).exec();
+            //   }
+            // }
             if (type === "chapter") {
               await Chapter.findByIdAndUpdate(folderID, {
                 $push: { proof_docs: ids },
@@ -126,7 +140,7 @@ exports.uploadFile = (req, res, next) => {
           // try {
           //listing messages in users mailbox
 
-          if (type !== 'undefined') {
+          if (type !== "undefined") {
             if (type === "chapter") {
               await Chapter.findByIdAndUpdate(folderID, {
                 $push: { proof_docs: ids },

@@ -52,7 +52,7 @@ exports.uploadFile = (req, res, next) => {
       status,
       type,
       sarID,
-      locationSAR
+      locationSAR,
     } = req.body;
 
     if (fileList.length === 1) {
@@ -71,7 +71,7 @@ exports.uploadFile = (req, res, next) => {
           description: description,
           status: status,
           userCreate: userCreate,
-          locationSAR: locationSAR
+          locationSAR: locationSAR,
         });
         try {
           let message = "";
@@ -173,9 +173,9 @@ exports.uploadFile = (req, res, next) => {
               });
             });
             //================Condition
-            setTimeout(()=>{
+            setTimeout(() => {
               if (message !== "") {
-                return res.send({message: message}, 400);
+                return res.send({ message: message }, 400);
               } else {
                 if (type === "chapter") {
                   Chapter.findByIdAndUpdate(folderID, {
@@ -201,7 +201,7 @@ exports.uploadFile = (req, res, next) => {
                   });
                 }
               }
-            },1500)
+            }, 1500);
           } else {
             await proofFolder
               .findByIdAndUpdate(folderID, {

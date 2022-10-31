@@ -1,5 +1,9 @@
 const { proofFile, proofFolder } = require("../models/proofsModel");
-const { Chapter, Criteria } = require("../models/tableContentModel");
+const {
+  Chapter,
+  Criteria,
+  TableOfContent,
+} = require("../models/tableContentModel");
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
 const mongoose = require("mongoose");
@@ -47,7 +51,7 @@ exports.uploadFile = (req, res, next) => {
       userCreate,
       status,
       type,
-      sarID
+      sarID,
     } = req.body;
 
     if (fileList.length === 1) {
@@ -136,6 +140,7 @@ exports.uploadFile = (req, res, next) => {
               },
             ]).exec((err, result) => {
               if (err) {
+                console.log(err);
                 return next(err);
               }
               result.forEach((child) => {
@@ -165,36 +170,57 @@ exports.uploadFile = (req, res, next) => {
                 });
               });
             });
-           //================Condition
-            if(message){
-              return res.send(message)
-            }
-            else{
-              if (type === "chapter") {
-                await Chapter.findByIdAndUpdate(folderID, {
-                  $push: { proof_docs: ids },
-                }).exec();
+            //================Condition
+            setTimeout(()=>{
+              if (message !== "") {
+                return res.send({message: message}, 400);
               } else {
-                await Criteria.findByIdAndUpdate(folderID, {
-                  $push: { proof_docs: ids },
-                }).exec();
+                if (type === "chapter") {
+                  Chapter.findByIdAndUpdate(folderID, {
+                    $push: { proof_docs: ids },
+                  }).exec(() => {
+                    newImage.save();
+                    return res.status(200).json({
+                      success: true,
+                      message: "Tải tệp lên thành công",
+                      fileList,
+                    });
+                  });
+                } else {
+                  Criteria.findByIdAndUpdate(folderID, {
+                    $push: { proof_docs: ids },
+                  }).exec(() => {
+                    newImage.save();
+                    return res.status(200).json({
+                      success: true,
+                      message: "Tải tệp lên thành công",
+                      fileList,
+                    });
+                  });
+                }
               }
-            }
-            
+            },1500)
           } else {
             await proofFolder
               .findByIdAndUpdate(folderID, {
                 $push: { proofFiles: ids },
               })
-              .exec();
+              .exec(() => {
+                newImage.save();
+                return res.status(200).json({
+                  success: true,
+                  message: "Tải tệp lên thành công",
+                  fileList,
+                });
+              });
           }
 
-          newImage.save();
-          return res.status(200).json({
-            success: true,
-            message: "Tải tệp lên thành công",
-            fileList,
-          });
+          // newImage.save();
+          // return res.status(200).json({
+          //   success: true,
+          //   message: "Tải tệp lên thành công",
+          //   fileList,
+          // });
         } catch (err) {
           next(err);
           return res.status(400).json({

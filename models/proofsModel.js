@@ -56,6 +56,7 @@ const proofFileSchema = new Schema({
     type: Number,
     default: 1,
   },
+  locationSAR: String,
   creatAt: {
     type: Date,
     default: Date.now(),

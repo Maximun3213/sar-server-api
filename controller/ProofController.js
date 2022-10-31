@@ -52,12 +52,13 @@ exports.uploadFile = (req, res, next) => {
       status,
       type,
       sarID,
+      locationSAR
     } = req.body;
 
     if (fileList.length === 1) {
       fileList.map(async (file, index) => {
         const ids = new ObjectId();
-        const newImage = new proofFile({
+        const newFile = new proofFile({
           _id: ids,
           name: Buffer.from(file.originalname, "latin1").toString("utf8"),
           data: fs.readFileSync(file.path),
@@ -70,6 +71,7 @@ exports.uploadFile = (req, res, next) => {
           description: description,
           status: status,
           userCreate: userCreate,
+          locationSAR: locationSAR
         });
         try {
           let message = "";
@@ -179,7 +181,7 @@ exports.uploadFile = (req, res, next) => {
                   Chapter.findByIdAndUpdate(folderID, {
                     $push: { proof_docs: ids },
                   }).exec(() => {
-                    newImage.save();
+                    newFile.save();
                     return res.status(200).json({
                       success: true,
                       message: "Tải tệp lên thành công",
@@ -190,7 +192,7 @@ exports.uploadFile = (req, res, next) => {
                   Criteria.findByIdAndUpdate(folderID, {
                     $push: { proof_docs: ids },
                   }).exec(() => {
-                    newImage.save();
+                    newFile.save();
                     return res.status(200).json({
                       success: true,
                       message: "Tải tệp lên thành công",
@@ -206,7 +208,7 @@ exports.uploadFile = (req, res, next) => {
                 $push: { proofFiles: ids },
               })
               .exec(() => {
-                newImage.save();
+                newFile.save();
                 return res.status(200).json({
                   success: true,
                   message: "Tải tệp lên thành công",
@@ -214,13 +216,6 @@ exports.uploadFile = (req, res, next) => {
                 });
               });
           }
-
-          // newImage.save();
-          // return res.status(200).json({
-          //   success: true,
-          //   message: "Tải tệp lên thành công",
-          //   fileList,
-          // });
         } catch (err) {
           next(err);
           return res.status(400).json({
@@ -234,7 +229,7 @@ exports.uploadFile = (req, res, next) => {
       try {
         fileList.map(async (file, index) => {
           const ids = new ObjectId();
-          const newImage = new proofFile({
+          const newFile = new proofFile({
             _id: ids,
             name: Buffer.from(file.originalname, "latin1").toString("utf8"),
             data: fs.readFileSync(file.path),
@@ -249,9 +244,6 @@ exports.uploadFile = (req, res, next) => {
             userCreate: userCreate[0],
           });
           // push to proofFolder
-          // try {
-          //listing messages in users mailbox
-
           if (type !== "undefined") {
             if (type === "chapter") {
               await Chapter.findByIdAndUpdate(folderID, {
@@ -270,7 +262,7 @@ exports.uploadFile = (req, res, next) => {
               .exec();
           }
 
-          newImage.save();
+          newFile.save();
         });
         return res.status(200).json({
           success: true,

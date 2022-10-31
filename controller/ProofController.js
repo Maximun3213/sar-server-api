@@ -37,10 +37,8 @@ exports.uploadFile = (req, res, next) => {
 
     const fileList = req.files;
 
-    // const folderID = req.body.folderID;
     const folderID = req.params.id;
 
-    //nếu tìm trong chapter criteria mà ko bằng với id folder thì sẽ thêm vào proofFolder
     const {
       enactNum,
       enactAddress,
@@ -49,6 +47,7 @@ exports.uploadFile = (req, res, next) => {
       userCreate,
       status,
       type,
+      sarID
     } = req.body;
 
     if (fileList.length === 1) {
@@ -69,13 +68,108 @@ exports.uploadFile = (req, res, next) => {
           userCreate: userCreate,
         });
         try {
-          //listing messages in users mailbox
-
+          let message = "";
           if (type !== "undefined") {
-            // xử lý đã up hay chưa
-            // if(){
-            //   res.send('Đã up trong mục ....')
-            // }else{
+            await TableOfContent.aggregate([
+              {
+                $match: {
+                  sarID: ObjectId(sarID),
+                },
+              },
+              {
+                $graphLookup: {
+                  from: "parts",
+                  startWith: "$partID",
+                  connectFromField: "partID",
+                  connectToField: "_id",
+                  as: "parts",
+                },
+              },
+
+              { $unwind: "$parts" },
+
+              {
+                $graphLookup: {
+                  from: "chapters",
+                  startWith: "$parts.chapterID",
+                  connectFromField: "parts.chapterID",
+                  connectToField: "_id",
+                  as: "chapters",
+                },
+              },
+
+              {
+                $unwind: {
+                  path: "$chapters",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+
+              {
+                $graphLookup: {
+                  from: "criterias",
+                  startWith: "$chapters.criteriaID",
+                  connectFromField: "chapters.criteriaID",
+                  connectToField: "_id",
+                  as: "criterias",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$criterias",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+              {
+                $project: {
+                  partID: 0,
+                },
+              },
+              {
+                $group: {
+                  _id: "$_id",
+                  sarID: { $first: "$sarID" },
+                  parts: { $addToSet: "$parts" },
+                  chapters: { $push: "$chapters" },
+                  criterias: { $push: "$criterias" },
+                },
+              },
+            ]).exec((err, result) => {
+              if (err) {
+                return next(err);
+              }
+              result.forEach((child) => {
+                child.chapters.forEach((chapter) => {
+                  proofFile
+                    .findOne({ _id: chapter.proof_docs, enactNum: enactNum })
+                    .exec((err, result) => {
+                      if (result == null) {
+                        return;
+                      } else {
+                        message = `Minh chứng đã tồn tại trong chương "${chapter.title}"`;
+                        return message;
+                      }
+                    });
+                });
+                child.criterias.forEach((criteria) => {
+                  proofFile
+                    .findOne({ _id: criteria.proof_docs, enactNum: enactNum })
+                    .exec((err, result) => {
+                      if (result == null) {
+                        return;
+                      } else {
+                        message = `Minh chứng đã tồn tại trong tiêu chí "${criteria.title}"`;
+                        return message;
+                      }
+                    });
+                });
+              });
+            });
+           //================Condition
+            if(message){
+              return res.send(message)
+            }
+            else{
               if (type === "chapter") {
                 await Chapter.findByIdAndUpdate(folderID, {
                   $push: { proof_docs: ids },
@@ -85,16 +179,8 @@ exports.uploadFile = (req, res, next) => {
                   $push: { proof_docs: ids },
                 }).exec();
               }
-            // }
-            if (type === "chapter") {
-              await Chapter.findByIdAndUpdate(folderID, {
-                $push: { proof_docs: ids },
-              }).exec();
-            } else {
-              await Criteria.findByIdAndUpdate(folderID, {
-                $push: { proof_docs: ids },
-              }).exec();
             }
+            
           } else {
             await proofFolder
               .findByIdAndUpdate(folderID, {

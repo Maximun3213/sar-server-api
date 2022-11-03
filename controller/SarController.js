@@ -586,5 +586,5 @@ exports.previewSar = async (req, res, next) => {
     .exec((err, result) => {
       res.send(result);
     });
-  
+
 };

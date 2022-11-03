@@ -405,7 +405,6 @@ exports.grantWritingRole = async (req, res, next) => {
   const roleCS = await Role.findOne({ roleID: "CS" });
   const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const sar = await SarFile.findOne({ _id: idSar });
-
   if (criteriaID) {
     return Criteria.findOneAndUpdate(
       { _id: criteriaID },

@@ -516,8 +516,8 @@ exports.removeWritingRole = async (req, res, next) => {
 };
 
 exports.getFileFromSarFolder = async (req, res, next) => {
-  const type = req.params.id
-  const id = req.params.type
+  const type = req.params.id;
+  const id = req.params.type;
   try {
     if (type === "chapter") {
       return Chapter.findOne({ _id: id })
@@ -533,7 +533,6 @@ exports.getFileFromSarFolder = async (req, res, next) => {
         ])
         .exec((err, result) => {
           return res.send(result);
-
         });
     } else {
       return Criteria.findOne({ _id: id })
@@ -556,3 +555,36 @@ exports.getFileFromSarFolder = async (req, res, next) => {
   }
 };
 
+exports.previewSar = async (req, res, next) => {
+  const idSar = req.params.id;
+  await TableOfContent.findOne({ sarID: idSar })
+    .populate({
+      path: "partID",
+      model: "part",
+      select: {
+        title: 1,
+      },
+      populate: [
+        {
+          path: "chapterID",
+          model: "chapter",
+          select: {
+            title: 1,
+            deltaContent: 1,
+          },
+          populate: {
+            path: "criteriaID",
+            model: "criteria",
+            select: {
+              title: 1,
+              deltaContent: 1,
+            },
+          },
+        },
+      ],
+    })
+    .exec((err, result) => {
+      res.send(result);
+    });
+  
+};

@@ -181,7 +181,9 @@ exports.getTreeStructure = async (req, res, next) => {
     if (err) {
       return next(err);
     }
-    res.send(result);
+    SarFile.populate(result, {path: "sarID", select: {'title': 1}}, (err, result) => {
+      res.send(result);
+    })
   });
 };
 

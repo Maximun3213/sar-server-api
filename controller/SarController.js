@@ -1,4 +1,5 @@
-const { SarFile, SarProofFolder } = require("../models/sarModel");
+const { SarFile } = require("../models/sarModel");
+const { proofFile } = require("../models/proofsModel");
 const Role = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
 const { setNotification } = require("../middleware/notification");
@@ -226,9 +227,11 @@ exports.removeSarFile = async (req, res, next) => {
         });
         child.chapters.forEach((chapter) => {
           Chapter.deleteMany({ _id: chapter._id }).exec();
+          // proofFile.deleteMany({ _id: chapter.proof_docs}).exec()
         });
         child.criterias.forEach((criteria) => {
           Criteria.deleteMany({ _id: criteria._id }).exec();
+          // proofFile.deleteMany({ _id: criteria.proof_docs}).exec()
         });
       });
       //Xóa mục lục và quyển Sar
@@ -274,7 +277,7 @@ exports.removeSarFile = async (req, res, next) => {
 
               SarFile.deleteOne({ _id: result._id }).exec((err) => {
                 if (err) console.log(err);
-                res.send("Xóa quyển Sar thành công");
+                return res.send("Xóa quyển Sar thành công");
               });
             });
           });
@@ -320,7 +323,7 @@ exports.modifySarData = async (req, res) => {
     if (err) {
       console.log(err);
     }
-    res.send("Update sar successfully");
+    return res.send("Update sar successfully");
   });
 };
 
@@ -329,7 +332,7 @@ exports.getDataFromSarFile = async (req, res, next) => {
   if (!file) {
     next(new Error("Data not found!!!"));
   }
-  res.send(file);
+  return res.send(file);
 };
 
 exports.addMemberToSar = async (req, res, next) => {
@@ -402,7 +405,6 @@ exports.grantWritingRole = async (req, res, next) => {
   const roleCS = await Role.findOne({ roleID: "CS" });
   const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const sar = await SarFile.findOne({ _id: idSar });
-
   if (criteriaID) {
     return Criteria.findOneAndUpdate(
       { _id: criteriaID },
@@ -420,7 +422,7 @@ exports.grantWritingRole = async (req, res, next) => {
         ).exec();
         setNotification(idSender, userID, createAt, content);
 
-        res.send("Cấp quyền thành công");
+        return res.send("Cấp quyền thành công");
       }
     ).clone();
   } else if (chapterID) {
@@ -446,11 +448,11 @@ exports.grantWritingRole = async (req, res, next) => {
         ).exec();
         setNotification(idSender, userID, createAt, content);
 
-        res.send("Cấp quyền truy cập thành công");
+        return res.send("Cấp quyền truy cập thành công");
       }
     ).clone();
   }
-  res.send("Không thể cấp quyền");
+  return res.send("Không thể cấp quyền");
 };
 
 exports.removeWritingRole = async (req, res, next) => {
@@ -480,7 +482,7 @@ exports.removeWritingRole = async (req, res, next) => {
           setNotification(idSender, userID, createAt, content);
         });
 
-        res.send("Xóa thành công");
+        return res.send("Xóa thành công");
       }
     ).clone();
   } else if (chapterID) {
@@ -514,11 +516,11 @@ exports.removeWritingRole = async (req, res, next) => {
 };
 
 exports.getFileFromSarFolder = async (req, res, next) => {
-  const type = req.params.id
-  const id = req.params.type
+  const type = req.params.id;
+  const id = req.params.type;
   try {
     if (type === "chapter") {
-      await Chapter.findOne({ _id: id })
+      return Chapter.findOne({ _id: id })
         .select("proof_docs")
         .populate([
           {
@@ -531,10 +533,9 @@ exports.getFileFromSarFolder = async (req, res, next) => {
         ])
         .exec((err, result) => {
           return res.send(result);
-
         });
     } else {
-      await Criteria.findOne({ _id: id })
+      return Criteria.findOne({ _id: id })
         .select("proof_docs")
         .populate([
           {
@@ -546,11 +547,44 @@ exports.getFileFromSarFolder = async (req, res, next) => {
           },
         ])
         .exec((err, result) => {
-          console.log(result)
           return res.send(result);
         });
     }
   } catch (error) {
     console.log(error);
   }
+};
+
+exports.previewSar = async (req, res, next) => {
+  const idSar = req.params.id;
+  await TableOfContent.findOne({ sarID: idSar })
+    .populate({
+      path: "partID",
+      model: "part",
+      select: {
+        title: 1,
+      },
+      populate: [
+        {
+          path: "chapterID",
+          model: "chapter",
+          select: {
+            title: 1,
+            deltaContent: 1,
+          },
+          populate: {
+            path: "criteriaID",
+            model: "criteria",
+            select: {
+              title: 1,
+              deltaContent: 1,
+            },
+          },
+        },
+      ],
+    })
+    .exec((err, result) => {
+      res.send(result);
+    });
+
 };

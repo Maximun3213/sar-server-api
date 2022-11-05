@@ -8,6 +8,7 @@ const {
 const json = require("body-parser");
 const { ObjectId } = require("mongodb");
 const { SarFile } = require("../models/sarModel");
+const { proofFile } = require("../models/proofsModel");
 
 exports.createTreeStructure = async (req, res) => {
   const { sarID, partID } = req.body;
@@ -180,42 +181,47 @@ exports.getTreeStructure = async (req, res, next) => {
     if (err) {
       return next(err);
     }
-    res.send(result);
+    SarFile.populate(result, {path: "sarID", select: {'title': 1}}, (err, result) => {
+      res.send(result);
+    })
   });
 };
 
 exports.checkUserExist = async (req, res, next) => {
   const { idCriteria, idChapter, idUserLogin } = req.body;
   let content;
+  let contentDelta
   if (idCriteria) {
     return Criteria.findOne({ _id: idCriteria }, (err, result) => {
       content = result.content;
+      contentDelta = result.deltaContent;
       if (err) {
-        return res.send({ isExist: false, content: content });
+        return res.send({ isExist: false, content: content, contentDelta: contentDelta});
       }
       if (result !== null && result.user_access == idUserLogin) {
-        return res.send({ isExist: true, content: content });
+        return res.send({ isExist: true, content: content, contentDelta: contentDelta });
       }
-      res.send({ isExist: false, content: content });
+      res.send({ isExist: false, content: content, contentDelta: contentDelta });
     }).clone();
   }
   if (idChapter) {
     return Chapter.findOne({ _id: idChapter }, (err, result) => {
       content = result.content;
+      contentDelta = result.deltaContent;
       if (err) {
-        return res.send({ isExist: false, content: content });
+        return res.send({ isExist: false, content: content, contentDelta: contentDelta });
       }
       if (result !== null && result.user_access == idUserLogin) {
-        return res.send({ isExist: true, content: content });
+        return res.send({ isExist: true, content: content, contentDelta: contentDelta });
       }
-      res.send({ isExist: false, content: content });
+      res.send({ isExist: false, content: content, contentDelta: contentDelta });
     }).clone();
   }
-  res.send({ isExist: false });
+  res.send({ isExist: false, contentDelta: contentDelta });
 };
 
 exports.addNewContent = async (req, res) => {
-  const { idCriteria, idChapter, content } = req.body;
+  const { idCriteria, idChapter, content, deltaContent } = req.body;
   if (idCriteria) {
     return Criteria.updateOne(
       {
@@ -224,6 +230,7 @@ exports.addNewContent = async (req, res) => {
       {
         $set: {
           content: content,
+          deltaContent: deltaContent,
         },
       }
     ).exec((err, result) => {
@@ -239,6 +246,7 @@ exports.addNewContent = async (req, res) => {
     {
       $set: {
         content: content,
+        deltaContent: deltaContent,
       },
     }
   ).exec((err, result) => {

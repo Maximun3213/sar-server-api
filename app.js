@@ -12,7 +12,7 @@ const cors = require("cors");
 app.use(express.static("uploads"));
 app.use(express.json({limit: '50mb'}));
 app.use(cors());
-app.use(bodyParser({limit: '50mb'}));
+// app.use(bodyParser({limit: '50mb'}));
 
 
 //socket library

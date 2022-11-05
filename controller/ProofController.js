@@ -1,5 +1,9 @@
 const { proofFile, proofFolder } = require("../models/proofsModel");
-const { Chapter, Criteria } = require("../models/tableContentModel");
+const {
+  Chapter,
+  Criteria,
+  TableOfContent,
+} = require("../models/tableContentModel");
 const User = require("../models/usersModel");
 const Role = require("../models/rolesModel");
 const mongoose = require("mongoose");
@@ -37,10 +41,8 @@ exports.uploadFile = (req, res, next) => {
 
     const fileList = req.files;
 
-    // const folderID = req.body.folderID;
     const folderID = req.params.id;
 
-    //nếu tìm trong chapter criteria mà ko bằng với id folder thì sẽ thêm vào proofFolder
     const {
       enactNum,
       enactAddress,
@@ -49,12 +51,14 @@ exports.uploadFile = (req, res, next) => {
       userCreate,
       status,
       type,
+      sarID,
+      locationSAR,
     } = req.body;
 
     if (fileList.length === 1) {
       fileList.map(async (file, index) => {
         const ids = new ObjectId();
-        const newImage = new proofFile({
+        const newFile = new proofFile({
           _id: ids,
           name: Buffer.from(file.originalname, "latin1").toString("utf8"),
           data: fs.readFileSync(file.path),
@@ -67,34 +71,151 @@ exports.uploadFile = (req, res, next) => {
           description: description,
           status: status,
           userCreate: userCreate,
+          locationSAR: locationSAR,
         });
         try {
-          //listing messages in users mailbox
+          let message = "";
+          if (type !== "undefined") {
+            await TableOfContent.aggregate([
+              {
+                $match: {
+                  sarID: ObjectId(sarID),
+                },
+              },
+              {
+                $graphLookup: {
+                  from: "parts",
+                  startWith: "$partID",
+                  connectFromField: "partID",
+                  connectToField: "_id",
+                  as: "parts",
+                },
+              },
 
-          if (type !== 'undefined') {
-            if (type === "chapter") {
-              await Chapter.findByIdAndUpdate(folderID, {
-                $push: { proof_docs: ids },
-              }).exec();
-            } else {
-              await Criteria.findByIdAndUpdate(folderID, {
-                $push: { proof_docs: ids },
-              }).exec();
-            }
+              { $unwind: "$parts" },
+
+              {
+                $graphLookup: {
+                  from: "chapters",
+                  startWith: "$parts.chapterID",
+                  connectFromField: "parts.chapterID",
+                  connectToField: "_id",
+                  as: "chapters",
+                },
+              },
+
+              {
+                $unwind: {
+                  path: "$chapters",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+
+              {
+                $graphLookup: {
+                  from: "criterias",
+                  startWith: "$chapters.criteriaID",
+                  connectFromField: "chapters.criteriaID",
+                  connectToField: "_id",
+                  as: "criterias",
+                },
+              },
+              {
+                $unwind: {
+                  path: "$criterias",
+                  preserveNullAndEmptyArrays: true,
+                },
+              },
+              {
+                $project: {
+                  partID: 0,
+                },
+              },
+              {
+                $group: {
+                  _id: "$_id",
+                  sarID: { $first: "$sarID" },
+                  parts: { $addToSet: "$parts" },
+                  chapters: { $push: "$chapters" },
+                  criterias: { $push: "$criterias" },
+                },
+              },
+            ]).exec((err, result) => {
+              if (err) {
+                console.log(err);
+                return next(err);
+              }
+              result.forEach((child) => {
+                child.chapters.forEach((chapter) => {
+                  proofFile
+                    .findOne({ _id: chapter.proof_docs, enactNum: enactNum })
+                    .exec((err, result) => {
+                      if (result == null) {
+                        return;
+                      } else {
+                        message = `Minh chứng đã tồn tại trong chương "${chapter.title}"`;
+                        return message;
+                      }
+                    });
+                });
+                child.criterias.forEach((criteria) => {
+                  proofFile
+                    .findOne({ _id: criteria.proof_docs, enactNum: enactNum })
+                    .exec((err, result) => {
+                      if (result == null) {
+                        return;
+                      } else {
+                        message = `Minh chứng đã tồn tại trong tiêu chí "${criteria.title}"`;
+                        return message;
+                      }
+                    });
+                });
+              });
+            });
+            //================Condition
+            setTimeout(() => {
+              if (message !== "") {
+                return res.send({ message: message }, 400);
+              } else {
+                if (type === "chapter") {
+                  Chapter.findByIdAndUpdate(folderID, {
+                    $push: { proof_docs: ids },
+                  }).exec(() => {
+                    newFile.save();
+                    return res.status(200).json({
+                      success: true,
+                      message: "Tải tệp lên thành công",
+                      fileList,
+                    });
+                  });
+                } else {
+                  Criteria.findByIdAndUpdate(folderID, {
+                    $push: { proof_docs: ids },
+                  }).exec(() => {
+                    newFile.save();
+                    return res.status(200).json({
+                      success: true,
+                      message: "Tải tệp lên thành công",
+                      fileList,
+                    });
+                  });
+                }
+              }
+            }, 1500);
           } else {
             await proofFolder
               .findByIdAndUpdate(folderID, {
                 $push: { proofFiles: ids },
               })
-              .exec();
+              .exec(() => {
+                newFile.save();
+                return res.status(200).json({
+                  success: true,
+                  message: "Tải tệp lên thành công",
+                  fileList,
+                });
+              });
           }
-
-          newImage.save();
-          return res.status(200).json({
-            success: true,
-            message: "Tải tệp lên thành công",
-            fileList,
-          });
         } catch (err) {
           next(err);
           return res.status(400).json({
@@ -108,7 +229,7 @@ exports.uploadFile = (req, res, next) => {
       try {
         fileList.map(async (file, index) => {
           const ids = new ObjectId();
-          const newImage = new proofFile({
+          const newFile = new proofFile({
             _id: ids,
             name: Buffer.from(file.originalname, "latin1").toString("utf8"),
             data: fs.readFileSync(file.path),
@@ -123,10 +244,7 @@ exports.uploadFile = (req, res, next) => {
             userCreate: userCreate[0],
           });
           // push to proofFolder
-          // try {
-          //listing messages in users mailbox
-
-          if (type !== 'undefined') {
+          if (type !== "undefined") {
             if (type === "chapter") {
               await Chapter.findByIdAndUpdate(folderID, {
                 $push: { proof_docs: ids },
@@ -144,7 +262,7 @@ exports.uploadFile = (req, res, next) => {
               .exec();
           }
 
-          newImage.save();
+          newFile.save();
         });
         return res.status(200).json({
           success: true,
@@ -663,3 +781,4 @@ exports.deleteFileOfSar = async (req, res, next) => {
     console.log(error);
   }
 };
+

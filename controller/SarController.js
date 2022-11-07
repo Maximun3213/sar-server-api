@@ -570,14 +570,16 @@ exports.previewSar = async (req, res, next) => {
           model: "chapter",
           select: {
             title: 1,
-            deltaContent: 1,
+            content: 1,
+            // deltaContent: 1,
           },
           populate: {
             path: "criteriaID",
             model: "criteria",
             select: {
               title: 1,
-              deltaContent: 1,
+              content: 1,
+              // deltaContent: 1,
             },
           },
         },

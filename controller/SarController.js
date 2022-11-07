@@ -405,7 +405,6 @@ exports.grantWritingRole = async (req, res, next) => {
   const roleCS = await Role.findOne({ roleID: "CS" });
   const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const sar = await SarFile.findOne({ _id: idSar });
-
   if (criteriaID) {
     return Criteria.findOneAndUpdate(
       { _id: criteriaID },
@@ -571,14 +570,16 @@ exports.previewSar = async (req, res, next) => {
           model: "chapter",
           select: {
             title: 1,
-            deltaContent: 1,
+            content: 1,
+            // deltaContent: 1,
           },
           populate: {
             path: "criteriaID",
             model: "criteria",
             select: {
               title: 1,
-              deltaContent: 1,
+              content: 1,
+              // deltaContent: 1,
             },
           },
         },
@@ -587,5 +588,5 @@ exports.previewSar = async (req, res, next) => {
     .exec((err, result) => {
       res.send(result);
     });
-  
+
 };

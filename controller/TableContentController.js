@@ -190,31 +190,34 @@ exports.getTreeStructure = async (req, res, next) => {
 exports.checkUserExist = async (req, res, next) => {
   const { idCriteria, idChapter, idUserLogin } = req.body;
   let content;
+  let contentDelta
   if (idCriteria) {
     return Criteria.findOne({ _id: idCriteria }, (err, result) => {
       content = result.content;
+      contentDelta = result.deltaContent;
       if (err) {
-        return res.send({ isExist: false, content: content });
+        return res.send({ isExist: false, content: content, contentDelta: contentDelta});
       }
       if (result !== null && result.user_access == idUserLogin) {
-        return res.send({ isExist: true, content: content });
+        return res.send({ isExist: true, content: content, contentDelta: contentDelta });
       }
-      res.send({ isExist: false, content: content });
+      res.send({ isExist: false, content: content, contentDelta: contentDelta });
     }).clone();
   }
   if (idChapter) {
     return Chapter.findOne({ _id: idChapter }, (err, result) => {
       content = result.content;
+      contentDelta = result.deltaContent;
       if (err) {
-        return res.send({ isExist: false, content: content });
+        return res.send({ isExist: false, content: content, contentDelta: contentDelta });
       }
       if (result !== null && result.user_access == idUserLogin) {
-        return res.send({ isExist: true, content: content });
+        return res.send({ isExist: true, content: content, contentDelta: contentDelta });
       }
-      res.send({ isExist: false, content: content });
+      res.send({ isExist: false, content: content, contentDelta: contentDelta });
     }).clone();
   }
-  res.send({ isExist: false });
+  res.send({ isExist: false, contentDelta: contentDelta });
 };
 
 exports.addNewContent = async (req, res) => {

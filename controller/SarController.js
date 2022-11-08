@@ -460,8 +460,12 @@ exports.removeWritingRole = async (req, res, next) => {
   const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const roleUser = await Role.findOne({ roleID: "USER" });
   const sar = await SarFile.findOne({ _id: idSar });
-  const checkExistFromCrit = await Criteria.find({user_access: ObjectId(criteriaID),}).select("_id");
-  const checkExistFromChap = await Chapter.find({user_access: ObjectId(chapterID),}).select("_id");
+  const checkExistFromCrit = await Criteria.find({
+    user_access: ObjectId(userID),
+  }).select("_id");
+  const checkExistFromChap = await Chapter.find({
+    user_access: ObjectId(userID),
+  }).select("_id");
 
   if (criteriaID) {
     return Criteria.findOneAndUpdate(
@@ -472,7 +476,8 @@ exports.removeWritingRole = async (req, res, next) => {
 
         const content = `Người quản trị Sar đã xóa bạn khỏi tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
         if (checkExistFromCrit.length == 0) {
-          User.updateMany(
+          console.log(checkExistFromCrit)
+          return User.updateMany(
             { _id: userID },
             {
               $set: {
@@ -501,7 +506,7 @@ exports.removeWritingRole = async (req, res, next) => {
         const content = `Người quản trị Sar đã xóa bạn khỏi chương "${result.title}" của quyển Sar "${sar.title}"`;
 
         if (checkExistFromChap.length == 0) {
-          User.updateMany(
+          return User.updateMany(
             { _id: userID },
             {
               $set: {

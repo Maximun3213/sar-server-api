@@ -412,6 +412,7 @@ exports.grantWritingRole = async (req, res, next) => {
       (err, result) => {
         const content = `Người quản trị Sar đã thêm bạn vào tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
         if (err) return res.send(err);
+
         User.updateMany(
           { _id: userID },
           {
@@ -459,6 +460,8 @@ exports.removeWritingRole = async (req, res, next) => {
   const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const roleUser = await Role.findOne({ roleID: "USER" });
   const sar = await SarFile.findOne({ _id: idSar });
+  const checkExistFromCrit = await Criteria.find({user_access: ObjectId(criteriaID),}).select("_id");
+  const checkExistFromChap = await Chapter.find({user_access: ObjectId(chapterID),}).select("_id");
 
   if (criteriaID) {
     return Criteria.findOneAndUpdate(
@@ -468,19 +471,18 @@ exports.removeWritingRole = async (req, res, next) => {
         if (err) return res.send(err);
 
         const content = `Người quản trị Sar đã xóa bạn khỏi tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
+        if (checkExistFromCrit.length == 0) {
+          User.updateMany(
+            { _id: userID },
+            {
+              $set: {
+                roleID: roleUser._id,
+              },
+            }
+          ).exec();
+        }
 
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleUser._id,
-            },
-          }
-        ).exec((err) => {
-          if (err) return res.send("Xóa thất bại");
-
-          setNotification(idSender, userID, createAt, content);
-        });
+        setNotification(idSender, userID, createAt, content);
 
         return res.send("Xóa thành công");
       }
@@ -498,14 +500,16 @@ exports.removeWritingRole = async (req, res, next) => {
 
         const content = `Người quản trị Sar đã xóa bạn khỏi chương "${result.title}" của quyển Sar "${sar.title}"`;
 
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleUser._id,
-            },
-          }
-        ).exec();
+        if (checkExistFromChap.length == 0) {
+          User.updateMany(
+            { _id: userID },
+            {
+              $set: {
+                roleID: roleUser._id,
+              },
+            }
+          ).exec();
+        }
         setNotification(idSender, userID, createAt, content);
 
         res.send("Xóa thành công");
@@ -588,5 +592,4 @@ exports.previewSar = async (req, res, next) => {
     .exec((err, result) => {
       res.send(result);
     });
-
 };

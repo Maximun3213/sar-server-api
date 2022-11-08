@@ -181,9 +181,13 @@ exports.getTreeStructure = async (req, res, next) => {
     if (err) {
       return next(err);
     }
-    SarFile.populate(result, {path: "sarID", select: {'title': 1}}, (err, result) => {
-      res.send(result);
-    })
+    SarFile.populate(
+      result,
+      { path: "sarID", select: { title: 1 } },
+      (err, result) => {
+        res.send(result);
+      }
+    );
   });
 };
 
@@ -194,7 +198,7 @@ exports.checkUserExist = async (req, res, next) => {
     return Criteria.findOne({ _id: idCriteria }, (err, result) => {
       content = result.content;
       if (err) {
-        return res.send({ isExist: false, content: content});
+        return res.send({ isExist: false, content: content });
       }
       if (result !== null && result.user_access == idUserLogin) {
         return res.send({ isExist: true, content: content });
@@ -206,12 +210,12 @@ exports.checkUserExist = async (req, res, next) => {
     return Chapter.findOne({ _id: idChapter }, (err, result) => {
       content = result.content;
       if (err) {
-        return res.send({ isExist: false, content: content});
+        return res.send({ isExist: false, content: content });
       }
       if (result !== null && result.user_access == idUserLogin) {
-        return res.send({ isExist: true, content: content});
+        return res.send({ isExist: true, content: content });
       }
-      res.send({ isExist: false, content: content});
+      res.send({ isExist: false, content: content });
     }).clone();
   }
   res.send({ isExist: false });

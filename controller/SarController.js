@@ -460,12 +460,8 @@ exports.removeWritingRole = async (req, res, next) => {
   const { criteriaID, chapterID, userID, idSender, idSar, createAt } = req.body;
   const roleUser = await Role.findOne({ roleID: "USER" });
   const sar = await SarFile.findOne({ _id: idSar });
-  const checkExistFromCrit = await Criteria.find({
-    user_access: ObjectId(criteriaID),
-  }).select("_id");
-  const checkExistFromChap = await Chapter.find({
-    user_access: ObjectId(chapterID),
-  }).select("_id");
+  const checkExistFromCrit = await Criteria.find({user_access: ObjectId(criteriaID),}).select("_id");
+  const checkExistFromChap = await Chapter.find({user_access: ObjectId(chapterID),}).select("_id");
 
   if (criteriaID) {
     return Criteria.findOneAndUpdate(

@@ -464,7 +464,7 @@ exports.removeWritingRole = async (req, res, next) => {
     user_access: ObjectId(criteriaID),
   }).select("_id");
   const checkExistFromChap = await Chapter.find({
-    user_access: ObjectId(criteriaID),
+    user_access: ObjectId(chapterID),
   }).select("_id");
 
   if (criteriaID) {

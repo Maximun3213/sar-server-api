@@ -33,7 +33,6 @@ const partSchema = new Schema({
 const chapterSchema = new Schema({
     title: String,
     content: String,
-    deltaContent: String, 
     criteriaID: [
         {
             type: mongoose.Schema.Types.ObjectId,
@@ -61,7 +60,6 @@ const chapterSchema = new Schema({
 const criteriaSchema = new Schema({
     title: String,
     content: String,
-    deltaContent: String, // => preview
     parentID: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'criteria',

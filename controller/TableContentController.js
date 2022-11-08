@@ -221,7 +221,7 @@ exports.checkUserExist = async (req, res, next) => {
 };
 
 exports.addNewContent = async (req, res) => {
-  const { idCriteria, idChapter, content, deltaContent } = req.body;
+  const { idCriteria, idChapter, content } = req.body;
   if (idCriteria) {
     return Criteria.updateOne(
       {
@@ -230,7 +230,6 @@ exports.addNewContent = async (req, res) => {
       {
         $set: {
           content: content,
-          deltaContent: deltaContent,
         },
       }
     ).exec((err, result) => {
@@ -246,7 +245,6 @@ exports.addNewContent = async (req, res) => {
     {
       $set: {
         content: content,
-        deltaContent: deltaContent,
       },
     }
   ).exec((err, result) => {

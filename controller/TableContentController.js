@@ -113,6 +113,8 @@ exports.creatPart = async (req, res) => {
 };
 
 exports.getTreeStructure = async (req, res, next) => {
+  const checkExist = await Criteria.find({ user_access: ObjectId('63528e4ae0e329de2a614387')}).select('_id')
+  
   await TableOfContent.aggregate([
     {
       $match: {

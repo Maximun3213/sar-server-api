@@ -461,7 +461,7 @@ exports.removeWritingRole = async (req, res, next) => {
   const roleUser = await Role.findOne({ roleID: "USER" });
   const sar = await SarFile.findOne({ _id: idSar });
 
-  if (criteriaID) {
+  if (criteriaID) {  
     return Criteria.findOneAndUpdate(
       { _id: criteriaID },
       { $set: { user_access: null } },

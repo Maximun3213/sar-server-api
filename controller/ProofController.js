@@ -782,3 +782,23 @@ exports.deleteFileOfSar = async (req, res, next) => {
   }
 };
 
+
+
+exports.updateCurrentOrder = async (req, res) => {
+  const {idProof, currentOrder} = req.body
+  await proofFile.updateOne(
+    {
+      _id: idProof,
+    },
+    {
+      $set: {
+        orderSAR: currentOrder
+      },
+    }
+  ).exec((err, result) => {
+    if (err) {
+      console.log(err);
+    }
+    return res.send("Đã cập nhật vị trí mới");
+  });
+};

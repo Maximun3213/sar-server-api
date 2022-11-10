@@ -33,16 +33,14 @@ exports.userLogin = async (req, res) => {
       message: "Sai mật khẩu",
     });
 
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
-    expiresIn: process.env.JWT_EXPIRES_IN,
-  });
+  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
 
-  const options = {
-    expiresIn: new Date(
-      Date.now() + 30 * 1000
-    ),
-    httpOnly: true,
-  };
+  // const options = {
+  //   expiresIn: new Date(
+  //     Date.now() + 30 * 1000
+  //   ),
+  //   httpOnly: true,
+  // };
 
   if (role != null) {
     const permission = await Role.findById(role._id)

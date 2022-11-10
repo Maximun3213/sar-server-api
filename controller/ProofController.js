@@ -701,6 +701,7 @@ exports.searchProof = async (req, res) => {
               { name: { $regex: req.body.key, $options: "i" } },
               { description: { $regex: req.body.key, $options: "i" } },
             ],
+            locationSAR: { $exists: false },
           },
           { proofFolder: { $in: arr } },
         ],
@@ -712,7 +713,6 @@ exports.searchProof = async (req, res) => {
         result,
       });
     }
-    res.send("Not found");
   } else {
     const result = await proofFile
       .find({
@@ -720,13 +720,13 @@ exports.searchProof = async (req, res) => {
           { name: { $regex: req.body.key, $options: "i" } },
           { description: { $regex: req.body.key, $options: "i" } },
         ],
+        locationSAR: { $exists: false },
       })
       .select("-data");
 
     if (result) {
       return res.status(200).json({ result });
     }
-    res.send("Not found");
   }
 };
 
@@ -782,23 +782,42 @@ exports.deleteFileOfSar = async (req, res, next) => {
   }
 };
 
-
-
 exports.updateCurrentOrder = async (req, res) => {
-  const {idProof, currentOrder} = req.body
-  await proofFile.updateOne(
-    {
-      _id: idProof,
-    },
-    {
-      $set: {
-        orderSAR: currentOrder
+  const { idProof, currentOrder } = req.body;
+  await proofFile
+    .updateOne(
+      {
+        _id: idProof,
       },
-    }
-  ).exec((err, result) => {
-    if (err) {
-      console.log(err);
-    }
-    return res.send("Đã cập nhật vị trí mới");
-  });
+      {
+        $set: {
+          orderSAR: currentOrder,
+        },
+      }
+    )
+    .exec((err, result) => {
+      if (err) {
+        console.log(err);
+      }
+      return res.send("Đã cập nhật vị trí mới");
+    });
+};
+
+exports.searchSarProof = async (req, res) => {
+  
+  const result = await proofFile
+    .find({
+      $and: [
+        {
+          $or: [
+            { name: { $regex: req.body.key, $options: "i" } },
+            { description: { $regex: req.body.key, $options: "i" } },
+          ],
+        },
+        { proofFolder: { $in: arr } },
+      ],
+    })
+    .select("-data");
+
+  res.send(result);
 };

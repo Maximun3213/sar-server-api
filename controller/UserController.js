@@ -33,7 +33,16 @@ exports.userLogin = async (req, res) => {
       message: "Sai mật khẩu",
     });
 
-  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
+  const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET, {
+    expiresIn: process.env.JWT_EXPIRES_IN,
+  });
+
+  const options = {
+    expiresIn: new Date(
+      Date.now() + 30 * 1000
+    ),
+    httpOnly: true,
+  };
 
   if (role != null) {
     const permission = await Role.findById(role._id)
@@ -44,7 +53,14 @@ exports.userLogin = async (req, res) => {
       const IdFolderRoot = await proofFolder
         .findOne({ parentID: null })
         .select("_id");
-
+      // return res.status(200).cookie("token", token, options).json({
+      //   success: true,
+      //   user,
+      //   role,
+      //   permission,
+      //   IdFolderRoot,
+      //   token,
+      // });
       return res.send({
         user,
         role,
@@ -53,7 +69,6 @@ exports.userLogin = async (req, res) => {
         IdFolderRoot,
       });
     }
-
     return res.send({
       user,
       role,
@@ -61,7 +76,6 @@ exports.userLogin = async (req, res) => {
       token,
     });
   }
-
   return res.send({
     user,
     token,
@@ -582,7 +596,7 @@ exports.checkIsRead = async (req, res, next) => {
 };
 
 exports.getUserById = async (req, res) => {
-  const user = await User.findOne({ _id: req.params.id});
+  const user = await User.findOne({ _id: req.params.id });
   const role = await Role.findById(user.roleID);
 
   const permission = await Role.findById(role._id)

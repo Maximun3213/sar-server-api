@@ -15,7 +15,8 @@ const {
   modifyProofData,
   getInfoOneFileById,
   deleteFileOfSar,
-  updateCurrentOrder
+  updateCurrentOrder,
+  searchSarProof
 } = require("../controller/ProofController");
 
 const router = express.Router();
@@ -43,6 +44,8 @@ router.route("/changeFileLocation").put(changeFileLocation);
 router.route("/modifyProofData/:id").put(modifyProofData);
 
 router.route("/search/:id").post(searchProof);
+
+router.route("/searchSarProof/:id").post(searchSarProof);
 
 router.route("/getInfoOneFileById/:id").get(getInfoOneFileById);
 

@@ -804,20 +804,107 @@ exports.updateCurrentOrder = async (req, res) => {
 };
 
 exports.searchSarProof = async (req, res) => {
-  
-  const result = await proofFile
-    .find({
-      $and: [
-        {
-          $or: [
-            { name: { $regex: req.body.key, $options: "i" } },
-            { description: { $regex: req.body.key, $options: "i" } },
-          ],
-        },
-        { proofFolder: { $in: arr } },
-      ],
-    })
-    .select("-data");
+  let arr = [];
+  await TableOfContent.aggregate([
+    {
+      $match: {
+        sarID: ObjectId(req.params.id),
+      },
+    },
+    {
+      $graphLookup: {
+        from: "parts",
+        startWith: "$partID",
+        connectFromField: "partID",
+        connectToField: "_id",
+        as: "parts",
+      },
+    },
 
-  res.send(result);
+    { $unwind: "$parts" },
+
+    {
+      $graphLookup: {
+        from: "chapters",
+        startWith: "$parts.chapterID",
+        connectFromField: "parts.chapterID",
+        connectToField: "_id",
+        as: "chapters",
+      },
+    },
+
+    {
+      $unwind: {
+        path: "$chapters",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+
+    {
+      $graphLookup: {
+        from: "criterias",
+        startWith: "$chapters.criteriaID",
+        connectFromField: "chapters.criteriaID",
+        connectToField: "_id",
+        as: "criterias",
+      },
+    },
+    {
+      $unwind: {
+        path: "$criterias",
+        preserveNullAndEmptyArrays: true,
+      },
+    },
+    {
+      $project: {
+        partID: 0,
+      },
+    },
+    {
+      $group: {
+        _id: "$_id",
+        sarID: { $first: "$sarID" },
+        parts: { $addToSet: "$parts" },
+        chapters: { $push: "$chapters" },
+        criterias: { $push: "$criterias" },
+      },
+    },
+  ]).exec((err, result) => {
+    result.forEach((child) => {
+      child.chapters.forEach((chapter) => {
+        arr.push(chapter._id);
+      });
+      child.criterias.forEach((criteria) => {
+        arr.push(criteria._id);
+      });
+    });
+    proofFile
+      .find({
+        $and: [
+          {
+            $or: [
+              { name: { $regex: req.body.key, $options: "i" } },
+              { description: { $regex: req.body.key, $options: "i" } },
+            ],
+          },
+          { proofFolder: { $in: arr } },
+        ],
+      })
+      .select("-data")
+      .exec((err, result) => {
+        if (req.body.key === "") {
+          return proofFile
+            .find({ proofFolder: req.body.currentFolder })
+            .select("-data")
+            .exec((err, result) => {
+              res.status(200).json({
+                result,
+              });
+            });
+        }
+        res.status(200).json({
+          result,
+        });
+      });
+  });
 };

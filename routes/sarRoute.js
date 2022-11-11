@@ -12,7 +12,8 @@ const {
   grantWritingRole,
   removeWritingRole,
   getFileFromSarFolder,
-  previewSar
+  previewSar,
+  getPublishedSar
 } = require("../controller/SarController");
 
 const router = express.Router();
@@ -42,6 +43,8 @@ router.route("/removeWritingRole").post(removeWritingRole);
 router.route("/getFileFromSarFolder/:type/:id").get(getFileFromSarFolder);
 
 router.route("/previewSar/:id").get(previewSar);
+
+router.route("/getPublishedSar").get(getPublishedSar);
 
 
 module.exports = router;

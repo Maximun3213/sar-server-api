@@ -61,6 +61,7 @@ const proofFileSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
+  orderSAR: String
 });
 
 const proofFolder = mongoose.model("proof_folder", proofFolderSchema);

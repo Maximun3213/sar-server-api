@@ -34,14 +34,6 @@ exports.userLogin = async (req, res) => {
     });
 
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-
-  // const options = {
-  //   expiresIn: new Date(
-  //     Date.now() + 30 * 1000
-  //   ),
-  //   httpOnly: true,
-  // };
-
   if (role != null) {
     const permission = await Role.findById(role._id)
       .populate("permissionID")
@@ -51,14 +43,7 @@ exports.userLogin = async (req, res) => {
       const IdFolderRoot = await proofFolder
         .findOne({ parentID: null })
         .select("_id");
-      // return res.status(200).cookie("token", token, options).json({
-      //   success: true,
-      //   user,
-      //   role,
-      //   permission,
-      //   IdFolderRoot,
-      //   token,
-      // });
+
       return res.send({
         user,
         role,

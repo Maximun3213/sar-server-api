@@ -21,7 +21,8 @@ const {
   changePassword,
   forgotPassword,
   resetPassword,
-  getUserById
+  getUserById,
+  getRoleUserByID
 } = require("../controller/UserController");
 
 const router = express.Router();
@@ -77,6 +78,6 @@ router.route("/removeNotification/:id").delete(removeNotification)
 
 router.route("/checkIsRead/:id").put(checkIsRead)
 
-router.route("/getUserById/:id").get(getUserById)
+router.route("/getRoleUserByID/:id").get(getRoleUserByID)
 
 module.exports = router;

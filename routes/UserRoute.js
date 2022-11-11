@@ -23,7 +23,6 @@ const {
   resetPassword,
   getUserById
 } = require("../controller/UserController");
-// const { authenToken, authorize } = require("../middleware/auth");
 
 const router = express.Router();
 

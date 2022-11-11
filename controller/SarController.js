@@ -597,4 +597,13 @@ exports.previewSar = async (req, res, next) => {
     });
 };
 
-
+exports.getPublishedSar = async (req, res, next) => {
+  try {
+    await SarFile.find({ status: 1}).exec((err, result) => {
+      if(err) return err
+      res.send(result)
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}

@@ -578,13 +578,16 @@ exports.checkIsRead = async (req, res, next) => {
   }
 };
 
-exports.getUserById = async (req, res) => {
+exports.getRoleUserByID = async (req, res) => {
   const user = await User.findOne({ _id: req.params.id });
-  const role = await Role.findById(user.roleID);
+  if (user.roleID == null) {
+    return res.send(user);
+  } else {
+    const role = await Role.findById(user.roleID);
+    const permission = await Role.findById(role._id)
+      .populate("permissionID")
+      .exec();
 
-  const permission = await Role.findById(role._id)
-    .populate("permissionID")
-    .exec();
-
-  res.send({ user, role, permission });
+    res.send({ user, role, permission });
+  }
 };

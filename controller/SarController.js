@@ -412,6 +412,7 @@ exports.grantWritingRole = async (req, res, next) => {
       (err, result) => {
         const content = `Người quản trị Sar đã thêm bạn vào tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
         if (err) return res.send(err);
+
         User.updateMany(
           { _id: userID },
           {
@@ -465,22 +466,23 @@ exports.removeWritingRole = async (req, res, next) => {
       { _id: criteriaID },
       { $set: { user_access: null } },
       (err, result) => {
-        if (err) return res.send(err);
-
         const content = `Người quản trị Sar đã xóa bạn khỏi tiêu chí "${result.title}" của quyển Sar "${sar.title}"`;
 
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleUser._id,
-            },
+        Criteria.find({
+          user_access: ObjectId(userID),
+        }).exec((err, result) => {
+          if (result.length == 0) {
+            return User.updateOne(
+              { _id: userID },
+              {
+                $set: {
+                  roleID: roleUser._id,
+                },
+              }
+            ).exec();
           }
-        ).exec((err) => {
-          if (err) return res.send("Xóa thất bại");
-
-          setNotification(idSender, userID, createAt, content);
         });
+        setNotification(idSender, userID, createAt, content);
 
         return res.send("Xóa thành công");
       }
@@ -494,18 +496,23 @@ exports.removeWritingRole = async (req, res, next) => {
         },
       },
       (err, result) => {
-        if (err) return res.send(err);
-
         const content = `Người quản trị Sar đã xóa bạn khỏi chương "${result.title}" của quyển Sar "${sar.title}"`;
 
-        User.updateMany(
-          { _id: userID },
-          {
-            $set: {
-              roleID: roleUser._id,
-            },
+        Chapter.find({
+          user_access: ObjectId(userID),
+        }).exec((err, result) => {
+          if (result.length == 0) {
+            return User.updateOne(
+              { _id: userID },
+              {
+                $set: {
+                  roleID: roleUser._id,
+                },
+              }
+            ).exec();
           }
-        ).exec();
+        });
+
         setNotification(idSender, userID, createAt, content);
 
         res.send("Xóa thành công");
@@ -588,5 +595,15 @@ exports.previewSar = async (req, res, next) => {
     .exec((err, result) => {
       res.send(result);
     });
-
 };
+
+exports.getPublishedSar = async (req, res, next) => {
+  try {
+    await SarFile.find({ status: 0}).exec((err, result) => {
+      if(err) return err
+      res.send(result)
+    })
+  } catch (error) {
+    console.log(error)
+  }
+}

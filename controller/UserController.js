@@ -34,7 +34,6 @@ exports.userLogin = async (req, res) => {
     });
 
   const token = jwt.sign({ _id: user._id }, process.env.TOKEN_SECRET);
-
   if (role != null) {
     const permission = await Role.findById(role._id)
       .populate("permissionID")
@@ -53,7 +52,6 @@ exports.userLogin = async (req, res) => {
         IdFolderRoot,
       });
     }
-
     return res.send({
       user,
       role,
@@ -61,7 +59,6 @@ exports.userLogin = async (req, res) => {
       token,
     });
   }
-
   return res.send({
     user,
     token,
@@ -579,4 +576,15 @@ exports.checkIsRead = async (req, res, next) => {
   } catch (error) {
     console.log(error);
   }
+};
+
+exports.getUserById = async (req, res) => {
+  const user = await User.findOne({ _id: req.params.id });
+  const role = await Role.findById(user.roleID);
+
+  const permission = await Role.findById(role._id)
+    .populate("permissionID")
+    .exec();
+
+  res.send({ user, role, permission });
 };

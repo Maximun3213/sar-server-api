@@ -14,7 +14,6 @@ const crypto = require("crypto");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
-
   //Kiểm tra email có tồn tại hay chưa
   const user = await User.findOne({ email });
   const role = await Role.findById(user.roleID);

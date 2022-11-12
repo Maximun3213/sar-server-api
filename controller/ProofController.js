@@ -909,47 +909,84 @@ exports.searchSarProof = async (req, res) => {
   });
 };
 
-exports.copyToSarStore = async (req, res, next) => {
-  const copy = await proofFile.findOne({ _id: req.params.id });
-  const {locationSar, proofFolder} = req.body;
+// exports.copyToSarStore = async (req, res, next) => {
+//   const copy = await proofFile.findOne({ _id: req.params.id });
+//   const {locationSar, proofFolder} = req.body;
 
-  copy._id = new ObjectId();
+//   copy._id = new ObjectId();
 
-  const newBackUpData = new proofFile({
-    _id: copy._id,
-    name: copy.name,
-    data: copy.data,
-    mimeType: copy.mimeType,
-    size: copy.size,
-    enactAddress: copy.enactAddress,
-    releaseDate: copy.releaseDate,
-    description: copy.description,
-    userCreate: copy.userCreate,
-    status: copy.status,
-    locationSAR: locationSar
-  });
+//   const newBackUpData = new proofFile({
+//     _id: copy._id,
+//     name: copy.name,
+//     data: copy.data,
+//     mimeType: copy.mimeType,
+//     size: copy.size,
+//     enactAddress: copy.enactAddress,
+//     releaseDate: copy.releaseDate,
+//     description: copy.description,
+//     userCreate: copy.userCreate,
+//     status: copy.status,
+//     locationSAR: locationSar
+//   });
 
-  newBackUpData.save((err, docs) => {
-    if(err){ return next(err) }
-    res.send('Success')
-  })
+//   newBackUpData.save((err, docs) => {
+//     if(err){ return next(err) }
+//     res.send('Success')
+//   })
   
-  // await proofFile
-  //   .aggregate([
-  //     {
-  //       $match: {
-  //         _id: ObjectId(req.params.id),
-  //       },
-  //     },
-  //     {
-  //       $addFields: {
-  //         locationSAR: `${'aaaa'}`
-  //       }
-  //     },
-  //     { $merge: { into: "sar_files" } },
+//   // await proofFile
+//   //   .aggregate([
+//   //     {
+//   //       $match: {
+//   //         _id: ObjectId(req.params.id),
+//   //       },
+//   //     },
+//   //     {
+//   //       $addFields: {
+//   //         locationSAR: `${'aaaa'}`
+//   //       }
+//   //     },
+//   //     { $merge: { into: "sar_files" } },
 
-  //   ])
-  //   .exec((err, result) => {
-  //     res.send("Success");
-  //   });
+//   //   ])
+//   //   .exec((err, result) => {
+//   //     res.send("Success");
+//   //   });
+exports.copyProofFileToSar = async (req, res) => {
+  const { idProof, currentOrder } = req.body;
+
+  proofFile
+    .find({ _id: idProof })
+    .select("-data")
+    .exec(function (err, doc) {
+      doc.forEach((node) => insertBatch(node));
+    });
+
+  async function insertBatch(doc) {
+    var id;
+    id = mongoose.Types.ObjectId();
+    doc._id = id;
+    console.log("doc", doc);
+
+    await proofFile.create({
+      _id: doc._id,
+      name: doc.name,
+      mimeType: doc.mimeType,
+      size: doc.size,
+      proofFolder: doc.proofFolder,
+      //Lỗi số ban hành bị duplicate
+      enactNum: "32112412",
+      enactAddress: doc.enactAddress,
+      releaseDate: doc.releaseDate,
+      description: doc.description,
+      userCreate: doc.userCreate,
+      status: doc.status,
+      creatAt: doc.creatAt
+    })
+
+    res.status(200).json({
+      success: true,
+      message: "Copy thành công",
+    });
+  }
 };

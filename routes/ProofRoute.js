@@ -17,7 +17,8 @@ const {
   deleteFileOfSar,
   updateCurrentOrder,
   searchSarProof,
-  copyToSarStore
+  // copyToSarStore
+  copyProofFileToSar
 } = require("../controller/ProofController");
 
 const router = express.Router();
@@ -54,6 +55,7 @@ router.route("/deleteFileOfSar").post(deleteFileOfSar);
 
 router.route("/updateCurrentOrder").put(updateCurrentOrder);
 
-router.route("/copyToSarStore/:id").post(copyToSarStore);
+// router.route("/copyToSarStore/:id").post(copyToSarStore);
+router.route("/copyProofFileToSar").post(copyProofFileToSar);
 
 module.exports = router;

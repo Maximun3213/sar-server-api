@@ -912,7 +912,6 @@ exports.searchSarProof = async (req, res) => {
 exports.copyProofFileToSar = async (req, res, next) => {
   const { idProof, locationSar, proofFolder } = req.body;
   const copy = await proofFile.findOne({ _id: idProof });
-
   copy._id = new ObjectId();
 
   const newBackUpData = new proofFile({
@@ -932,73 +931,85 @@ exports.copyProofFileToSar = async (req, res, next) => {
     creatAt: copy.creatAt,
   });
 
-  newBackUpData.save((err, docs) => {
-    if (err) return next(err);
-    proofFile.aggregate([
-        { $limit: 1 },
-        {
-          $lookup: {
-            from: "chapters",
-            pipeline: [{ $match: { _id: ObjectId(proofFolder) } }],
-            as: "chapter",
+  const copied = await proofFile.findOne({
+    proofFolder: proofFolder,
+    $or: [
+      { name: copy.name },
+      { enactNum: copy.enactNum }
+    ]
+  });
+
+  if (copied == null) {
+    return newBackUpData.save((err, docs) => {
+      if (err) return next(err);
+      proofFile
+        .aggregate([
+          { $limit: 1 },
+          {
+            $lookup: {
+              from: "chapters",
+              pipeline: [{ $match: { _id: ObjectId(proofFolder) } }],
+              as: "chapter",
+            },
           },
-        },
-        {
-          $lookup: {
-            from: "criterias",
-            pipeline: [{ $match: { _id: ObjectId(proofFolder) } }],
-            as: "criteria",
+          {
+            $lookup: {
+              from: "criterias",
+              pipeline: [{ $match: { _id: ObjectId(proofFolder) } }],
+              as: "criteria",
+            },
           },
-        },
-        {
-          $project: {
-            data: 0,
-            "chapter.content": 0,
-            "criteria.content": 0,
+          {
+            $project: {
+              data: 0,
+              "chapter.content": 0,
+              "criteria.content": 0,
+            },
           },
-        },
-      ])
-      .exec((err, result) => {
-        result.map((arr) => {
-          if (arr.chapter.length > 0) {
-            return Chapter.updateOne(
+        ])
+        .exec((err, result) => {
+          result.map((arr) => {
+            if (arr.chapter.length > 0) {
+              return Chapter.updateOne(
+                { _id: proofFolder },
+                { $push: { proof_docs: copy._id } }
+              ).exec((err) => {
+                if (err) return next(err);
+                res.send("Sao chép minh chứng thành công");
+              });
+            }
+            Criteria.updateOne(
               { _id: proofFolder },
               { $push: { proof_docs: copy._id } }
             ).exec((err) => {
               if (err) return next(err);
               res.send("Sao chép minh chứng thành công");
             });
-          }
-          Criteria.updateOne(
-            { _id: proofFolder },
-            { $push: { proof_docs: copy._id } }
-          ).exec((err) => {
-            if (err) return next(err);
-            res.send("Sao chép minh chứng thành công");
           });
         });
-      });
-  });
-
-  // await proofFile
-  //   .aggregate([
-  //     {
-  //       $match: {
-  //         _id: ObjectId(req.params.id),
-  //       },
-  //     },
-  //     {
-  //       $addFields: {
-  //         locationSAR: `${'aaaa'}`
-  //       }
-  //     },
-  //     { $merge: { into: "sar_files" } },
-
-  //   ])
-  //   .exec((err, result) => {
-  //     res.send("Success");
-  //   });
+    });
+  }
+  res.send('Minh chứng đã được sao chép trong thư mục này')
 };
+
+// await proofFile
+//   .aggregate([
+//     {
+//       $match: {
+//         _id: ObjectId(req.params.id),
+//       },
+//     },
+//     {
+//       $addFields: {
+//         locationSAR: `${'aaaa'}`
+//       }
+//     },
+//     { $merge: { into: "sar_files" } },
+
+//   ])
+//   .exec((err, result) => {
+//     res.send("Success");
+//   });
 
 // exports.copyProofFileToSar = async (req, res) => {
 //   const { idProof, currentOrder } = req.body;

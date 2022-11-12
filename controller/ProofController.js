@@ -939,13 +939,7 @@ exports.copyProofFileToSar = async (req, res, next) => {
         {
           $lookup: {
             from: "chapters",
-            pipeline: [
-              {
-                $match: {
-                  _id: ObjectId(proofFolder),
-                },
-              },
-            ],
+            pipeline: [{ $match: { _id: ObjectId(proofFolder) } }],
             as: "chapter",
           },
         },

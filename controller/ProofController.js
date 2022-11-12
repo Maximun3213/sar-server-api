@@ -908,3 +908,42 @@ exports.searchSarProof = async (req, res) => {
       });
   });
 };
+
+exports.copyProofFileToSar = async (req, res) => {
+  const { idProof, currentOrder } = req.body;
+
+  proofFile
+    .find({ _id: idProof })
+    .select("-data")
+    .exec(function (err, doc) {
+      doc.forEach((node) => insertBatch(node));
+    });
+
+  async function insertBatch(doc) {
+    var id;
+    id = mongoose.Types.ObjectId();
+    doc._id = id;
+    console.log("doc", doc);
+
+    await proofFile.create({
+      _id: doc._id,
+      name: doc.name,
+      mimeType: doc.mimeType,
+      size: doc.size,
+      proofFolder: doc.proofFolder,
+      //Lỗi số ban hành bị duplicate
+      enactNum: "32112412",
+      enactAddress: doc.enactAddress,
+      releaseDate: doc.releaseDate,
+      description: doc.description,
+      userCreate: doc.userCreate,
+      status: doc.status,
+      creatAt: doc.creatAt
+    })
+
+    res.status(200).json({
+      success: true,
+      message: "Copy thành công",
+    });
+  }
+};

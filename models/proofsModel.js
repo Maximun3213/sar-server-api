@@ -43,7 +43,7 @@ const proofFileSchema = new Schema({
   },
   enactNum: {
     type: String,
-    unique: true
+    // unique: true
   },
   enactAddress: String,
   releaseDate: Date,

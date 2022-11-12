@@ -932,7 +932,6 @@ exports.copyProofFileToSar = async (req, res, next) => {
   });
 
   const copied = await proofFile.findOne({
-    proofFolder: proofFolder,
     $or: [
       { name: copy.name },
       { enactNum: copy.enactNum }

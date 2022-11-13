@@ -930,7 +930,7 @@ exports.copyProofFileToSar = async (req, res, next) => {
     locationSAR: locationSar,
     creatAt: copy.creatAt,
   });
-
+  //check file có locationSar đã trùng tên hoặc enactNum 
   const copied = await proofFile.findOne({
     locationSAR: { $exists: true },
     $or: [{ name: copy.name }, { enactNum: copy.enactNum }],

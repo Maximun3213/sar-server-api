@@ -908,3 +908,147 @@ exports.searchSarProof = async (req, res) => {
       });
   });
 };
+
+exports.copyProofFileToSar = async (req, res, next) => {
+  const { idProof, locationSar, proofFolder } = req.body;
+  const copy = await proofFile.findOne({ _id: idProof });
+  copy._id = new ObjectId();
+
+  const newBackUpData = new proofFile({
+    _id: copy._id,
+    name: copy.name,
+    data: copy.data,
+    mimeType: copy.mimeType,
+    size: copy.size,
+    enactAddress: copy.enactAddress,
+    enactNum: copy.enactNum,
+    proofFolder: proofFolder,
+    releaseDate: copy.releaseDate,
+    description: copy.description,
+    userCreate: copy.userCreate,
+    status: copy.status,
+    locationSAR: locationSar,
+    creatAt: copy.creatAt,
+  });
+  //check file có locationSar đã trùng tên hoặc enactNum
+  const copied = await proofFile.findOne({
+    locationSAR: { $exists: true },
+    $or: [{ name: copy.name }, { enactNum: copy.enactNum }],
+  });
+
+  if (copied == null) {
+    return newBackUpData.save((err, docs) => {
+      if (err) return next(err);
+      proofFile
+        .aggregate([
+          { $limit: 1 },
+          {
+            $lookup: {
+              from: "chapters",
+              pipeline: [{ $match: { _id: ObjectId(proofFolder) } }],
+              as: "chapter",
+            },
+          },
+          {
+            $lookup: {
+              from: "criterias",
+              pipeline: [{ $match: { _id: ObjectId(proofFolder) } }],
+              as: "criteria",
+            },
+          },
+          {
+            $project: {
+              data: 0,
+              "chapter.content": 0,
+              "criteria.content": 0,
+            },
+          },
+        ])
+        .exec((err, result) => {
+          result.map((arr) => {
+            if (arr.chapter.length > 0) {
+              return Chapter.updateOne(
+                { _id: proofFolder },
+                { $push: { proof_docs: copy._id } }
+              ).exec((err) => {
+                if (err) return next(err);
+                res.status(200).send("Sao chép minh chứng thành công");
+              });
+            }
+            Criteria.updateOne(
+              { _id: proofFolder },
+              { $push: { proof_docs: copy._id } }
+            ).exec((err) => {
+              if (err) return next(err);
+              res.status(200).send("Sao chép minh chứng thành công");
+            });
+          });
+        });
+    });
+  }
+  const crit = await Criteria.findOne({ _id: copied.proofFolder });
+  const chap = await Chapter.findOne({ _id: copied.proofFolder });
+
+  if (crit !== null) {
+    return res.status(400).send(`Minh chứng đã có trong mục "${crit.title}"`);
+  }
+  res.status(400).send(`Minh chứng đã có trong mục "${chap.title}"`);
+};
+
+// await proofFile
+//   .aggregate([
+//     {
+//       $match: {
+//         _id: ObjectId(req.params.id),
+//       },
+//     },
+//     {
+//       $addFields: {
+//         locationSAR: `${'aaaa'}`
+//       }
+//     },
+//     { $merge: { into: "sar_files" } },
+
+//   ])
+//   .exec((err, result) => {
+//     res.send("Success");
+//   });
+
+// exports.copyProofFileToSar = async (req, res) => {
+//   const { idProof, currentOrder } = req.body;
+
+//   proofFile
+//     .find({ _id: idProof })
+//     .select("-data")
+//     .exec(function (err, doc) {
+//       doc.forEach((node) => insertBatch(node));
+//     });
+
+//   async function insertBatch(doc) {
+//     var id;
+//     id = mongoose.Types.ObjectId();
+//     doc._id = id;
+//     console.log("doc", doc);
+
+//     await proofFile.create({
+//       _id: doc._id,
+//       name: doc.name,
+//       mimeType: doc.mimeType,
+//       size: doc.size,
+//       proofFolder: doc.proofFolder,
+//       //Lỗi số ban hành bị duplicate
+//       enactNum: doc.enactNum,
+//       enactAddress: doc.enactAddress,
+//       releaseDate: doc.releaseDate,
+//       description: doc.description,
+//       userCreate: doc.userCreate,
+//       status: doc.status,
+//       creatAt: doc.creatAt
+//     })
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Copy thành công",
+//     });
+//   }
+// };

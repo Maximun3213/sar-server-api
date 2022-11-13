@@ -930,7 +930,7 @@ exports.copyProofFileToSar = async (req, res, next) => {
     locationSAR: locationSar,
     creatAt: copy.creatAt,
   });
-  //check file có locationSar đã trùng tên hoặc enactNum 
+  //check file có locationSar đã trùng tên hoặc enactNum
   const copied = await proofFile.findOne({
     locationSAR: { $exists: true },
     $or: [{ name: copy.name }, { enactNum: copy.enactNum }],
@@ -972,7 +972,7 @@ exports.copyProofFileToSar = async (req, res, next) => {
                 { $push: { proof_docs: copy._id } }
               ).exec((err) => {
                 if (err) return next(err);
-                res.send("Sao chép minh chứng thành công");
+                res.status(200).send("Sao chép minh chứng thành công");
               });
             }
             Criteria.updateOne(
@@ -980,7 +980,7 @@ exports.copyProofFileToSar = async (req, res, next) => {
               { $push: { proof_docs: copy._id } }
             ).exec((err) => {
               if (err) return next(err);
-              res.send("Sao chép minh chứng thành công");
+              res.status(200).send("Sao chép minh chứng thành công");
             });
           });
         });
@@ -990,9 +990,9 @@ exports.copyProofFileToSar = async (req, res, next) => {
   const chap = await Chapter.findOne({ _id: copied.proofFolder });
 
   if (crit !== null) {
-    return res.send(`Minh chứng đã được sao chép trong mục "${crit.title}"`);
+    return res.status(400).send(`Minh chứng đã có trong mục "${crit.title}"`);
   }
-  res.send(`Minh chứng đã được sao chép trong mục "${chap.title}"`);
+  res.status(400).send(`Minh chứng đã có trong mục "${chap.title}"`);
 };
 
 // await proofFile

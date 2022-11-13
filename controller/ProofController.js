@@ -932,10 +932,8 @@ exports.copyProofFileToSar = async (req, res, next) => {
   });
 
   const copied = await proofFile.findOne({
-    $or: [
-      { name: copy.name },
-      { enactNum: copy.enactNum }
-    ]
+    locationSAR: { $exists: true },
+    $or: [{ name: copy.name }, { enactNum: copy.enactNum }],
   });
 
   if (copied == null) {
@@ -988,7 +986,13 @@ exports.copyProofFileToSar = async (req, res, next) => {
         });
     });
   }
-  res.send('Minh chứng đã được sao chép trong thư mục này')
+  const crit = await Criteria.findOne({ _id: copied.proofFolder });
+  const chap = await Chapter.findOne({ _id: copied.proofFolder });
+
+  if (crit !== null) {
+    return res.send(`Minh chứng đã được sao chép trong mục "${crit.title}"`);
+  }
+  res.send(`Minh chứng đã được sao chép trong mục "${chap.title}"`);
 };
 
 // await proofFile

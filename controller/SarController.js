@@ -227,11 +227,11 @@ exports.removeSarFile = async (req, res, next) => {
         });
         child.chapters.forEach((chapter) => {
           Chapter.deleteMany({ _id: chapter._id }).exec();
-          // proofFile.deleteMany({ _id: chapter.proof_docs}).exec()
+          proofFile.deleteMany({ _id: chapter.proof_docs}).exec()
         });
         child.criterias.forEach((criteria) => {
           Criteria.deleteMany({ _id: criteria._id }).exec();
-          // proofFile.deleteMany({ _id: criteria.proof_docs}).exec()
+          proofFile.deleteMany({ _id: criteria.proof_docs}).exec()
         });
       });
       //Xóa mục lục và quyển Sar

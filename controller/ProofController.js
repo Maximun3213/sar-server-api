@@ -75,8 +75,8 @@ exports.uploadFile = (req, res, next) => {
         });
         try {
           let message = "";
-          if (type !== "undefined") {
-            await TableOfContent.aggregate([
+          if (type) {
+             await TableOfContent.aggregate([
               {
                 $match: {
                   sarID: ObjectId(sarID),
@@ -91,9 +91,7 @@ exports.uploadFile = (req, res, next) => {
                   as: "parts",
                 },
               },
-
               { $unwind: "$parts" },
-
               {
                 $graphLookup: {
                   from: "chapters",
@@ -103,14 +101,12 @@ exports.uploadFile = (req, res, next) => {
                   as: "chapters",
                 },
               },
-
               {
                 $unwind: {
                   path: "$chapters",
                   preserveNullAndEmptyArrays: true,
                 },
               },
-
               {
                 $graphLookup: {
                   from: "criterias",

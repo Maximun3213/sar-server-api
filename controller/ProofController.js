@@ -16,20 +16,20 @@ const { ObjectId } = require("mongodb");
 const { populate, find } = require("../models/rolesModel");
 const { type } = require("os");
 
-// const Str = multer.diskStorage({
-//   destination: "uploads",
-//   filename: (req, file, cb) => {
-//     cb(
-//       null,
-//       file.fieldname + "_" + Date.now() + file.originalname.match(/\..*$/)[0]
-//     );
-//   },
-// });
+const Str = multer.diskStorage({
+  destination: "uploads",
+  filename: (req, file, cb) => {
+    cb(
+      null,
+      file.fieldname + "_" + Date.now() + file.originalname.match(/\..*$/)[0]
+    );
+  },
+});
 
-// const upload = multer({
-//   storage: Str,
-//   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-// }).any("uploadedFiles", 4);
+const upload = multer({
+  storage: Str,
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
+}).any("uploadedFiles", 4);
 
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {

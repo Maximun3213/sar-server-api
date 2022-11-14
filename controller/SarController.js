@@ -256,23 +256,23 @@ exports.removeSarFile = async (req, res, next) => {
           ]).exec((err, doc) => {
             doc.map((result) => {
               if (result.user_manage !== null) {
-                User.updateMany(
-                  { _id: result.user_access },
-                  {
-                    $set: {
-                      roleID: null,
-                    },
-                  }
-                ).exec();
-
-                User.updateMany(
+                return User.updateMany(
                   { _id: result.user_manage },
                   {
                     $set: {
                       roleID: null,
                     },
                   }
-                ).exec();
+                ).exec(() => {
+                  User.updateMany(
+                    { _id: result.user_access },
+                    {
+                      $set: {
+                        roleID: null,
+                      },
+                    }
+                  ).exec();
+                });
               }
 
               SarFile.deleteOne({ _id: result._id }).exec((err) => {

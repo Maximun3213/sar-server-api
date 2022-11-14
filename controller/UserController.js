@@ -577,6 +577,21 @@ exports.checkIsRead = async (req, res, next) => {
   }
 };
 
+exports.checkIsReadAll = async (req, res, next) => {
+  try {
+    await Notification.updateMany(
+      { receiver: req.params.id },
+      { $set: { is_read: true } }
+    ).exec((err) => {
+      if (err) console.log(err);
+      res.send("Đã xem toàn bộ");
+    });
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+
 exports.getRoleUserByID = async (req, res) => {
   const user = await User.findOne({ _id: req.params.id });
   if (user.roleID == null) {

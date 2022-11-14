@@ -22,7 +22,8 @@ const {
   forgotPassword,
   resetPassword,
   getUserById,
-  getRoleUserByID
+  getRoleUserByID,
+  checkIsReadAll
 } = require("../controller/UserController");
 
 const router = express.Router();
@@ -54,6 +55,8 @@ router.route("/updateUserById/:id").put(updateUserById)
 
 router.route("/deleteUserById/:id").delete(deleteUserById)
 
+router.route("/getRoleUserByID/:id").get(getRoleUserByID)
+
 //API for authenticate
 
 router.route("/changePassword/:id").put(changePassword)
@@ -78,6 +81,7 @@ router.route("/removeNotification/:id").delete(removeNotification)
 
 router.route("/checkIsRead/:id").put(checkIsRead)
 
-router.route("/getRoleUserByID/:id").get(getRoleUserByID)
+router.route("/checkIsReadAll/:id").put(checkIsReadAll)
+
 
 module.exports = router;

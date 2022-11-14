@@ -227,11 +227,11 @@ exports.removeSarFile = async (req, res, next) => {
         });
         child.chapters.forEach((chapter) => {
           Chapter.deleteMany({ _id: chapter._id }).exec();
-          proofFile.deleteMany({ _id: chapter.proof_docs}).exec()
+          proofFile.deleteMany({ _id: chapter.proof_docs }).exec();
         });
         child.criterias.forEach((criteria) => {
           Criteria.deleteMany({ _id: criteria._id }).exec();
-          proofFile.deleteMany({ _id: criteria.proof_docs}).exec()
+          proofFile.deleteMany({ _id: criteria.proof_docs }).exec();
         });
       });
       //Xóa mục lục và quyển Sar
@@ -272,9 +272,12 @@ exports.removeSarFile = async (req, res, next) => {
                       },
                     }
                   ).exec();
+                  SarFile.deleteOne({ _id: result._id }).exec((err) => {
+                    if (err) console.log(err);
+                    return res.send("Xóa quyển Sar thành công");
+                  });
                 });
               }
-
               SarFile.deleteOne({ _id: result._id }).exec((err) => {
                 if (err) console.log(err);
                 return res.send("Xóa quyển Sar thành công");
@@ -599,11 +602,11 @@ exports.previewSar = async (req, res, next) => {
 
 exports.getPublishedSar = async (req, res, next) => {
   try {
-    await SarFile.find({ status: 0}).exec((err, result) => {
-      if(err) return err
-      res.send(result)
-    })
+    await SarFile.find({ status: 0 }).exec((err, result) => {
+      if (err) return err;
+      res.send(result);
+    });
   } catch (error) {
-    console.log(error)
+    console.log(error);
   }
-}
+};

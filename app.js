@@ -50,7 +50,7 @@ const { ObjectId } = require("mongodb");
 app.use("/api/user", user);
 app.use("/api/role", role);
 app.use("/api/permission", permission);
-// app.use("/api/proofStore", proof);
+app.use("/api/proofStore", proof);
 app.use("/api/sar", sar);
 app.use("/api/tableOfContent", tableOfContent);
 

@@ -45,7 +45,7 @@ router.route("/getMPList").get(getAllDataForEachMP)
 
 router.route("/getListUserAccess/:id").get(getListUserAccessFromFolder)
 
-router.route("/removeProofKey/:fid/:uid").delete(removeProofKey)
+router.route("/removeProofKey/:fid/:uid/:sid").delete(removeProofKey)
 
 router.route("/getAllUserRoleNull").get(getAllUserRoleNull)
 

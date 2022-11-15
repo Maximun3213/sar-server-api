@@ -339,20 +339,25 @@ exports.getDataFromSarFile = async (req, res, next) => {
 };
 
 exports.addMemberToSar = async (req, res, next) => {
-  const listOfUserID = req.body.userList;
+  const {userList, sarID, senderID, createAt} = req.body
   const roleUser = await Role.findOne({ roleID: "USER" });
+  const sar = await SarFile.findOne({ _id: sarID });
+  const sender = await User.findOne({ _id: senderID });
+
+  const content = `Bạn đã được ${sender.fullName} thêm vào quyển Sar "${sar.title}"`;
+
   await SarFile.updateMany(
-    { _id: req.body.sarID },
+    { _id: sarID },
     {
       $push: {
-        user_access: listOfUserID,
+        user_access: userList,
       },
     }
   ).exec((err, result) => {
     if (err) return res.send("Thêm thành viên thất bại");
 
     User.updateMany(
-      { _id: listOfUserID },
+      { _id: userList },
       {
         $set: {
           roleID: roleUser._id,
@@ -361,6 +366,10 @@ exports.addMemberToSar = async (req, res, next) => {
     ).exec((err) => {
       if (err) return res.send("Thêm thành viên thất bại");
 
+      userList.map((member) => {
+        setNotification(senderID, member, createAt, content);
+      })
+      
       return res.send("Thêm thành viên thành công");
     });
   });

@@ -11,6 +11,7 @@ const { populate } = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
 const sendMail = require("../utils/sendMail.js");
 const crypto = require("crypto");
+const { MongoServerError } = require("mongodb");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -130,20 +131,34 @@ exports.deleteUserById = (req, res) => {
 //test đăng ký user
 exports.userRegister = async (req, res) => {
   const { cbID, fullName, roleID, email, password, department } = req.body;
+  try {
+    const user = await User.create({
+      cbID,
+      fullName,
+      roleID,
+      email,
+      password,
+      department,
+    });
 
-  const user = await User.create({
-    cbID,
-    fullName,
-    roleID,
-    email,
-    password,
-    department,
-  });
-
-  res.status(200).json({
-    success: true,
-    message: "Tạo tài khoản thành công",
-  });
+    res.status(200).json({
+      success: true,
+      message: "Tạo tài khoản thành công",
+    });
+  } catch (err) {
+    const dupField = Object.keys(err.keyValue)[0];
+    if (err.code === 11000 && err.keyValue[dupField] === cbID) {
+      return res.status(403).json({
+        success: false,
+        message: "Mã cán bộ đã tồn tại",
+      });
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Email cán bộ đã tồn tại",
+      });
+    }
+  }
 };
 
 exports.changePassword = async (req, res, next) => {
@@ -233,7 +248,8 @@ exports.resetPassword = async (req, res, next) => {
 
 // List MP user
 exports.getAllProofManager = async (req, res, next) => {
-  const user = await User.find({ roleID: "630a2454b6a1b1e909a16431" })
+  const roleMP = await Role.findOne({ roleID: "MP" });
+  const user = await User.find({ roleID: roleMP._id })
     .select("cbID fullName")
     .exec(function (err, users) {
       if (err) {
@@ -591,7 +607,6 @@ exports.checkIsReadAll = async (req, res, next) => {
     console.log(error);
   }
 };
-
 
 exports.getRoleUserByID = async (req, res) => {
   const user = await User.findOne({ _id: req.params.id });

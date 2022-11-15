@@ -263,8 +263,8 @@ exports.grantProofKey = async (req, res, next) => {
   const { id, proofStore, senderID, createAt } = req.body;
   const checkProofStoreExist = await User.findById(req.body.id);
   const roleMP = await Role.find({ roleID: "MP" });
-  const folderName = await proofFolder.findOne({ _id: proofStore})
-  const content = `Bạn đã được cấp quyền quản trị thư mục "${folderName.title}"`;
+  const folder = await proofFolder.findOne({ _id: proofStore})
+  const content = `Bạn đã được cấp quyền quản trị kho minh chứng đơn vị "${folderName.title}"`;
 
   if (!checkProofStoreExist.proofStore.includes(proofStore)) {
     return proofFolder
@@ -410,7 +410,9 @@ exports.getListUserAccessFromFolder = async (req, res) => {
 exports.removeProofKey = async (req, res, next) => {
   //----
   try {
-    const { fid, uid } = req.params;
+    const { fid, uid, sid, createAt } = req.params;
+    const folder = await proofFolder.findOne({ _id: fid})
+    const content = `Bạn đã bị xóa quyền quản trị kho minh chứng "${folder.title}"`;
 
     proofFolder
       .updateMany(
@@ -439,6 +441,8 @@ exports.removeProofKey = async (req, res, next) => {
           if (err) {
             console.log(err);
           }
+          setNotification(sid, uid, createAt, content);
+
           return res.send("Xoá thành công");
         });
       });

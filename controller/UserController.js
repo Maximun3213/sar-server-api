@@ -139,6 +139,7 @@ exports.userRegister = async (req, res) => {
     password,
     department,
   });
+
   res.status(200).json({
     success: true,
     message: "Tạo tài khoản thành công",
@@ -220,7 +221,7 @@ exports.resetPassword = async (req, res, next) => {
       .send("Reset Password URL is invalid or has been expired");
   }
   if (req.body.password !== req.body.confirmPassword) {
-    return res.status(400).send("Password not matched");
+    return res.status(400).send("Mật khẩu không khớp");
   }
   user.password = req.body.password;
   user.resetPasswordToken = undefined;

@@ -344,7 +344,7 @@ exports.addMemberToSar = async (req, res, next) => {
   const sar = await SarFile.findOne({ _id: sarID });
   const sender = await User.findOne({ _id: senderID });
 
-  const content = `Bạn đã được ${sender.fullName} thêm vào quyển Sar "${sar.title}"`;
+  const content = `${sender.fullName} đã thêm bạn vào quyển Sar "${sar.title}"`;
 
   await SarFile.updateMany(
     { _id: sarID },
@@ -379,7 +379,7 @@ exports.deleteMemberOfSar = async (req, res, next) => {
   const {userID, sarID, senderID, createAt} = req.params;
   const sar = await SarFile.findOne({ _id: sarID });
   const sender = await User.findOne({ _id: senderID });
-  const content = `Bạn đã bị ${sender.fullName} xóa khỏi quyển Sar "${sar.title}"`;
+  const content = `${sender.fullName} đã xóa bạn khỏi quyển Sar "${sar.title}"`;
 
   await SarFile.updateMany(
     { _id: sarID },

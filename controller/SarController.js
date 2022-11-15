@@ -369,14 +369,18 @@ exports.addMemberToSar = async (req, res, next) => {
       userList.map((member) => {
         setNotification(senderID, member, createAt, content);
       })
-      
+
       return res.send("Thêm thành viên thành công");
     });
   });
 };
 
 exports.deleteMemberOfSar = async (req, res, next) => {
-  const userID = req.params.userID;
+  const {userID, sarID, senderID, createAt} = req.params;
+  const sar = await SarFile.findOne({ _id: sarID });
+  const sender = await User.findOne({ _id: senderID });
+  const content = `Bạn đã bị ${sender.fullName} xóa khỏi quyển Sar "${sar.title}"`;
+
   await SarFile.updateMany(
     { _id: req.params.id },
     {
@@ -396,6 +400,8 @@ exports.deleteMemberOfSar = async (req, res, next) => {
         },
       }
     ).exec();
+    setNotification(senderID, userID, createAt, content);
+
     return res.send("Xoá thành công");
   });
 };

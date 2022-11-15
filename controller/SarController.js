@@ -382,7 +382,7 @@ exports.deleteMemberOfSar = async (req, res, next) => {
   const content = `Bạn đã bị ${sender.fullName} xóa khỏi quyển Sar "${sar.title}"`;
 
   await SarFile.updateMany(
-    { _id: req.params.id },
+    { _id: sarID },
     {
       $pull: {
         user_access: { $in: userID },

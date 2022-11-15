@@ -260,16 +260,18 @@ exports.getAllProofManager = async (req, res, next) => {
 };
 //grantProofPermission
 exports.grantProofKey = async (req, res, next) => {
-  const filter = { _id: req.body.id };
+  const { id, proofStore, senderID, createAt } = req.body;
   const checkProofStoreExist = await User.findById(req.body.id);
   const roleMP = await Role.find({ roleID: "MP" });
+  const folderName = await proofFolder.findOne({ _id: proofStore})
+  const content = `Bạn đã được cấp quyền quản trị thư mục "${folderName.title}"`;
 
-  if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
+  if (!checkProofStoreExist.proofStore.includes(proofStore)) {
     return proofFolder
       .aggregate([
         {
           $match: {
-            _id: ObjectId(req.body.proofStore),
+            _id: ObjectId(proofStore),
           },
         },
         {
@@ -293,12 +295,15 @@ exports.grantProofKey = async (req, res, next) => {
       ])
       .then((data) => {
         roleMP.map((result) => {
-          User.findByIdAndUpdate(filter, {
-            $push: { proofStore: req.body.proofStore },
-            $set: {
-              roleID: ObjectId(result._id),
-            },
-          }).exec();
+          User.findByIdAndUpdate(
+            { _id: id },
+            {
+              $push: { proofStore: proofStore },
+              $set: {
+                roleID: ObjectId(result._id),
+              },
+            }
+          ).exec();
         });
         proofFolder
           .findByIdAndUpdate(req.body.proofStore, {
@@ -307,6 +312,10 @@ exports.grantProofKey = async (req, res, next) => {
             },
           })
           .exec();
+
+        
+
+        setNotification(senderID, id, createAt, content);
 
         return res.send("Grant key successfully");
       });

@@ -313,7 +313,7 @@ exports.grantProofKey = async (req, res, next) => {
           })
           .exec();
 
-        
+
 
         setNotification(senderID, id, createAt, content);
 

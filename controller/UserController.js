@@ -248,7 +248,8 @@ exports.resetPassword = async (req, res, next) => {
 
 // List MP user
 exports.getAllProofManager = async (req, res, next) => {
-  const user = await User.find({ roleID: "630a2454b6a1b1e909a16431" })
+  const roleMP = await Role.findOne({ roleID: "MP" });
+  const user = await User.find({ roleID: roleMP._id })
     .select("cbID fullName")
     .exec(function (err, users) {
       if (err) {

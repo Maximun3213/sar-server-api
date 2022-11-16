@@ -317,7 +317,7 @@ exports.grantProofKey = async (req, res, next) => {
 
         setNotification(senderID, id, createAt, content);
 
-        return res.send("Grant key successfully");
+        return res.send("Cấp kho minh chứng đơn vị thành công");
       });
   }
   return res.status(400).json({

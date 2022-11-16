@@ -142,14 +142,14 @@ exports.getAllSarFiles = async (req, res, next) => {
 };
 
 exports.removeSarFile = async (req, res, next) => {
-  try {   
-    const {senderID, createAt} = req.params 
+  try {
+    const {senderID, createAt} = req.params
     const sar = await SarFile.findOne({ _id: req.params.id });
     const sender = await User.findOne({ _id: senderID });
 
     const content = `${sender.fullName} đã xóa quyển Sar "${sar.title}"`;
 
-    
+
 
     await TableOfContent.aggregate([
       {
@@ -253,10 +253,15 @@ exports.removeSarFile = async (req, res, next) => {
             },
           ]).exec((err, doc) => {
             doc.map((result) => {
+              let userList = []
               if (result.user_manage !== null) {
-                const userList = result.user_access
                 userList.push(result.user_manage)
-
+                if(result.user_access){
+                  userList.push(result.user_access)
+                  // const userList = result.user_access
+                  // console.log(result.user_access)
+                  // userList.push(result.user_manage)
+                }
                 return User.updateMany(
                   { _id: result.user_manage },
                   {
@@ -280,7 +285,10 @@ exports.removeSarFile = async (req, res, next) => {
                       setNotification(senderID, member, createAt, content);
                     })
 
-                    return res.send("Xóa quyển Sar thành công");
+                    return res.status(200).json({
+                      userList,
+                      message: "Xóa quyển Sar thành công"
+                    });
                   });
                 });
               }

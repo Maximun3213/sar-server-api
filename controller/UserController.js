@@ -11,6 +11,7 @@ const { populate } = require("../models/rolesModel");
 const Notification = require("../models/notificationModel");
 const sendMail = require("../utils/sendMail.js");
 const crypto = require("crypto");
+const { MongoServerError } = require("mongodb");
 
 exports.userLogin = async (req, res) => {
   const { email, password } = req.body;
@@ -130,19 +131,34 @@ exports.deleteUserById = (req, res) => {
 //test đăng ký user
 exports.userRegister = async (req, res) => {
   const { cbID, fullName, roleID, email, password, department } = req.body;
+  try {
+    const user = await User.create({
+      cbID,
+      fullName,
+      roleID,
+      email,
+      password,
+      department,
+    });
 
-  const user = await User.create({
-    cbID,
-    fullName,
-    roleID,
-    email,
-    password,
-    department,
-  });
-  res.status(200).json({
-    success: true,
-    message: "Tạo tài khoản thành công",
-  });
+    res.status(200).json({
+      success: true,
+      message: "Tạo tài khoản thành công",
+    });
+  } catch (err) {
+    const dupField = Object.keys(err.keyValue)[0];
+    if (err.code === 11000 && err.keyValue[dupField] === cbID) {
+      return res.status(403).json({
+        success: false,
+        message: "Mã cán bộ đã tồn tại",
+      });
+    } else {
+      return res.status(403).json({
+        success: false,
+        message: "Email cán bộ đã tồn tại",
+      });
+    }
+  }
 };
 
 exports.changePassword = async (req, res, next) => {
@@ -220,7 +236,7 @@ exports.resetPassword = async (req, res, next) => {
       .send("Reset Password URL is invalid or has been expired");
   }
   if (req.body.password !== req.body.confirmPassword) {
-    return res.status(400).send("Password not matched");
+    return res.status(400).send("Mật khẩu không khớp");
   }
   user.password = req.body.password;
   user.resetPasswordToken = undefined;
@@ -232,7 +248,8 @@ exports.resetPassword = async (req, res, next) => {
 
 // List MP user
 exports.getAllProofManager = async (req, res, next) => {
-  const user = await User.find({ roleID: "630a2454b6a1b1e909a16431" })
+  const roleMP = await Role.findOne({ roleID: "MP" });
+  const user = await User.find({ roleID: roleMP._id })
     .select("cbID fullName")
     .exec(function (err, users) {
       if (err) {
@@ -243,16 +260,18 @@ exports.getAllProofManager = async (req, res, next) => {
 };
 //grantProofPermission
 exports.grantProofKey = async (req, res, next) => {
-  const filter = { _id: req.body.id };
+  const { id, proofStore, senderID, createAt } = req.body;
   const checkProofStoreExist = await User.findById(req.body.id);
   const roleMP = await Role.find({ roleID: "MP" });
+  const folder = await proofFolder.findOne({ _id: proofStore})
+  const content = `Bạn đã được cấp quyền quản trị kho minh chứng đơn vị "${folderName.title}"`;
 
-  if (!checkProofStoreExist.proofStore.includes(req.body.proofStore)) {
+  if (!checkProofStoreExist.proofStore.includes(proofStore)) {
     return proofFolder
       .aggregate([
         {
           $match: {
-            _id: ObjectId(req.body.proofStore),
+            _id: ObjectId(proofStore),
           },
         },
         {
@@ -276,12 +295,15 @@ exports.grantProofKey = async (req, res, next) => {
       ])
       .then((data) => {
         roleMP.map((result) => {
-          User.findByIdAndUpdate(filter, {
-            $push: { proofStore: req.body.proofStore },
-            $set: {
-              roleID: ObjectId(result._id),
-            },
-          }).exec();
+          User.findByIdAndUpdate(
+            { _id: id },
+            {
+              $push: { proofStore: proofStore },
+              $set: {
+                roleID: ObjectId(result._id),
+              },
+            }
+          ).exec();
         });
         proofFolder
           .findByIdAndUpdate(req.body.proofStore, {
@@ -291,7 +313,11 @@ exports.grantProofKey = async (req, res, next) => {
           })
           .exec();
 
-        return res.send("Grant key successfully");
+
+
+        setNotification(senderID, id, createAt, content);
+
+        return res.send("Cấp kho minh chứng đơn vị thành công");
       });
   }
   return res.status(400).json({
@@ -384,7 +410,9 @@ exports.getListUserAccessFromFolder = async (req, res) => {
 exports.removeProofKey = async (req, res, next) => {
   //----
   try {
-    const { fid, uid } = req.params;
+    const { fid, uid, sid, createAt } = req.params;
+    const folder = await proofFolder.findOne({ _id: fid})
+    const content = `Bạn đã bị xóa quyền quản trị kho minh chứng "${folder.title}"`;
 
     proofFolder
       .updateMany(
@@ -413,6 +441,8 @@ exports.removeProofKey = async (req, res, next) => {
           if (err) {
             console.log(err);
           }
+          setNotification(sid, uid, createAt, content);
+
           return res.send("Xoá thành công");
         });
       });
@@ -590,7 +620,6 @@ exports.checkIsReadAll = async (req, res, next) => {
     console.log(error);
   }
 };
-
 
 exports.getRoleUserByID = async (req, res) => {
   const user = await User.findOne({ _id: req.params.id });

@@ -13,6 +13,7 @@ const json = require("body-parser");
 const { ObjectId } = require("mongodb");
 const { aggregate } = require("../models/rolesModel");
 const User = require("../models/usersModel");
+const { set } = require("mongoose");
 
 exports.createSar = async (req, res, next) => {
   const ids = new ObjectId();
@@ -132,16 +133,6 @@ exports.createSar = async (req, res, next) => {
   });
 };
 
-exports.createSarFolder = async (req, res) => {
-  const { title, parentID, docs } = req.body;
-
-  await SarProofFolder.create(req.body);
-  res.status(200).json({
-    success: true,
-    message: "New folder is created",
-  });
-};
-
 exports.getAllSarFiles = async (req, res, next) => {
   await SarFile.find({}, (err, result) => {
     if (err) {
@@ -153,6 +144,14 @@ exports.getAllSarFiles = async (req, res, next) => {
 
 exports.removeSarFile = async (req, res, next) => {
   try {
+    const {senderID, createAt} = req.params
+    const sar = await SarFile.findOne({ _id: req.params.id });
+    const sender = await User.findOne({ _id: senderID });
+
+    const content = `${sender.fullName} đã xóa quyển Sar "${sar.title}"`;
+
+
+
     await TableOfContent.aggregate([
       {
         $match: {
@@ -255,7 +254,15 @@ exports.removeSarFile = async (req, res, next) => {
             },
           ]).exec((err, doc) => {
             doc.map((result) => {
+              let userList = []
               if (result.user_manage !== null) {
+                userList.push(result.user_manage)
+                if(result.user_access){
+                  userList.push(result.user_access)
+                  // const userList = result.user_access
+                  // console.log(result.user_access)
+                  // userList.push(result.user_manage)
+                }
                 return User.updateMany(
                   { _id: result.user_manage },
                   {
@@ -274,7 +281,15 @@ exports.removeSarFile = async (req, res, next) => {
                   ).exec();
                   SarFile.deleteOne({ _id: result._id }).exec((err) => {
                     if (err) console.log(err);
-                    return res.send("Xóa quyển Sar thành công");
+
+                    userList.map((member) => {
+                      setNotification(senderID, member, createAt, content);
+                    });
+
+                    return res.status(200).json({
+                      userList,
+                      message: "Xóa quyển Sar thành công"
+                    });
                   });
                 });
               }
@@ -303,7 +318,15 @@ exports.modifySarData = async (req, res) => {
     license,
     curriculum,
     status,
+    senderID,
+    createAt
   } = req.body;
+  const sar = await SarFile.findOne({ _id: req.params.id });
+  const sender = await User.findOne({ _id: senderID });
+
+  const userArr = await User.find({ _id: { $ne: senderID } }).select("_id");
+  const content = `${sender.fullName} đã công bố quyển SAR "${sar.title}"`;
+
   await SarFile.updateOne(
     {
       _id: req.params.id,
@@ -323,10 +346,18 @@ exports.modifySarData = async (req, res) => {
       },
     }
   ).exec((err, result) => {
-    if (err) {
-      console.log(err);
+    const userList = [];
+
+    if (status === 0) {
+      userArr.map((member) => {
+        userList.push(member._id)
+        setNotification(senderID, member, createAt, content);
+      });
     }
-    return res.send("Update sar successfully");
+    return res.status(200).json({
+      userList,
+      message: "Update sar successfully"
+    });
   });
 };
 
@@ -339,20 +370,25 @@ exports.getDataFromSarFile = async (req, res, next) => {
 };
 
 exports.addMemberToSar = async (req, res, next) => {
-  const listOfUserID = req.body.userList;
+  const { userList, sarID, senderID, createAt } = req.body;
   const roleUser = await Role.findOne({ roleID: "USER" });
+  const sar = await SarFile.findOne({ _id: sarID });
+  const sender = await User.findOne({ _id: senderID });
+
+  const content = `${sender.fullName} đã thêm bạn vào quyển Sar "${sar.title}"`;
+
   await SarFile.updateMany(
-    { _id: req.body.sarID },
+    { _id: sarID },
     {
       $push: {
-        user_access: listOfUserID,
+        user_access: userList,
       },
     }
   ).exec((err, result) => {
     if (err) return res.send("Thêm thành viên thất bại");
 
     User.updateMany(
-      { _id: listOfUserID },
+      { _id: userList },
       {
         $set: {
           roleID: roleUser._id,
@@ -361,15 +397,23 @@ exports.addMemberToSar = async (req, res, next) => {
     ).exec((err) => {
       if (err) return res.send("Thêm thành viên thất bại");
 
+      userList.map((member) => {
+        setNotification(senderID, member, createAt, content);
+      });
+
       return res.send("Thêm thành viên thành công");
     });
   });
 };
 
 exports.deleteMemberOfSar = async (req, res, next) => {
-  const userID = req.params.userID;
+  const { userID, sarID, senderID, createAt } = req.params;
+  const sar = await SarFile.findOne({ _id: sarID });
+  const sender = await User.findOne({ _id: senderID });
+  const content = `${sender.fullName} đã xóa bạn khỏi quyển Sar "${sar.title}"`;
+
   await SarFile.updateMany(
-    { _id: req.params.id },
+    { _id: sarID },
     {
       $pull: {
         user_access: { $in: userID },
@@ -387,6 +431,8 @@ exports.deleteMemberOfSar = async (req, res, next) => {
         },
       }
     ).exec();
+    setNotification(senderID, userID, createAt, content);
+
     return res.send("Xoá thành công");
   });
 };

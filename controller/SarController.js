@@ -132,16 +132,6 @@ exports.createSar = async (req, res, next) => {
   });
 };
 
-exports.createSarFolder = async (req, res) => {
-  const { title, parentID, docs } = req.body;
-
-  await SarProofFolder.create(req.body);
-  res.status(200).json({
-    success: true,
-    message: "New folder is created",
-  });
-};
-
 exports.getAllSarFiles = async (req, res, next) => {
   await SarFile.find({}, (err, result) => {
     if (err) {
@@ -152,7 +142,15 @@ exports.getAllSarFiles = async (req, res, next) => {
 };
 
 exports.removeSarFile = async (req, res, next) => {
-  try {
+  try {   
+    const {senderID, createAt} = req.params 
+    const sar = await SarFile.findOne({ _id: req.params.id });
+    const sender = await User.findOne({ _id: senderID });
+
+    const content = `${sender.fullName} đã xóa quyển Sar "${sar.title}"`;
+
+    
+
     await TableOfContent.aggregate([
       {
         $match: {
@@ -256,6 +254,9 @@ exports.removeSarFile = async (req, res, next) => {
           ]).exec((err, doc) => {
             doc.map((result) => {
               if (result.user_manage !== null) {
+                const userList = result.user_access
+                userList.push(result.user_manage)
+
                 return User.updateMany(
                   { _id: result.user_manage },
                   {
@@ -274,6 +275,11 @@ exports.removeSarFile = async (req, res, next) => {
                   ).exec();
                   SarFile.deleteOne({ _id: result._id }).exec((err) => {
                     if (err) console.log(err);
+
+                    userList.map((member) => {
+                      setNotification(senderID, member, createAt, content);
+                    })
+
                     return res.send("Xóa quyển Sar thành công");
                   });
                 });

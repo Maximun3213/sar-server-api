@@ -29,7 +29,7 @@ const Str = multer.diskStorage({
 const upload = multer({
   storage: Str,
   limits: { fileSize: 10 * 1024 * 1024 }, // 10MB
-}).single("uploadedFiles");
+}).any("uploadedFiles", 4);
 
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {

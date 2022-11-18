@@ -264,7 +264,7 @@ exports.grantProofKey = async (req, res, next) => {
   const checkProofStoreExist = await User.findById(req.body.id);
   const roleMP = await Role.find({ roleID: "MP" });
   const folder = await proofFolder.findOne({ _id: proofStore})
-  const content = `Bạn đã được cấp quyền quản trị kho minh chứng đơn vị "${folderName.title}"`;
+  const content = `Bạn đã được cấp quyền quản trị kho minh chứng đơn vị "${folder.title}"`;
 
   if (!checkProofStoreExist.proofStore.includes(proofStore)) {
     return proofFolder

@@ -33,12 +33,6 @@ const upload = multer({
 
 exports.uploadFile = (req, res, next) => {
   upload(req, res, (err) => {
-    if (err) {
-      return res
-        .status(400)
-        .send({ success: false, message: "Tối đa 4 tệp được upload" });
-    }
-
     const fileList = req.files;
 
     const folderID = req.params.id;
@@ -55,225 +49,172 @@ exports.uploadFile = (req, res, next) => {
       locationSAR,
     } = req.body;
 
-    if (fileList.length === 1) {
-      fileList.map(async (file, index) => {
-        const ids = new ObjectId();
-        const newFile = new proofFile({
-          _id: ids,
-          name: Buffer.from(file.originalname, "latin1").toString("utf8"),
-          data: fs.readFileSync(file.path),
-          mimeType: file.mimetype,
-          size: file.size,
-          proofFolder: folderID,
-          enactNum: enactNum,
-          enactAddress: enactAddress,
-          releaseDate: moment(releaseDate, "DD-MM-YYYY"),
-          description: description,
-          status: status,
-          userCreate: userCreate,
-          locationSAR: locationSAR,
-        });
-        try {
-          let message = "";
-          if (type) {
-             await TableOfContent.aggregate([
-              {
-                $match: {
-                  sarID: ObjectId(sarID),
-                },
+    fileList.map(async (file, index) => {
+      const ids = new ObjectId();
+      const newFile = new proofFile({
+        _id: ids,
+        name: Buffer.from(file.originalname, "latin1").toString("utf8"),
+        data: fs.readFileSync(file.path),
+        mimeType: file.mimetype,
+        size: file.size,
+        proofFolder: folderID,
+        enactNum: enactNum,
+        enactAddress: enactAddress,
+        releaseDate: moment(releaseDate, "DD-MM-YYYY"),
+        description: description,
+        status: status,
+        userCreate: userCreate,
+        locationSAR: locationSAR,
+      });
+      //kho minh chứng SAR
+      try {
+        let message = "";
+        if (type) {
+          await TableOfContent.aggregate([
+            {
+              $match: {
+                sarID: ObjectId(sarID),
               },
-              {
-                $graphLookup: {
-                  from: "parts",
-                  startWith: "$partID",
-                  connectFromField: "partID",
-                  connectToField: "_id",
-                  as: "parts",
-                },
+            },
+            {
+              $graphLookup: {
+                from: "parts",
+                startWith: "$partID",
+                connectFromField: "partID",
+                connectToField: "_id",
+                as: "parts",
               },
-              { $unwind: "$parts" },
-              {
-                $graphLookup: {
-                  from: "chapters",
-                  startWith: "$parts.chapterID",
-                  connectFromField: "parts.chapterID",
-                  connectToField: "_id",
-                  as: "chapters",
-                },
+            },
+            { $unwind: "$parts" },
+            {
+              $graphLookup: {
+                from: "chapters",
+                startWith: "$parts.chapterID",
+                connectFromField: "parts.chapterID",
+                connectToField: "_id",
+                as: "chapters",
               },
-              {
-                $unwind: {
-                  path: "$chapters",
-                  preserveNullAndEmptyArrays: true,
-                },
+            },
+            {
+              $unwind: {
+                path: "$chapters",
+                preserveNullAndEmptyArrays: true,
               },
-              {
-                $graphLookup: {
-                  from: "criterias",
-                  startWith: "$chapters.criteriaID",
-                  connectFromField: "chapters.criteriaID",
-                  connectToField: "_id",
-                  as: "criterias",
-                },
+            },
+            {
+              $graphLookup: {
+                from: "criterias",
+                startWith: "$chapters.criteriaID",
+                connectFromField: "chapters.criteriaID",
+                connectToField: "_id",
+                as: "criterias",
               },
-              {
-                $unwind: {
-                  path: "$criterias",
-                  preserveNullAndEmptyArrays: true,
-                },
+            },
+            {
+              $unwind: {
+                path: "$criterias",
+                preserveNullAndEmptyArrays: true,
               },
-              {
-                $project: {
-                  partID: 0,
-                },
+            },
+            {
+              $project: {
+                partID: 0,
               },
-              {
-                $group: {
-                  _id: "$_id",
-                  sarID: { $first: "$sarID" },
-                  parts: { $addToSet: "$parts" },
-                  chapters: { $push: "$chapters" },
-                  criterias: { $push: "$criterias" },
-                },
+            },
+            {
+              $group: {
+                _id: "$_id",
+                sarID: { $first: "$sarID" },
+                parts: { $addToSet: "$parts" },
+                chapters: { $push: "$chapters" },
+                criterias: { $push: "$criterias" },
               },
-            ]).exec((err, result) => {
-              if (err) {
-                console.log(err);
-                return next(err);
-              }
-              result.forEach((child) => {
-                child.chapters.forEach((chapter) => {
-                  proofFile
-                    .findOne({ _id: chapter.proof_docs, enactNum: enactNum })
-                    .exec((err, result) => {
-                      if (result == null) {
-                        return;
-                      } else {
-                        message = `Minh chứng đã tồn tại trong chương "${chapter.title}"`;
-                        return message;
-                      }
-                    });
-                });
-                child.criterias.forEach((criteria) => {
-                  proofFile
-                    .findOne({ _id: criteria.proof_docs, enactNum: enactNum })
-                    .exec((err, result) => {
-                      if (result == null) {
-                        return;
-                      } else {
-                        message = `Minh chứng đã tồn tại trong tiêu chí "${criteria.title}"`;
-                        return message;
-                      }
-                    });
-                });
+            },
+          ]).exec((err, result) => {
+            if (err) {
+              console.log(err);
+              return next(err);
+            }
+            result.forEach((child) => {
+              child.chapters.forEach((chapter) => {
+                proofFile
+                  .findOne({ _id: chapter.proof_docs, enactNum: enactNum })
+                  .exec((err, result) => {
+                    if (result == null) {
+                      return;
+                    } else {
+                      message = `Minh chứng đã tồn tại trong chương "${chapter.title}"`;
+                      return message;
+                    }
+                  });
+              });
+              child.criterias.forEach((criteria) => {
+                proofFile
+                  .findOne({ _id: criteria.proof_docs, enactNum: enactNum })
+                  .exec((err, result) => {
+                    if (result == null) {
+                      return;
+                    } else {
+                      message = `Minh chứng đã tồn tại trong tiêu chí "${criteria.title}"`;
+                      return message;
+                    }
+                  });
               });
             });
-            //================Condition
-            setTimeout(() => {
-              if (message !== "") {
-                return res.send({ message: message }, 400);
-              } else {
-                if (type === "chapter") {
-                  Chapter.findByIdAndUpdate(folderID, {
-                    $push: { proof_docs: ids },
-                  }).exec(() => {
-                    newFile.save();
-                    return res.status(200).json({
-                      success: true,
-                      message: "Tải tệp lên thành công",
-                      fileList,
-                    });
-                  });
-                } else {
-                  Criteria.findByIdAndUpdate(folderID, {
-                    $push: { proof_docs: ids },
-                  }).exec(() => {
-                    newFile.save();
-                    return res.status(200).json({
-                      success: true,
-                      message: "Tải tệp lên thành công",
-                      fileList,
-                    });
-                  });
-                }
-              }
-            }, 1500);
-          } else {
-            await proofFolder
-              .findByIdAndUpdate(folderID, {
-                $push: { proofFiles: ids },
-              })
-              .exec(() => {
-                newFile.save();
-                return res.status(200).json({
-                  success: true,
-                  message: "Tải tệp lên thành công",
-                  fileList,
-                });
-              });
-          }
-        } catch (err) {
-          next(err);
-          return res.status(400).json({
-            success: true,
-            message: "Tải tệp lên thất bại",
-            fileList,
           });
-        }
-      });
-    } else {
-      try {
-        fileList.map(async (file, index) => {
-          const ids = new ObjectId();
-          const newFile = new proofFile({
-            _id: ids,
-            name: Buffer.from(file.originalname, "latin1").toString("utf8"),
-            data: fs.readFileSync(file.path),
-            mimeType: file.mimetype,
-            size: file.size,
-            proofFolder: folderID,
-            enactNum: enactNum && enactNum[0],
-            enactAddress: enactAddress[0],
-            releaseDate: moment(releaseDate[0], "DD-MM-YYYY"),
-            description: description[0],
-            status: status[0],
-            userCreate: userCreate[0],
-          });
-          // push to proofFolder
-          if (type !== "undefined") {
-            if (type === "chapter") {
-              await Chapter.findByIdAndUpdate(folderID, {
-                $push: { proof_docs: ids },
-              }).exec();
+          //================Condition
+          setTimeout(() => {
+            if (message !== "") {
+              return res.send({ message: message }, 400);
             } else {
-              await Criteria.findByIdAndUpdate(folderID, {
-                $push: { proof_docs: ids },
-              }).exec();
+              if (type === "chapter") {
+                Chapter.findByIdAndUpdate(folderID, {
+                  $push: { proof_docs: ids },
+                }).exec(() => {
+                  newFile.save();
+                  return res.status(200).json({
+                    success: true,
+                    message: "Tải tệp lên thành công",
+                    fileList,
+                  });
+                });
+              } else {
+                Criteria.findByIdAndUpdate(folderID, {
+                  $push: { proof_docs: ids },
+                }).exec(() => {
+                  newFile.save();
+                  return res.status(200).json({
+                    success: true,
+                    message: "Tải tệp lên thành công",
+                    fileList,
+                  });
+                });
+              }
             }
-          } else {
-            await proofFolder
-              .findByIdAndUpdate(folderID, {
-                $push: { proofFiles: ids },
-              })
-              .exec();
-          }
-
-          newFile.save();
-        });
-        return res.status(200).json({
-          success: true,
-          message: "Tải tệp lên thành công",
-          fileList,
-        });
-      } catch (error) {
+          }, 1500);
+        } else {
+          await proofFolder
+            .findByIdAndUpdate(folderID, {
+              $push: { proofFiles: ids },
+            })
+            .exec(() => {
+              newFile.save();
+              return res.status(200).json({
+                success: true,
+                message: "Tải tệp lên thành công",
+                fileList,
+              });
+            });
+        }
+      } catch (err) {
         next(err);
         return res.status(400).json({
-          success: false,
+          success: true,
           message: "Tải tệp lên thất bại",
           fileList,
         });
       }
-    }
+    });
   });
 };
 

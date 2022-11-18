@@ -203,7 +203,7 @@ exports.forgotPassword = async (req, res, next) => {
     });
     res.status(200).json({
       success: true,
-      message: `Email send to ${user.email} successfully`,
+      message: `Gửi email đến ${user.email} thành công`,
     });
   } catch (error) {
     console.log("Catch block");
@@ -233,7 +233,7 @@ exports.resetPassword = async (req, res, next) => {
   if (!user) {
     return res
       .status(400)
-      .send("Reset Password URL is invalid or has been expired");
+      .send("Email không tồn tại trong hệ thống");
   }
   if (req.body.password !== req.body.confirmPassword) {
     return res.status(400).send("Mật khẩu không khớp");

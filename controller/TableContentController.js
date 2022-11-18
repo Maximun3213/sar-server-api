@@ -41,7 +41,7 @@ exports.createCriteria = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Create a new criteria successfully",
+      message: "Tạo tiêu chí thành công",
     });
   });
 };
@@ -86,7 +86,7 @@ exports.modifyCriteria = async (req, res) => {
     if (err) {
       console.log(err);
     }
-    res.send("Update criteria successfully");
+    res.send("Cập nhật thành công");
   });
 };
 

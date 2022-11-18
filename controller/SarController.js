@@ -358,7 +358,7 @@ exports.modifySarData = async (req, res) => {
     }
     return res.status(200).json({
       userList,
-      message: "Update sar successfully"
+      message: "Cập nhập thành công"
     });
   });
 };

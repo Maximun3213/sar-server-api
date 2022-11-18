@@ -23,10 +23,12 @@ class SocketServices {
 
     socket.on("sendNotification", async ({receiverID}) => {
       const receiver = getUser(receiverID);
-      await Notification.find({ receiver: receiver.idUser }).exec((err, notification) => {
-        if (err) return res.send(err);
-        _io.to(receiver.socketId).emit("getNotification", notification);
-      });
+      if(receiver){
+        await Notification.find({ receiver: receiver.idUser }).exec((err, notification) => {
+          if (err) return res.send(err);
+          _io.to(receiver.socketId).emit("getNotification", notification);
+        });
+      }
     });
 
     socket.on("disconnect", () => {

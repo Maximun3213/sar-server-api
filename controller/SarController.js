@@ -295,7 +295,9 @@ exports.removeSarFile = async (req, res, next) => {
               }
               SarFile.deleteOne({ _id: result._id }).exec((err) => {
                 if (err) console.log(err);
-                return res.send("Xóa quyển Sar thành công");
+                return res.status(200).json({
+                  message: "Xóa quyển Sar thành công"
+                });
               });
             });
           });

@@ -259,9 +259,6 @@ exports.removeSarFile = async (req, res, next) => {
                 userList.push(result.user_manage)
                 if(result.user_access){
                   userList.push(result.user_access)
-                  // const userList = result.user_access
-                  // console.log(result.user_access)
-                  // userList.push(result.user_manage)
                 }
                 return User.updateMany(
                   { _id: result.user_manage },

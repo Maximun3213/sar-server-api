@@ -228,7 +228,7 @@ exports.createFolder = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: "Tạo thư mục thành công",
+      message: "New folder was created",
     });
   }
 };
@@ -333,7 +333,7 @@ exports.removeDirectory = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Xoá thành công",
+      message: "Folder removed successfully",
     });
   } catch (error) {
     // This is where you handle the error
@@ -359,7 +359,7 @@ exports.postDeleteFile = async (req, res, next) => {
 
     res.status(200).json({
       success: true,
-      message: "Xoá thành công",
+      message: "Delete success",
     });
   } catch (error) {
     // This is where you handle the error
@@ -391,7 +391,7 @@ exports.updateFolder = async (req, res, next) => {
     await proofFolder.updateOne(myquery, newvalues, { upsert: true });
     res.status(200).json({
       success: true,
-      message: "Cập nhật thành công",
+      message: "Update success",
     });
   }
 };
@@ -530,7 +530,7 @@ exports.changeFileLocation = async (req, res) => {
         }
       )
       .exec();
-    return res.send("Di chuyển tệp thành công");
+    return res.send("File moved successfully");
   }
   res.status(400).json({
     success: false,
@@ -585,7 +585,7 @@ exports.modifyProofData = async (req, res) => {
       if (err) {
         console.log(err);
       }
-      res.send("Cập nhật thành công");
+      res.send("Update folder successfully");
     });
 };
 
@@ -931,3 +931,61 @@ exports.copyProofFileToSar = async (req, res, next) => {
   }
   res.status(400).send(`Minh chứng đã có trong mục "${chap.title}"`);
 };
+
+// await proofFile
+//   .aggregate([
+//     {
+//       $match: {
+//         _id: ObjectId(req.params.id),
+//       },
+//     },
+//     {
+//       $addFields: {
+//         locationSAR: `${'aaaa'}`
+//       }
+//     },
+//     { $merge: { into: "sar_files" } },
+
+//   ])
+//   .exec((err, result) => {
+//     res.send("Success");
+//   });
+
+// exports.copyProofFileToSar = async (req, res) => {
+//   const { idProof, currentOrder } = req.body;
+
+//   proofFile
+//     .find({ _id: idProof })
+//     .select("-data")
+//     .exec(function (err, doc) {
+//       doc.forEach((node) => insertBatch(node));
+//     });
+
+//   async function insertBatch(doc) {
+//     var id;
+//     id = mongoose.Types.ObjectId();
+//     doc._id = id;
+//     console.log("doc", doc);
+
+//     await proofFile.create({
+//       _id: doc._id,
+//       name: doc.name,
+//       mimeType: doc.mimeType,
+//       size: doc.size,
+//       proofFolder: doc.proofFolder,
+//       //Lỗi số ban hành bị duplicate
+//       enactNum: doc.enactNum,
+//       enactAddress: doc.enactAddress,
+//       releaseDate: doc.releaseDate,
+//       description: doc.description,
+//       userCreate: doc.userCreate,
+//       status: doc.status,
+//       creatAt: doc.creatAt
+//     })
+
+//     res.status(200).json({
+//       success: true,
+//       message: "Copy thành công",
+//     });
+//   }
+// };

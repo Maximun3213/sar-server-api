@@ -268,34 +268,36 @@ exports.removeSarFile = async (req, res, next) => {
                     },
                   }
                 ).exec(() => {
-                  User.updateMany(
+                  return User.updateMany(
                     { _id: result.user_access },
                     {
                       $set: {
                         roleID: null,
                       },
                     }
-                  ).exec();
-                  SarFile.deleteOne({ _id: result._id }).exec((err) => {
-                    if (err) console.log(err);
+                  ).exec(()=>{
+                    return SarFile.deleteOne({ _id: result._id }).exec((err) => {
+                      if (err) console.log(err);
 
-                    userList.map((member) => {
-                      setNotification(senderID, member, createAt, content);
-                    });
+                      userList.map((member) => {
+                        setNotification(senderID, member, createAt, content);
+                      });
 
-                    return res.status(200).json({
-                      userList,
-                      message: "Xóa quyển Sar thành công"
+                      return res.status(200).json({
+                        userList,
+                        message: "Xóa quyển Sar thành công"
+                      });
                     });
                   });
                 });
-              }
-              SarFile.deleteOne({ _id: result._id }).exec((err) => {
-                if (err) console.log(err);
-                return res.status(200).json({
-                  message: "Xóa quyển Sar thành công"
+              } else {
+                SarFile.deleteOne({ _id: result._id }).exec((err) => {
+                  if (err) console.log(err);
+                  return res.status(200).json({
+                    message: "Xóa quyển Sar thành công"
+                  });
                 });
-              });
+              }
             });
           });
         });

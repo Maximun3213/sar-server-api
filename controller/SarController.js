@@ -251,8 +251,8 @@ exports.removeSarFile = async (req, res, next) => {
               let userList = []
               if (result.user_manage !== null) {
                 userList.push(result.user_manage)
-                
-                if(result.user_access){ 
+
+                if(result.user_access){
                   result.user_access.map((user) => {
                     userList.push(user)
                   })
@@ -278,7 +278,6 @@ exports.removeSarFile = async (req, res, next) => {
                     });
                   });
                 })
-
               } else {
                 SarFile.deleteOne({ _id: result._id }).exec((err) => {
                   if (err) console.log(err);

@@ -251,6 +251,7 @@ exports.removeSarFile = async (req, res, next) => {
               let userList = []
               if (result.user_manage !== null) {
                 userList.push(result.user_manage)
+                
                 if(result.user_access){ 
                   result.user_access.map((user) => {
                     userList.push(user)

@@ -58,7 +58,11 @@ const proofFileSchema = new Schema({
     type: Date,
     default: Date.now(),
   },
-  orderSAR: String
+  orderSAR: String,
+  sarID: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'sar_file'
+  }
 });
 
 const proofFolder = mongoose.model("proof_folder", proofFolderSchema);

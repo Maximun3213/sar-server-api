@@ -847,7 +847,7 @@ exports.searchSarProof = async (req, res) => {
 };
 
 exports.copyProofFileToSar = async (req, res, next) => {
-  const { idProof, locationSar, proofFolder } = req.body;
+  const { idProof, locationSar, proofFolder, sarID } = req.body;
   const copy = await proofFile.findOne({ _id: idProof });
   copy._id = new ObjectId();
 

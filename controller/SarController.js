@@ -246,39 +246,25 @@ exports.removeSarFile = async (req, res, next) => {
                 _id: ObjectId(req.params.id),
               },
             },
-            {
-              $unwind: {
-                path: "$user_access",
-                preserveNullAndEmptyArrays: true,
-              },
-            },
           ]).exec((err, doc) => {
             doc.map((result) => {
               let userList = []
               if (result.user_manage !== null) {
                 userList.push(result.user_manage)
+
                 if(result.user_access){
-                  userList.push(result.user_access)
-                  // const userList = result.user_access
-                  // console.log(result.user_access)
-                  // userList.push(result.user_manage)
+                  result.user_access.map((user) => {
+                    userList.push(user)
+                  })
                 }
                 return User.updateMany(
-                  { _id: result.user_manage },
+                  { _id: userList },
                   {
                     $set: {
                       roleID: null,
                     },
                   }
                 ).exec(() => {
-                  User.updateMany(
-                    { _id: result.user_access },
-                    {
-                      $set: {
-                        roleID: null,
-                      },
-                    }
-                  ).exec();
                   SarFile.deleteOne({ _id: result._id }).exec((err) => {
                     if (err) console.log(err);
 
@@ -291,14 +277,15 @@ exports.removeSarFile = async (req, res, next) => {
                       message: "Xóa quyển Sar thành công"
                     });
                   });
+                })
+              } else {
+                SarFile.deleteOne({ _id: result._id }).exec((err) => {
+                  if (err) console.log(err);
+                  return res.status(200).json({
+                    message: "Xóa quyển Sar thành công"
+                  });
                 });
               }
-              SarFile.deleteOne({ _id: result._id }).exec((err) => {
-                if (err) console.log(err);
-                return res.status(200).json({
-                  message: "Xóa quyển Sar thành công"
-                });
-              });
             });
           });
         });

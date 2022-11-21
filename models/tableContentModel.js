@@ -60,17 +60,6 @@ const chapterSchema = new Schema({
 const criteriaSchema = new Schema({
     title: String,
     content: String,
-    parentID: {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'criteria',
-        default: null,
-    },
-    childrenID: [
-        {
-            type: mongoose.Schema.Types.ObjectId,
-            ref: 'criteria',
-        }
-    ],
     user_access: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'user',

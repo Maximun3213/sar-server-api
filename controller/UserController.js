@@ -99,9 +99,9 @@ exports.getUserById = (req, res) => {
     });
 };
 
-exports.updateUserById = (req, res) => {
+exports.updateUserById = async (req, res) => {
   const { cbID, fullName, email, department } = req.body;
-  User.findByIdAndUpdate(
+  await User.findByIdAndUpdate(
     { _id: req.params.id },
     {
       $set: {
@@ -113,9 +113,20 @@ exports.updateUserById = (req, res) => {
     }
   ).exec((err, result) => {
     if (err) {
-      console.log(err);
+      const dupField = Object.keys(err.keyValue)[0];
+      if (err.code === 11000 && err.keyValue[dupField] === cbID) {
+        return res.status(403).json({
+          success: false,
+          message: "Mã cán bộ đã tồn tại",
+        });
+      } else {
+        return res.status(403).json({
+          success: false,
+          message: "Email cán bộ đã tồn tại",
+        });
+      }
     }
-    return res.send("Cập nhật thông tin thành công");
+    res.send("Cập nhật thông tin thành công");
   });
 };
 
@@ -231,9 +242,7 @@ exports.resetPassword = async (req, res, next) => {
   });
 
   if (!user) {
-    return res
-      .status(400)
-      .send("Email không tồn tại trong hệ thống");
+    return res.status(400).send("Đường dẫn không hợp lệ hoặc đã hết hạn");
   }
   if (req.body.password !== req.body.confirmPassword) {
     return res.status(400).send("Mật khẩu không khớp");
@@ -263,7 +272,7 @@ exports.grantProofKey = async (req, res, next) => {
   const { id, proofStore, senderID, createAt } = req.body;
   const checkProofStoreExist = await User.findById(req.body.id);
   const roleMP = await Role.find({ roleID: "MP" });
-  const folder = await proofFolder.findOne({ _id: proofStore})
+  const folder = await proofFolder.findOne({ _id: proofStore });
   const content = `Bạn đã được cấp quyền quản trị kho minh chứng đơn vị "${folder.title}"`;
 
   if (!checkProofStoreExist.proofStore.includes(proofStore)) {
@@ -312,8 +321,6 @@ exports.grantProofKey = async (req, res, next) => {
             },
           })
           .exec();
-
-
 
         setNotification(senderID, id, createAt, content);
 
@@ -411,7 +418,7 @@ exports.removeProofKey = async (req, res, next) => {
   //----
   try {
     const { fid, uid, sid, createAt } = req.params;
-    const folder = await proofFolder.findOne({ _id: fid})
+    const folder = await proofFolder.findOne({ _id: fid });
     const content = `Bạn đã bị xóa quyền quản trị kho minh chứng "${folder.title}"`;
 
     proofFolder

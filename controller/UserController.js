@@ -233,7 +233,7 @@ exports.resetPassword = async (req, res, next) => {
   if (!user) {
     return res
       .status(400)
-      .send("Email không tồn tại trong hệ thống");
+      .send("Đường dẫn không hợp lệ hoặc đã hết hạn");
   }
   if (req.body.password !== req.body.confirmPassword) {
     return res.status(400).send("Mật khẩu không khớp");

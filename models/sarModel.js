@@ -21,7 +21,7 @@ const sarFilesSchema = new Schema({
     desc: String,
     proofStore: {
         type: mongoose.Schema.ObjectId,
-        ref: 'sar_proof_folder'
+        ref: 'proof_folder'
     },
     indexID: {
         type: mongoose.Schema.ObjectId,
